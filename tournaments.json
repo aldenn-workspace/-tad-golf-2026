@@ -1,0 +1,1579 @@
+{
+  "meta": {
+    "player": "Tad Collett",
+    "season": 2026,
+    "college": "Mount St. Mary's — D1 Golf, Fall 2026",
+    "lastUpdated": "2026-02-18",
+    "researchedBy": "subagent tad-golf-research",
+    "researchedAt": "2026-02-18",
+    "dateConfidenceKey": {
+      "confirmed-2026": "Verified from official 2026 tournament website",
+      "from-schedule": "Taken from Mike's schedule notes — treat as reliable",
+      "estimated": "Estimated based on typical annual timing",
+      "tbd": "Not yet announced for 2026 — check linked website"
+    }
+  },
+  "deadlines": [
+    {
+      "id": "dl-ijga-elevated",
+      "label": "IJGA Elevated Events Signup Opens",
+      "date": "2026-02-04",
+      "timeDisplay": "10am CT",
+      "url": null,
+      "done": true,
+      "notes": "Players Challenge #1 (Countryside), DuPage County Jr Classic, Players Challenge #5 (Cog Hill), MAJGT (Countryside), IJGA-CDGA Jr Am, Kevin Streelman Invitational"
+    },
+    {
+      "id": "dl-ijga-elite",
+      "label": "IJGA Elite Events Signup Opens",
+      "date": "2026-02-17",
+      "timeDisplay": "10am CT",
+      "url": null,
+      "done": true,
+      "notes": ""
+    },
+    {
+      "id": "dl-il-optimist",
+      "label": "IL Optimist Qualifier Registration Opens",
+      "date": "2026-02-15",
+      "timeDisplay": null,
+      "url": null,
+      "done": false,
+      "notes": "Check if pursuing"
+    },
+    {
+      "id": "dl-us-open-apply",
+      "label": "US Open Championship — Apply to Play Opens",
+      "date": "2026-02-18",
+      "timeDisplay": "8am CT",
+      "url": "https://champ-admin.usga.org/player#/apply",
+      "done": true,
+      "notes": "Greys Lake (Stonewall Orchard) confirmed. Apply window closes Thu Apr 9."
+    },
+    {
+      "id": "dl-other-ijga",
+      "label": "Other IJGA Tournaments Signup Opens",
+      "date": "2026-02-25",
+      "timeDisplay": "10am CT",
+      "url": null,
+      "done": true,
+      "notes": ""
+    },
+    {
+      "id": "dl-us-open-apply-close",
+      "label": "US Open Apply Window CLOSES",
+      "date": "2026-04-09",
+      "timeDisplay": null,
+      "url": "https://champ-admin.usga.org/player#/apply",
+      "done": true,
+      "notes": "Already applied Wed Feb 18. Just a reminder of the close date."
+    },
+    {
+      "id": "dl-us-jr-am-close",
+      "label": "US Jr. Amateur Apply Window CLOSES",
+      "date": "2026-05-14",
+      "timeDisplay": null,
+      "url": "https://champ-admin.usga.org/player#/apply",
+      "done": true,
+      "notes": "Already applied Wed Mar 11."
+    },
+    {
+      "id": "dl-us-am-close",
+      "label": "US Amateur Apply Window CLOSES",
+      "date": "2026-05-28",
+      "timeDisplay": null,
+      "url": "https://champ-admin.usga.org/player#/apply",
+      "done": true,
+      "notes": "Already applied Wed Mar 18."
+    },
+    {
+      "id": "dl-western-am-qual-reg",
+      "label": "Western Amateur Qualifier Registration DEADLINE",
+      "date": "2026-07-19",
+      "timeDisplay": "5pm CDT",
+      "url": "https://thewesternamateur.com/qualifier-information",
+      "done": true,
+      "notes": "After championship field finalized Fri Jun 26, non-exempt players get email to register. First-come first-served. 84 players, 7 qualifying spots."
+    },
+    {
+      "id": "dl-chick-evans-register",
+      "label": "Chick Evans — Register by This Date!",
+      "date": "2026-07-08",
+      "timeDisplay": null,
+      "url": null,
+      "done": true,
+      "notes": "Guaranteed exempt spot — but MUST register by July 8 or spot is forfeited.",
+      "actionNeeded": true
+    },
+    {
+      "id": "dl-dogwood-reg-opens",
+      "label": "Dogwood Invitational — Qualifier Registration Opens",
+      "date": "2026-03-16",
+      "timeDisplay": null,
+      "url": "https://thedogwood.com/qualifier-registration",
+      "done": false,
+      "canceled": false,
+      "notes": "Register ASAP — closes Mon Apr 20. Qualifier Mon May 11, tournament Mon Jun 15–Sat Jun 20."
+    }
+  ],
+  "tournaments": [
+    {
+      "id": "scott-robertson-qual",
+      "name": "Scott Robertson Memorial Qualifier",
+      "shortName": "Scott Robertson Qual",
+      "status": "canceled",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "TBD",
+      "city": "Naples",
+      "state": "FL",
+      "venueConfirmed": false,
+      "venueNote": "Venue TBD — check tournament website",
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered"
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-04-12",
+        "end": "2026-04-12",
+        "displayDate": "Sun Apr 12, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 18,
+      "notes": "18 holes. CANCELED.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-open-qual",
+      "name": "US Open Qualifier — Stonewall Orchard",
+      "shortName": "US Open Qualifier",
+      "status": "registered",
+      "types": [
+        "usga"
+      ],
+      "venue": "Stonewall Orchard Golf Club",
+      "city": "Greyslake",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-18",
+        "opensDisplay": "Wed Feb 18, 2026",
+        "deadline": "2026-04-09",
+        "deadlineDisplay": "Thu Apr 9, 2026",
+        "timeDisplay": "8am CT",
+        "url": "https://champ-admin.usga.org/player#/apply",
+        "done": true,
+        "notes": "Applied Wed Feb 18 — confirmed. 78 spots. Note: 2026 US Open is at Shinnecock Hills, Thu Jun 18–Sun Jun 21."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-04-22",
+        "end": "2026-04-22",
+        "displayDate": "Wed Apr 22, 2026 (rain date Apr 23)",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 18,
+      "notes": "78 spots. 18 holes. Rain date Thu Apr 23. 2026 US Open is at Shinnecock Hills Golf Club, Southampton NY, Thu Jun 18–Sun Jun 21.",
+      "results": null,
+      "website": "https://www.usga.org/content/usga/home-page/championships/2026/us-open.html",
+      "actionNeeded": false
+    },
+    {
+      "id": "players-challenge-1",
+      "name": "Players Challenge #1 at Countryside",
+      "shortName": "Players Challenge #1",
+      "status": "registered",
+      "types": [
+        "illinois",
+        "ijga"
+      ],
+      "venue": "Countryside Country Club",
+      "city": "Countryside",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-04",
+        "opensDisplay": "Wed Feb 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Elevated IJGA. Signed up Wed Feb 4."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-05-03",
+        "end": "2026-05-04",
+        "displayDate": "Sun May 3–Mon May 4, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 36,
+      "notes": "Elevated IJGA. 36 holes.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "ijga-junior",
+      "name": "IJGA Junior (formerly Medinah)",
+      "shortName": "IJGA Junior",
+      "status": "registered",
+      "types": [
+        "illinois",
+        "ijga"
+      ],
+      "venue": "TBD",
+      "city": "TBD",
+      "state": "IL",
+      "venueConfirmed": false,
+      "venueNote": "Venue TBD — formerly held at Medinah CC",
+      "signup": {
+        "opens": "2026-02-25",
+        "opensDisplay": "Wed Feb 25, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Registered"
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-05-04",
+        "end": "2026-05-04",
+        "displayDate": "Mon May 4, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 36,
+      "notes": "36 holes. Formerly held at Medinah CC —",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "dupage-county-jr",
+      "name": "DuPage County Jr Classic",
+      "shortName": "DuPage County Jr",
+      "status": "registered",
+      "types": [
+        "illinois",
+        "ijga",
+        "national-jr"
+      ],
+      "venue": "Preserve at Oak Meadows",
+      "city": "Addison",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-04",
+        "opensDisplay": "Wed Feb 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Elevated IJGA. Jr Worlds Qualifier — top 2 get exempts to Torrey Pines."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-05-10",
+        "end": "2026-05-11",
+        "displayDate": "Sun May 10–Mon May 11, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 36,
+      "notes": "Elevated IJGA. 36 holes. Jr Worlds Qualifier — top 2 get exempts to Torrey Pines (Mon Jul 6–Fri Jul 10).",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-jr-am-qual",
+      "name": "US Junior Amateur Qualifier",
+      "shortName": "US Jr Am Qualifier",
+      "status": "registered",
+      "types": [
+        "usga",
+        "national-jr"
+      ],
+      "venue": "Thunderhawk Golf Club",
+      "city": "Beach Park",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-11",
+        "opensDisplay": "Wed Mar 11, 2026",
+        "deadline": "2026-05-14",
+        "deadlineDisplay": "Thu May 14, 2026",
+        "timeDisplay": "8am CT",
+        "url": "https://champ-admin.usga.org/player#/apply",
+        "done": true,
+        "notes": "Applied Wed Mar 11. Apply window closes Thu May 14. Have Stracka."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-05-26",
+        "end": "2026-05-26",
+        "displayDate": "Tue May 26, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": 18,
+      "notes": "Have Stracka. US Jr Am is Mon Jul 20–Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264; entries open Wed Mar 11 at 9am ET.",
+      "results": null,
+      "website": "https://champ-admin.usga.org",
+      "actionNeeded": false
+    },
+    {
+      "id": "jr-pga-qual-1",
+      "name": "Jr. PGA Tour Qualifier #1 — Kemper Lakes",
+      "shortName": "Jr PGA Qual #1",
+      "status": "registered",
+      "types": [
+        "national-jr",
+        "illinois"
+      ],
+      "venue": "Kemper Lakes Golf Club",
+      "city": "Kildeer",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-01-05",
+        "opensDisplay": "Mon Jan 5, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Signed up Mon Jan 5. DONE. Have Stracka."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-02",
+        "end": "2026-06-03",
+        "displayDate": "Tue Jun 2–Wed Jun 3, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "1 qualifier spot, 1 alternate. Have Stracka. Signed up Mon Jan 5.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-am-qual-schereville",
+      "name": "US Amateur Qualifier — Briar Ridge CC",
+      "shortName": "US Am Qualifier",
+      "status": "registered",
+      "types": [
+        "usga"
+      ],
+      "venue": "Briar Ridge Country Club",
+      "city": "Schererville",
+      "state": "IN",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-18",
+        "opensDisplay": "Wed Mar 18, 2026",
+        "deadline": "2026-05-28",
+        "deadlineDisplay": "Thu May 28, 2026",
+        "timeDisplay": "8am CT",
+        "url": "https://champ-admin.usga.org/player#/apply",
+        "done": true,
+        "notes": "Applied Wed Mar 18. Apply window closes Thu May 28. US Am is Mon Aug 10–Sun Aug 16 at Merion GC, Ardmore PA + Philly CC, Gladwyne PA."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-08",
+        "end": "2026-06-08",
+        "displayDate": "Mon Jun 8, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "PRIMARY qualifier. US Am is Mon Aug 10–Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA — NOT Olympic Club SF! Alt site: Orchard Ridge CC, Fort Wayne IN on Thu Jun 4.",
+      "results": null,
+      "website": "https://champ-admin.usga.org",
+      "actionNeeded": false
+    },
+    {
+      "id": "il-state-am-qual-1",
+      "name": "IL State Am Qualifier — Winnetka",
+      "shortName": "IL State Am Qual #1",
+      "status": "registered",
+      "types": [
+        "illinois"
+      ],
+      "venue": "Winnetka Golf Club",
+      "city": "Winnetka",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered"
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-09",
+        "end": "2026-06-09",
+        "displayDate": "Tue Jun 9, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "IL State Am is Tue Jul 14–Thu Jul 16 at Crestwicke CC, Bloomington IL if qualifies.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "southern-junior",
+      "name": "Southern Junior Championship",
+      "shortName": "Southern Junior",
+      "status": "applied",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Dataw Island Club",
+      "city": "St Helena Island",
+      "state": "SC",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-04",
+        "opensDisplay": "Wed Mar 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered Wed Mar 4 — waiting on invite/acceptance."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-11",
+        "end": "2026-06-13",
+        "displayDate": "Thu Jun 11–Sat Jun 13, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Applied/registered Wed Mar 4. Waiting on invite/acceptance.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "sunnehanna-am",
+      "name": "Sunnehanna Amateur",
+      "shortName": "Sunnehanna Am",
+      "status": "tentative",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Sunnehanna Country Club",
+      "city": "Johnstown",
+      "state": "PA",
+      "venueConfirmed": true,
+      "venueNote": "TBD — check sunnehannacc.org for 2026 dates",
+      "signup": {
+        "opens": "2026-03-11",
+        "opensDisplay": "Wed Mar 11, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "7:30am CT",
+        "url": "https://sunnehannacc.org",
+        "done": false,
+        "notes": "NOT registering — qualifier date conflicts."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-11",
+        "end": "2026-06-14",
+        "displayDate": "Thu Jun 11–Sun Jun 14, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Decided not to register — qualifier on bad date.",
+      "results": null,
+      "website": "https://sunnehannacc.org",
+      "actionNeeded": false
+    },
+    {
+      "id": "western-jr-am",
+      "name": "Western Jr. Amateur",
+      "shortName": "Western Jr. Am",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "Knollwood Club",
+      "city": "Lake Forest",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-03",
+        "opensDisplay": "Tue Feb 3, 2026",
+        "deadline": "2026-05-03",
+        "deadlineDisplay": "Sun May 3, 2026",
+        "timeDisplay": null,
+        "url": "https://www.thewesternjunior.com",
+        "done": true,
+        "notes": "Registered Tue Feb 3. Entries close Sun May 3. Index <3.0 required. Invite only — no qualifier."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-15",
+        "end": "2026-06-18",
+        "displayDate": "Mon Jun 15–Thu Jun 18, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 54,
+      "notes": "⚠️ VENUE CHANGED — Knollwood Club, Lake Forest IL (not Rhodes IA). Invite only — no qualifier. Index <3.0. Registered Tue Feb 3. Format: 54-hole stroke play (3 rounds). Sun Jun 14 Con-Am, Mon Jun 15 practice, Tue Jun 16–Thu Jun 18 competitive play. Cut to 44 after 36 holes",
+      "results": null,
+      "website": "https://www.thewesternjunior.com",
+      "actionNeeded": false
+    },
+    {
+      "id": "hudson-jr-inv",
+      "name": "Hudson Junior Invitational",
+      "shortName": "Hudson Junior",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "TBD",
+      "city": "Akron/Cleveland area",
+      "state": "OH",
+      "venueConfirmed": false,
+      "venueNote": "TBD — venue not confirmed for 2026",
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered — waiting on invite/acceptance."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-16",
+        "end": "2026-06-19",
+        "displayDate": "Tue Jun 16–Fri Jun 19, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Registered and waiting on invite. Invite-only. Note: Conflicts with Western Jr Am (Mon Jun 15–Thu Jun 18) — if playing Western Jr, Hudson Jr may not be possible.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "il-state-am-qual-2",
+      "name": "IL State Am Qualifier — The Hawk CC",
+      "shortName": "IL State Am Qual #2",
+      "status": "registered",
+      "types": [
+        "illinois"
+      ],
+      "venue": "The Hawk Country Club",
+      "city": "St. Charles",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered. 9:48am tee time confirmed."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-17",
+        "end": "2026-06-17",
+        "displayDate": "Wed Jun 17, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "9:48am tee time confirmed. If qualifies, advances to US Am Final Qualifier Thu Jul 23 at Aldeen GC.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "ns-jr-qual",
+      "name": "North & South Jr — Open Qualifier",
+      "shortName": "N&S Jr Qualifier",
+      "status": "registered",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Pinehurst No. 6",
+      "city": "Pinehurst",
+      "state": "NC",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-03",
+        "opensDisplay": "Tue Mar 3, 2026",
+        "deadline": null,
+        "deadlineDisplay": "Mon May 4, 2026",
+        "timeDisplay": "9am CT",
+        "url": "https://www.pinehurst.com/golf/tournaments/north-south-junior-championship/",
+        "done": true,
+        "notes": "Registered Tue Mar 3. Waiting since Sun May 17 acceptance. Field announced Wed May 6. Qualifier is only for non-exempt boys who applied but didn't make the 90-player field.",
+        "displayDeadline": null
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-20",
+        "end": "2026-06-20",
+        "displayDate": "Sat Jun 20, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "Boys open qualifier. Must have applied to Championship. Registration first-come, first-served when field announced Wed May 6. Qualifier at Pinehurst No. 6.",
+      "results": null,
+      "website": "https://www.pinehurst.com/golf/tournaments/north-south-junior-championship/",
+      "actionNeeded": false
+    },
+    {
+      "id": "ns-jr",
+      "name": "48th North & South Junior Amateur",
+      "shortName": "North & South Jr",
+      "status": "if-qual",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Pinehurst Resort (No. 2 & No. 6)",
+      "city": "Pinehurst",
+      "state": "NC",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-03",
+        "opensDisplay": "Tue Mar 3, 2026",
+        "deadline": null,
+        "deadlineDisplay": "Mon May 4, 2026",
+        "timeDisplay": "9am CT",
+        "url": "https://www.pinehurst.com/golf/tournaments/north-south-junior-championship/",
+        "done": true,
+        "notes": "Applied Tue Mar 3. Entry deadline Mon May 4 @ 12PM ET. Field finalized by Wed May 6.",
+        "displayDeadline": null
+      },
+      "qualifier": {
+        "date": "2026-06-20",
+        "displayDate": "Sat Jun 20, 2026",
+        "venue": "Pinehurst No. 6",
+        "city": "Pinehurst",
+        "state": "NC",
+        "dateConfidence": "confirmed-2026"
+      },
+      "tournament": {
+        "start": "2026-06-21",
+        "end": "2026-06-24",
+        "displayDate": "Sun Jun 21–Wed Jun 24, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 54,
+      "notes": "54-hole stroke play. Boys play Pinehurst No. 2 & No. 6. If exempt, no qualifier needed. Official tournament dates per Pinehurst website: Sun Jun 21–Wed Jun 24 (starts Sun Jun 21 with registration/practice, not Mon Jun 22). ⚠️ Note: Family Montreal trip is Fri Jun 26–Mon Jun 29 — no conflict with Sun Jun 21–Wed Jun 24 tournament.",
+      "results": null,
+      "website": "https://www.pinehurst.com/golf/tournaments/north-south-junior-championship/",
+      "actionNeeded": false
+    },
+    {
+      "id": "il-state-jr-am",
+      "name": "105th Illinois State Junior Amateur",
+      "shortName": "IL State Jr. Amateur",
+      "status": "registered",
+      "types": [
+        "illinois"
+      ],
+      "venue": "Makray Memorial Golf Club",
+      "city": "Barrington",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "EXEMPT — registered. Practice round Sun Jun 21 with Tad, Nat & Dad."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-23",
+        "end": "2026-06-25",
+        "displayDate": "Tue Jun 23–Thu Jun 25, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "EXEMPT — registered. Practice round Sun Jun 21 with Tad, Nat & Dad. Conflicts: CDGA Am, Press Thornton, Southern Am Qual — all canceled due to this.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "cdga-am",
+      "name": "105th CDGA Amateur",
+      "shortName": "CDGA Amateur",
+      "status": "canceled",
+      "types": [
+        "illinois"
+      ],
+      "venue": "Briarwood Golf Club",
+      "city": "Sun River Grove",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": "Listed as NSCC in notes",
+      "signup": {
+        "opens": "2026-01-20",
+        "opensDisplay": "Tue Jan 20, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "8am",
+        "url": null,
+        "done": true,
+        "notes": "Signed up Tue Jan 20 — but conflicts with IL State Jr Am."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-23",
+        "end": "2026-06-25",
+        "displayDate": "Tue Jun 23–Thu Jun 25, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "CANCELED — conflicts with IL State Junior Amateur. Would have been at NSCC.",
+      "results": null,
+      "website": null,
+      "conflicts": [
+        "il-state-jr-am"
+      ],
+      "actionNeeded": false
+    },
+    {
+      "id": "press-thornton",
+      "name": "Press Thornton Future Masters",
+      "shortName": "Press Thornton",
+      "status": "canceled",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "TBD",
+      "city": "Dothan",
+      "state": "AL",
+      "venueConfirmed": false,
+      "venueNote": "TBD — check tournament website",
+      "signup": {
+        "opens": "2026-01-01",
+        "opensDisplay": "Thu Jan 1, 2026",
+        "deadline": null,
+        "deadlineDisplay": "Fri May 1 acceptance notice",
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Applied Thu Jan 1. Fri May 1 acceptance notice."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-25",
+        "end": "2026-06-28",
+        "displayDate": "Thu Jun 25–Sun Jun 28, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "DECLINED — conflicts with IL State Junior Amateur (Tue Jun 23–Thu Jun 25).",
+      "results": null,
+      "website": null,
+      "conflicts": [
+        "il-state-jr-am"
+      ],
+      "actionNeeded": false
+    },
+    {
+      "id": "southern-am-qual",
+      "name": "Southern Amateur Qualifier",
+      "shortName": "Southern Am Qual",
+      "status": "canceled",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "TBD",
+      "city": "Bowling Green",
+      "state": "KY",
+      "venueConfirmed": false,
+      "venueNote": "TBD — venue not confirmed",
+      "signup": {
+        "opens": "2026-03-10",
+        "opensDisplay": "Tue Mar 10, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Registered Tue Mar 10."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-25",
+        "end": "2026-06-25",
+        "displayDate": "Thu Jun 25, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "CANCELED — conflicts with IL State Junior Amateur.",
+      "results": null,
+      "website": null,
+      "conflicts": [
+        "il-state-jr-am"
+      ],
+      "actionNeeded": false
+    },
+    {
+      "id": "bubba-conlee",
+      "name": "Bubba Conlee National Jr Golf Classic",
+      "shortName": "Bubba Conlee",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "TBD",
+      "city": "Memphis",
+      "state": "TN",
+      "venueConfirmed": false,
+      "venueNote": "TBD — check tournament website for 2026 venue",
+      "signup": {
+        "opens": "2026-01-12",
+        "opensDisplay": "Mon Jan 12, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "Applied Mon Jan 12 — waiting on invite."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-06",
+        "end": "2026-07-09",
+        "displayDate": "Mon Jul 6–Thu Jul 9, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Applied Mon Jan 12. Waiting on invite. Venue TBD — historically played in Memphis TN area. Check tournament for 2026 venue.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "junior-worlds",
+      "name": "Junior World Golf Championships",
+      "shortName": "Junior Worlds",
+      "status": "if-qual",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Torrey Pines Golf Course",
+      "city": "La Jolla",
+      "state": "CA",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": null,
+      "qualifier": {
+        "date": "2026-05-10",
+        "displayDate": "Sun May 10–Mon May 11, 2026 (DuPage County Jr Classic)",
+        "venue": "Preserve at Oak Meadows",
+        "city": "Addison",
+        "state": "IL",
+        "dateConfidence": "from-schedule"
+      },
+      "tournament": {
+        "start": "2026-07-06",
+        "end": "2026-07-10",
+        "displayDate": "Mon Jul 6–Fri Jul 10, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "IF QUAL: Top 2 finishers from DuPage County Jr Classic (Sun May 10–Mon May 11) receive exempt spots.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "jr-pga-qual-2",
+      "name": "Jr. PGA Tour Qualifier #2 — Bull Valley",
+      "shortName": "Jr PGA Qual #2",
+      "status": "registered",
+      "types": [
+        "national-jr",
+        "illinois"
+      ],
+      "venue": "Bull Valley Golf Club",
+      "city": "Woodstock",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-01-05",
+        "opensDisplay": "Mon Jan 5, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Signed up Mon Jan 5. DONE."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-07",
+        "end": "2026-07-07",
+        "displayDate": "~Tue Jul 7, 2026",
+        "dateConfidence": "estimated"
+      },
+      "holes": null,
+      "notes": "Exact date TBD. Registered Mon Jan 5. Kevin Streelman Invitational canceled due to conflict with this.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "kevin-streelman-inv",
+      "name": "Kevin Streelman Invitational",
+      "shortName": "Kevin Streelman Inv.",
+      "status": "canceled",
+      "types": [
+        "illinois",
+        "ijga"
+      ],
+      "venue": "Old Wayne GC / Cantigny Golf",
+      "city": "Wayne / Wheaton",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-04",
+        "opensDisplay": "Wed Feb 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Registered — but canceled due to conflict."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-07",
+        "end": "2026-07-08",
+        "displayDate": "Tue Jul 7–Wed Jul 8, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "CANCELED — conflicts with Jr PGA Qualifier #2 (Bull Valley). Elevated IJGA event.",
+      "results": null,
+      "website": null,
+      "conflicts": [
+        "jr-pga-qual-2"
+      ],
+      "actionNeeded": false
+    },
+    {
+      "id": "ijga-cdga-jr-am",
+      "name": "IJGA/CDGA Junior Amateur",
+      "shortName": "IJGA/CDGA Jr Am",
+      "status": "canceled",
+      "types": [
+        "illinois",
+        "ijga"
+      ],
+      "venue": "Prairie Landing Golf Club",
+      "city": "West Chicago",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-04",
+        "opensDisplay": "Wed Feb 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Registered — but canceled due to AJGA conflict."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-10",
+        "end": "2026-07-11",
+        "displayDate": "Fri Jul 10–Sat Jul 11, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "CANCELED — conflicts with AJGA event. Elevated IJGA event.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "chick-evans",
+      "name": "Chick Evans Jr. Amateur",
+      "shortName": "Chick Evans Jr Am",
+      "status": "registered",
+      "types": [
+        "national-jr",
+        "illinois"
+      ],
+      "venue": "Itasca Country Club",
+      "city": "Itasca",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": "Wed Jul 8, 2026",
+        "timeDisplay": null,
+        "url": null,
+        "done": true,
+        "notes": "EXEMPT — guaranteed spot. MUST register by Wed Jul 8 or spot is forfeited.",
+        "displayDeadline": null
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-13",
+        "end": "2026-07-17",
+        "displayDate": "Mon Jul 13–Fri Jul 17, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "EXEMPT — guaranteed spot but MUST register by Wed Jul 8.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false,
+      "actionLabel": "Register by July 8 (guaranteed exempt spot — don't lose it!)"
+    },
+    {
+      "id": "il-state-am",
+      "name": "Illinois State Amateur Championship",
+      "shortName": "IL State Amateur",
+      "status": "if-qual",
+      "types": [
+        "illinois"
+      ],
+      "venue": "Crestwicke Country Club",
+      "city": "Bloomington",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": null,
+      "qualifier": {
+        "date": "2026-06-09",
+        "displayDate": "Tue Jun 9 (Winnetka) or Wed Jun 17 (The Hawk, St. Charles)",
+        "venue": "Winnetka GC or The Hawk CC",
+        "city": "Winnetka or St. Charles",
+        "state": "IL",
+        "dateConfidence": "from-schedule"
+      },
+      "tournament": {
+        "start": "2026-07-14",
+        "end": "2026-07-16",
+        "displayDate": "Tue Jul 14–Thu Jul 16, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": null,
+      "notes": "IF QUAL at Tue Jun 9 (Winnetka) or Thu Jun 18 (St. Charles) qualifiers.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-jr-am",
+      "name": "US Junior Amateur Championship",
+      "shortName": "US Jr. Amateur",
+      "status": "if-qual",
+      "types": [
+        "usga",
+        "national-jr"
+      ],
+      "venue": "Saucon Valley Country Club (Old Course)",
+      "city": "Bethlehem",
+      "state": "PA",
+      "venueConfirmed": true,
+      "venueNote": "Stroke play also at Grace Course. Match play on Old Course.",
+      "signup": {
+        "opens": "2026-03-11",
+        "opensDisplay": "Wed Mar 11, 2026 (9am ET)",
+        "deadline": "2026-05-14",
+        "deadlineDisplay": "Thu May 14, 2026",
+        "timeDisplay": "8am CT",
+        "url": "https://champ-admin.usga.org/player#/apply",
+        "done": true,
+        "notes": "Applied Wed Mar 11. Closes Thu May 14. Have Stracka."
+      },
+      "qualifier": {
+        "date": "2026-05-26",
+        "displayDate": "Tue May 26, 2026",
+        "venue": "Thunderhawk Golf Club",
+        "city": "Beach Park",
+        "state": "IL",
+        "dateConfidence": "from-schedule"
+      },
+      "tournament": {
+        "start": "2026-07-20",
+        "end": "2026-07-25",
+        "displayDate": "Mon Jul 20–Sat Jul 25, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 264,
+      "fieldSize": 264,
+      "format": "36-hole stroke play qualifying (Mon Jul 20–Tue Jul 21), then match play to 36-hole final (Wed Jul 22–Sat Jul 25). 64 qualify for match play.",
+      "notes": "IF QUAL at Tue May 26 Thunderhawk. Have Stracka. Applied Wed Mar 11. 78th US Jr Amateur. Field: 264. Eligibility: HI ≤2.4, must not have turned 19 by Sat Jul 25. Schedule: Mon Jul 20–Tue Jul 21 stroke play, Wed Jul 22 R64, Thu Jul 23 R32/R16, Fri Jul 24 QF/SF, Sat Jul 25 36-hole final.",
+      "results": null,
+      "website": "https://championships.usga.org/usjunioramateur.html",
+      "actionNeeded": false
+    },
+    {
+      "id": "majgt",
+      "name": "MAJGT at Countryside",
+      "shortName": "MAJGT Countryside",
+      "status": "tentative",
+      "types": [
+        "illinois",
+        "ijga"
+      ],
+      "venue": "Countryside Country Club",
+      "city": "Countryside",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-02-04",
+        "opensDisplay": "Wed Feb 4, 2026",
+        "deadline": null,
+        "deadlineDisplay": null,
+        "timeDisplay": "10am CT",
+        "url": null,
+        "done": true,
+        "notes": "Registered — but probably not playing."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-21",
+        "end": "2026-07-22",
+        "displayDate": "Tue Jul 21–Wed Jul 22, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Registered — probably not playing. Will likely conflict with US Jr Am schedule.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "il-open-qual",
+      "name": "Illinois Open Qualifier",
+      "shortName": "IL Open Qualifier",
+      "status": "registered",
+      "types": [
+        "illinois"
+      ],
+      "venue": "Winnetka Golf Club",
+      "city": "Winnetka",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": null,
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-22",
+        "end": "2026-07-22",
+        "displayDate": "Wed Jul 22, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-am-final-qual",
+      "name": "US Amateur Final Qualifier — Aldeen GC",
+      "shortName": "US Am Final Qualifier",
+      "status": "if-qual",
+      "types": [
+        "usga"
+      ],
+      "venue": "Aurora Country Club",
+      "city": "Aurora",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": null,
+      "qualifier": {
+        "date": "2026-06-18",
+        "displayDate": "Thu Jun 18, 2026",
+        "venue": "The Hawk CC",
+        "city": "St. Charles",
+        "state": "IL",
+        "dateConfidence": "from-schedule"
+      },
+      "tournament": {
+        "start": "2026-07-23",
+        "end": "2026-07-23",
+        "displayDate": "Thu Jul 23, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": null,
+      "notes": "IF QUAL at Thu Jun 18 IL State Am Qualifier (The Hawk CC, St Charles). 9:48am tee time at qualifier.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "western-am-qual",
+      "name": "Western Amateur Qualifier",
+      "shortName": "Western Am Qualifier",
+      "status": "registered",
+      "types": [
+        "usga",
+        "national-jr"
+      ],
+      "venue": "Flossmoor Golf Club",
+      "city": "Flossmoor",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": "2026-07-19",
+        "deadlineDisplay": "Sun Jul 19, 2026 (5pm CDT)",
+        "timeDisplay": "5pm CDT",
+        "url": "https://thewesternamateur.com/qualifier-information",
+        "done": true,
+        "notes": "After championship field finalized Fri Jun 26, non-exempt players get email link to register. First-come first-served. 84 players, 7 qualifying spots. Entry fee $175."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-07-26",
+        "end": "2026-07-26",
+        "displayDate": "Sun Jul 26, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "⚠️ CHANGED: Qualifier is Sun Jul 26 at Flossmoor Golf Club, Flossmoor IL (not Winnetka, not Mon Jul 27). 18-hole stroke play. 84 players, 7 spots awarded. Starting times 7am-9:10am off #1 & #10. Pairings posted Fri Jul 24. Register by Sun Jul 19. Western Am is Mon Jul 27–Sat Aug 1 at Beverly CC, Chicago IL.",
+      "results": null,
+      "website": "https://thewesternamateur.com/qualifier-information",
+      "actionNeeded": false,
+      "actionLabel": "Register after Fri Jun 26 at thewesternamateur.com/qualifier-information (deadline Sun Jul 19)"
+    },
+    {
+      "id": "western-am",
+      "name": "Western Amateur Championship",
+      "shortName": "Western Amateur",
+      "status": "if-qual",
+      "types": [
+        "usga",
+        "national-jr"
+      ],
+      "venue": "Beverly Country Club",
+      "city": "Chicago",
+      "state": "IL",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": null,
+        "opensDisplay": null,
+        "deadline": null,
+        "deadlineDisplay": "Register for qualifier after Fri Jun 26",
+        "timeDisplay": null,
+        "url": "https://thewesternamateur.com/qualifier-information",
+        "done": true,
+        "notes": "Apply first via thewesternamateur.com. Qualifier registration opens after championship field finalized Fri Jun 26."
+      },
+      "qualifier": {
+        "date": "2026-07-26",
+        "displayDate": "Sun Jul 26, 2026",
+        "venue": "Flossmoor Golf Club",
+        "city": "Flossmoor",
+        "state": "IL",
+        "dateConfidence": "confirmed-2026"
+      },
+      "tournament": {
+        "start": "2026-07-27",
+        "end": "2026-08-01",
+        "displayDate": "Mon Jul 27–Sat Aug 1, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": null,
+      "notes": "⚠️ VENUE CHANGED — Beverly Country Club, Chicago IL (not Skokie CC, Glencoe). Dates: Mon Jul 27–Sat Aug 1 (not Tue Jul 28–Sun Aug 2). IF QUAL (Sun Jul 26 at Flossmoor GC)",
+      "results": null,
+      "website": "https://thewesternamateur.com",
+      "actionNeeded": false
+    },
+    {
+      "id": "northern-jr",
+      "name": "24th Northern Junior Championship",
+      "shortName": "Northern Junior",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "Wethersfield Country Club",
+      "city": "Wethersfield",
+      "state": "CT",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-01",
+        "opensDisplay": "Sun Mar 1, 2026",
+        "deadline": null,
+        "deadlineDisplay": "Opens March 2026",
+        "timeDisplay": "7am CT",
+        "url": "https://northernjunior.com/qualifier/",
+        "done": false,
+        "notes": "Signup opens Sun Mar 1 at 7am CT. Applications open in March 2026. 2026 Entry Procedure will be posted by March 2026."
+      },
+      "qualifier": {
+        "date": "2026-05-15",
+        "displayDate": "TBD — posted by March 2026",
+        "venue": "TBD",
+        "city": "TBD",
+        "state": "TBD",
+        "dateConfidence": "tbd"
+      },
+      "tournament": {
+        "start": "2026-08-03",
+        "end": "2026-08-05",
+        "displayDate": "Mon Aug 3–Wed Aug 5, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 36,
+      "notes": "36-hole stroke play. Venue confirmed: Wethersfield CC, Wethersfield CT (NOT New Haven CC). ~84 player field. Two qualifiers held — dates/sites posted by March 2026. Invite-only for non-qualifiers.",
+      "results": null,
+      "website": "https://northernjunior.com",
+      "actionNeeded": true,
+      "actionLabel": "Sign up Sun Mar 1 @ 7am CT at northernjunior.com/qualifier/"
+    },
+    {
+      "id": "hope-valley-jr",
+      "name": "Hope Valley Junior Invitational",
+      "shortName": "Hope Valley Jr",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "Hope Valley Country Club",
+      "city": "Durham",
+      "state": "NC",
+      "venueConfirmed": true,
+      "venueNote": "TBD — check for 2026 confirmation",
+      "signup": null,
+      "qualifier": {
+        "date": "2026-04-15",
+        "displayDate": "April 2026 (TBD)",
+        "venue": "TBD",
+        "city": "TBD",
+        "state": "TBD",
+        "dateConfidence": "tbd"
+      },
+      "tournament": {
+        "start": "2026-08-04",
+        "end": "2026-08-06",
+        "displayDate": "Tue Aug 4–Thu Aug 6, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Invite. Qualifier in April (exact date TBD). Venue: Hope Valley CC, Durham NC.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "gator-inv",
+      "name": "Gator Invitational",
+      "shortName": "Gator Invitational",
+      "status": "applied",
+      "types": [
+        "national-jr",
+        "invite-only"
+      ],
+      "venue": "Country Club of Jackson",
+      "city": "Jackson",
+      "state": "MS",
+      "venueConfirmed": true,
+      "venueNote": "TBD — confirm for 2026",
+      "signup": null,
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-08-05",
+        "end": "2026-08-08",
+        "displayDate": "Wed Aug 5–Sat Aug 8, 2026",
+        "dateConfidence": "from-schedule"
+      },
+      "holes": null,
+      "notes": "Invite by rankings. Country Club of Jackson, Jackson MS.",
+      "results": null,
+      "website": null,
+      "actionNeeded": false
+    },
+    {
+      "id": "us-am",
+      "name": "US Amateur Championship",
+      "shortName": "US Amateur",
+      "status": "if-qual",
+      "types": [
+        "usga",
+        "national-jr"
+      ],
+      "venue": "Merion Golf Club (East Course)",
+      "city": "Ardmore",
+      "state": "PA",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": {
+        "opens": "2026-03-18",
+        "opensDisplay": "Wed Mar 18, 2026",
+        "deadline": "2026-05-28",
+        "deadlineDisplay": "Thu May 28, 2026",
+        "timeDisplay": "8am CT",
+        "url": "https://champ-admin.usga.org/player#/apply",
+        "done": true,
+        "notes": "Applied Wed Mar 18. Apply window closes Thu May 28."
+      },
+      "qualifier": {
+        "date": "2026-06-08",
+        "displayDate": "Mon Jun 8, 2026 (Schereville) or Thu Jun 4 (Fort Wayne)",
+        "venue": "Briar Ridge CC",
+        "city": "Schereville",
+        "state": "IN",
+        "dateConfidence": "from-schedule"
+      },
+      "tournament": {
+        "start": "2026-08-10",
+        "end": "2026-08-16",
+        "displayDate": "Mon Aug 10–Sun Aug 16, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": null,
+      "notes": "⚠️ MAJOR CHANGE: Mon Aug 10–Sun Aug 16 (not Tue Aug 11–Mon Aug 17). Venue: Merion Golf Club (East Course) + Philadelphia CC, Gladwyne PA — NOT Olympic Club SF! 2025 was at Olympic Club. IF QUAL (Mon Jun 8 at Briar Ridge CC, Schereville). Applied Wed Mar 18.",
+      "results": null,
+      "website": "https://championships.usga.org/usamateur.html",
+      "actionNeeded": false
+    },
+    {
+      "id": "dogwood-inv",
+      "name": "Dogwood Invitational",
+      "shortName": "Dogwood",
+      "status": "waiting",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Druid Hills Golf Club",
+      "city": "Atlanta",
+      "state": "GA",
+      "venueConfirmed": true,
+      "signup": {
+        "opens": "2026-03-16",
+        "opensDisplay": "Mon Mar 16, 2026",
+        "deadline": "2026-04-20",
+        "deadlineDisplay": "Mon Apr 20, 2026",
+        "timeDisplay": null,
+        "url": "https://thedogwood.com/qualifier-registration",
+        "done": false,
+        "notes": "Registration opens Mon Mar 16. 100-player field, 6 advance. GHIN <3.0. Entry fee $275."
+      },
+      "qualifier": {
+        "start": "2026-05-11",
+        "end": "2026-05-11",
+        "displayDate": "Mon May 11, 2026",
+        "dateConfidence": "confirmed-2026",
+        "venue": "Druid Hills Golf Club",
+        "city": "Atlanta",
+        "state": "GA"
+      },
+      "tournament": {
+        "start": "2026-06-15",
+        "end": "2026-06-20",
+        "displayDate": "Mon Jun 15–Sat Jun 20, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "Open qualifier. 6 advance to championship. Registration opens Mon Mar 16.",
+      "website": "https://thedogwood.com",
+      "actionNeeded": false
+    },
+    {
+      "id": "dogwood-inv-qual",
+      "name": "Dogwood Invitational — Open Qualifier",
+      "shortName": "Dogwood Qualifier",
+      "status": "waiting",
+      "types": [
+        "national-jr"
+      ],
+      "venue": "Druid Hills Golf Club",
+      "city": "Atlanta",
+      "state": "GA",
+      "venueConfirmed": true,
+      "signup": {
+        "opens": "2026-03-16",
+        "opensDisplay": "Mon Mar 16, 2026",
+        "deadline": "2026-04-20",
+        "deadlineDisplay": "Mon Apr 20, 2026",
+        "timeDisplay": null,
+        "url": "https://thedogwood.com/qualifier-registration",
+        "done": false,
+        "notes": "Registration opens Mon Mar 16, closes Mon Apr 20. Entry fee ."
+      },
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-05-11",
+        "end": "2026-05-11",
+        "displayDate": "Mon May 11, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "18-hole stroke play. 100-player field. 6 advance to Mon Jun 15–Sat Jun 20 championship. GHIN <3.0 required. Tee times start 8:30am.",
+      "website": "https://thedogwood.com/qualifier-registration",
+      "actionNeeded": false
+    }
+  ]
+}

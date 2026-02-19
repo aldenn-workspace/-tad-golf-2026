@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tad Collett — 2026 Season ⛳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#08090f;--surface:#0f1018;--surface2:#161822;--surface3:#1d1f2d;
+  --border:#252737;--border2:#2e3047;
+  --text:#e8e8f4;--text-dim:#7a7a9a;--text-mute:#4a4a6a;
+  --accent:#7c6ff7;--accent-glow:rgba(124,111,247,0.12);
+  --c-reg:#22c55e;--c-reg-bg:rgba(34,197,94,0.07);--c-reg-bdr:rgba(34,197,94,0.22);
+  --c-app:#f59e0b;--c-app-bg:rgba(245,158,11,0.07);--c-app-bdr:rgba(245,158,11,0.22);
+  --c-wait:#f97316;--c-wait-bg:rgba(249,115,22,0.07);--c-wait-bdr:rgba(249,115,22,0.22);
+  --c-iq:#60a5fa;--c-iq-bg:rgba(96,165,250,0.07);--c-iq-bdr:rgba(96,165,250,0.2);
+  --c-inv:#c084fc;--c-inv-bg:rgba(192,132,252,0.06);--c-inv-bdr:rgba(192,132,252,0.18);
+  --c-can:#9ca3af;--c-can-bg:rgba(156,163,175,0.1);--c-can-bdr:rgba(156,163,175,0.25);
+  --c-ten:#6b7280;--c-ten-bg:rgba(107,114,128,0.08);--c-ten-bdr:rgba(107,114,128,0.18);
+  --c-dl:#fb923c;--c-dl-bg:rgba(251,146,60,0.07);--c-dl-bdr:rgba(251,146,60,0.22);
+  --c-past:#374151;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* LAYOUT */
+.wrap{max-width:1060px;margin:0 auto;padding:32px 18px 80px}
+
+/* HEADER */
+header{text-align:center;padding:44px 0 32px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;opacity:.85}
+h1{font-size:clamp(2rem,5vw,2.9rem);font-weight:800;letter-spacing:-1.5px;line-height:1.1;background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.sub{color:var(--text-dim);font-size:.93rem;margin-bottom:4px}
+.college{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 14px;background:var(--accent-glow);border:1px solid rgba(124,111,247,.2);border-radius:100px;font-size:11.5px;color:#a5b4fc;font-weight:500}
+
+/* STATS */
+.stats{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;margin-bottom:24px;flex-wrap:wrap}
+.stat{flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:13px 10px;border-radius:10px;transition:background .18s}
+.stat:hover{background:var(--surface2)}
+.stat .n{font-size:1.5rem;font-weight:800;letter-spacing:-1px;line-height:1}
+.stat .l{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-dim)}
+.st .n{color:var(--text)}
+.sr .n{color:var(--c-reg)}
+.sa .n{color:var(--c-app)}
+.si .n{color:var(--c-iq)}
+.sv .n{color:var(--c-inv)}
+.sx .n{color:var(--c-can)}
+
+/* ACTION NEEDED */
+.action-box{background:linear-gradient(135deg,rgba(251,146,60,.055),rgba(239,68,68,.03));border:1px solid rgba(251,146,60,.2);border-radius:14px;padding:18px 22px;margin-bottom:24px}
+.action-box h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--c-dl);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.action-list{display:flex;flex-direction:column;gap:6px}
+.ai{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;background:rgba(251,146,60,.055);border:1px solid rgba(251,146,60,.16);border-radius:9px;transition:all .18s}
+.ai:hover{border-color:rgba(251,146,60,.3);background:rgba(251,146,60,.09)}
+.ai .ico{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.ai .body{flex:1}
+.ai .nm{font-weight:600;font-size:13.5px;color:var(--text)}
+.ai .lbl{font-size:11.5px;color:var(--c-dl);margin-top:2px;font-weight:500}
+.ai .nt{font-size:11px;color:var(--text-dim);margin-top:2px}
+.ai .lk{font-size:11px;color:var(--accent)}
+
+/* NOTICE */
+.notice{font-size:11.5px;background:rgba(124,111,247,.06);border:1px solid rgba(124,111,247,.14);border-radius:9px;padding:9px 13px;color:var(--text-dim);margin-bottom:20px;line-height:1.6}
+.notice strong{color:var(--accent)}
+
+/* FILTERS */
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:26px}
+.fbtn{padding:6px 13px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:11.5px;font-weight:500;cursor:pointer;transition:all .16s;font-family:'Inter',sans-serif;white-space:nowrap}
+.fbtn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2)}
+.fbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.fbtn.fr.on{background:var(--c-reg);border-color:var(--c-reg)}
+.fbtn.fa.on{background:var(--c-app);border-color:var(--c-app);color:#1a0d00}
+.fbtn.fi.on{background:var(--c-iq);border-color:var(--c-iq);color:#0a1628}
+.fbtn.fv.on{background:var(--c-inv);border-color:var(--c-inv);color:#1a0a2e}
+.fbtn.fx.on{background:var(--c-can);border-color:var(--c-can)}
+.fsep{width:1px;background:var(--border);margin:4px 3px}
+
+/* MONTH SECTION */
+.month{margin-bottom:8px}
+.mhdr{display:flex;align-items:center;gap:10px;padding:11px 15px;background:var(--surface);border:1px solid var(--border);border-radius:11px;cursor:pointer;user-select:none;transition:all .18s;margin-bottom:6px}
+.mhdr:hover{border-color:var(--border2);background:var(--surface2)}
+.mhdr.coll{margin-bottom:0}
+.mlbl{font-size:14.5px;font-weight:700;color:var(--text);flex:1}
+.mnow{font-size:9px;color:var(--accent);font-weight:700;margin-left:6px;letter-spacing:.5px}
+.mcnt{font-size:10.5px;color:var(--text-dim);background:var(--surface2);padding:2px 9px;border-radius:100px;border:1px solid var(--border);font-weight:500}
+.mchv{color:var(--text-mute);transition:transform .22s;font-size:11px}
+.mhdr.coll .mchv{transform:rotate(-90deg)}
+.mentries{display:flex;flex-direction:column;gap:5px;padding-left:6px}
+.mentries.coll{display:none}
+.mpips{display:flex;gap:2px;align-items:center}
+.pip{width:5px;height:5px;border-radius:50%}
+
+/* DEADLINE STRIP */
+.dl{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;background:var(--c-dl-bg);border:1px solid var(--c-dl-bdr);border-left:3px solid var(--c-dl);border-radius:9px;transition:all .18s}
+.dl:hover{background:rgba(251,146,60,.11)}
+.dl.done{opacity:.75;border-left-color:var(--c-reg);background:rgba(34,197,94,.03);border-color:rgba(34,197,94,.1)}
+.dl.skip{opacity:1;border-left-color:var(--c-can);background:rgba(75,85,99,.06)}
+.dl.skip .dl-lbl{text-decoration:line-through;color:var(--text)}
+.dl.skip .dl-date,.dl.skip .dl-meta{color:var(--text-dim)}
+.dl-ico{font-size:13px;flex-shrink:0;margin-top:1px}
+.dl-body{flex:1}
+.dl-lbl{font-weight:600;font-size:12.5px;color:var(--text)}
+.dl-meta{font-size:11px;color:var(--text-dim);margin-top:2px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dl-date{font-weight:600;color:var(--c-dl)}
+.done-tag{font-size:9.5px;font-weight:700;color:var(--c-reg)}
+.skip-tag{font-size:9.5px;font-weight:700;color:var(--c-can)}
+.dl-note{font-size:10.5px;color:var(--text-dim);margin-top:2px;font-style:italic}
+
+/* TOURNAMENT CARD */
+.tc{background:var(--surface);border:1px solid var(--border);border-left:3px solid transparent;border-radius:11px;padding:15px 17px;transition:all .2s;position:relative}
+.tc:hover{transform:translateX(3px);box-shadow:0 4px 20px rgba(0,0,0,.28)}
+
+.tc.sr{border-color:var(--c-reg-bdr);background:var(--c-reg-bg);border-left-color:var(--c-reg)}
+.tc.sr:hover{border-color:rgba(34,197,94,.38)}
+.tc.sa{border-color:var(--c-app-bdr);border-left-color:var(--c-app)}
+.tc.sa:hover{border-color:rgba(245,158,11,.38)}
+.tc.siq{border-color:var(--c-iq-bdr);border-left-color:var(--c-iq)}
+.tc.siq:hover{border-color:rgba(96,165,250,.38)}
+.tc.sio{border-color:var(--c-inv-bdr);border-left-color:var(--c-inv)}
+.tc.sw{border-color:var(--c-wait-bdr);border-left-color:var(--c-wait)}
+.tc.sio:hover{border-color:rgba(192,132,252,.32)}
+.tc.sc,.tc.st{opacity:1;border-left-color:var(--c-can);background:rgba(75,85,99,.08);padding:9px 13px}
+.tc.sc:hover,.tc.st:hover{opacity:1}
+.tc.sc .cdate,.tc.st .cdate{font-size:11px;margin-bottom:2px}
+.tc.sc .cname,.tc.st .cname{font-size:12px}
+.tc.sc .chead,.tc.st .chead{margin-bottom:3px}
+.tc.sc .crow:not(.rnotes),.tc.st .crow:not(.rnotes){display:none}
+.tc.sc .crows,.tc.st .crows{gap:1px}
+.tc.sp{opacity:.3;border-left-color:var(--c-past)}
+
+/* Prominent date on top */
+.cdate{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:.2px}
+.tc.sr .cdate{color:var(--c-reg)}
+.tc.sa .cdate{color:var(--c-app)}
+.tc.siq .cdate{color:var(--c-iq)}
+.tc.sio .cdate{color:var(--c-inv)}
+/* Default styles for new classes */
+.snote{font-size:10.5px;font-style:italic;color:var(--text-mute)}
+.qloc{color:var(--text-mute)}
+.sitelink{font-size:11.5px;color:var(--c-iq)}
+/* Canceled card — full brightness overrides */
+.tc.sc,.tc.st{color:var(--text)}
+.tc.sc .cdate,.tc.st .cdate,.tc.sc .cname,.tc.st .cname{color:var(--text)}
+.tc.sc .crow .cb,.tc.st .crow .cb{color:var(--text)}
+.tc.sc .rloc .cb,.tc.st .rloc .cb{color:var(--text)}
+.tc.sc .vtbd,.tc.st .vtbd{color:var(--text)}
+.tc.sc .tdate,.tc.st .tdate{color:var(--text)}
+.tc.sc .snote,.tc.st .snote{color:var(--text-dim)}
+.tc.sc .qloc,.tc.st .qloc{color:var(--text-dim)}
+.tc.sc .sitelink,.tc.st .sitelink{color:#60a5fa}
+.tc.sc a,.tc.st a{color:#60a5fa}
+.tc.sc .stracka-no,.tc.st .stracka-no{color:var(--text);border-color:rgba(232,232,244,.2)}
+.tc.sc .stracka-yes,.tc.st .stracka-yes{color:#22c55e}
+/* Stracka badge */
+.stracka-yes{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:100px;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25)}
+.stracka-no{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:100px;color:#9ca3af;background:rgba(156,163,175,.08);border:1px solid rgba(156,163,175,.18)}
+/* Card header + badges */
+.chead{display:flex;align-items:flex-start;gap:7px;margin-bottom:9px;flex-wrap:wrap}
+.badges{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.bst{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:2px 8px;border-radius:100px;border:1px solid;white-space:nowrap}
+.bst.sr{color:var(--c-reg);background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.28)}
+.bst.sa{color:var(--c-app);background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.28)}
+.bst.siq{color:var(--c-iq);background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.24)}
+.bst.sio{color:var(--c-inv);background:rgba(192,132,252,.1);border-color:rgba(192,132,252,.22)}
+.bst.sw{color:var(--c-wait);background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.22)}
+.bst.sc{color:var(--c-can);background:rgba(75,85,99,.15);border-color:rgba(75,85,99,.28)}
+.bst.st{color:var(--c-ten);background:rgba(107,114,128,.1);border-color:rgba(107,114,128,.2)}
+.bst.sp{color:var(--c-past);background:rgba(55,65,81,.2);border-color:rgba(55,65,81,.28)}
+.btp{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:100px;border:1px solid;white-space:nowrap}
+.btp.usga{color:#7c6ff7;background:rgba(124,111,247,.1);border-color:rgba(124,111,247,.2)}
+.btp.illinois{color:#34d399;background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.16)}
+.btp.nj{color:#fb923c;background:rgba(251,146,60,.07);border-color:rgba(251,146,60,.16)}
+.btp.ijga{color:#60a5fa;background:rgba(96,165,250,.07);border-color:rgba(96,165,250,.16)}
+.btp.inv{color:#c084fc;background:rgba(192,132,252,.05);border-color:rgba(192,132,252,.14)}
+
+/* Card content */
+.cname{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:9px;line-height:1.25}
+.sc .cname,.sp .cname{text-decoration:line-through;color:var(--text)}
+.crows{display:flex;flex-direction:column;gap:5px}
+.crow{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:1.4}
+.crow .ci{flex-shrink:0;font-size:12.5px;width:17px;text-align:center}
+.crow .cb{flex:1;min-width:0}
+.crow .rl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-right:3px}
+
+/* Location */
+.rloc .cb{color:var(--text-dim)}
+.vname{color:var(--text);font-weight:500}
+.vchg{color:#fbbf24;font-size:9.5px;font-weight:600;margin-left:3px}
+.vtbd{color:var(--text-mute);font-size:10px}
+
+/* Signup row */
+.rsign .rl{color:var(--c-dl)}
+.rsign a{color:var(--c-dl);font-weight:500}
+.dtick{color:var(--c-reg);font-size:10px;font-weight:600;margin-left:3px}
+.sopens{color:var(--text-dim);font-size:10.5px}
+
+/* Tournament date */
+.rtourn .rl{color:var(--text-dim)}
+.tdate{font-weight:600}
+.sr .tdate{color:var(--c-reg)}
+.sa .tdate{color:var(--c-app)}
+.siq .tdate{color:var(--c-iq)}
+.sio .tdate{color:var(--c-inv)}
+.sw .tdate{color:var(--c-wait)}
+.st .tdate,.sc .tdate{color:var(--c-can)}
+.sp .tdate{color:var(--c-past)}
+
+/* Confidence badge */
+.cbadge{font-size:8.5px;font-weight:600;padding:1px 5px;border-radius:100px;margin-left:5px}
+.cb-conf{background:rgba(34,197,94,.1);color:var(--c-reg);border:1px solid rgba(34,197,94,.18)}
+.cb-tbd{background:rgba(251,146,60,.1);color:var(--c-dl);border:1px solid rgba(251,146,60,.18)}
+.cb-est{background:rgba(107,114,128,.1);color:var(--c-ten);border:1px solid rgba(107,114,128,.18)}
+
+/* Qualifier row */
+.rqual .rl{color:var(--c-iq)}
+.rqual .cb{color:var(--text-dim)}
+
+/* Notes */
+.rnotes .cb{color:var(--text-dim);font-style:italic;font-size:11px}
+
+/* Conflict note */
+.cflt{font-size:10.5px;color:#f87171;margin-top:5px;font-weight:500}
+
+/* LEGEND */
+.legend{margin-top:44px;padding:18px 22px;background:var(--surface);border:1px solid var(--border);border-radius:13px}
+.legend h3{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:12px}
+.lgrid{display:flex;flex-wrap:wrap;gap:8px 18px}
+.li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim)}
+.ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--text-mute)}
+.empty .eico{font-size:2.5rem;margin-bottom:10px}
+
+/* ── THEMES ── */
+[data-theme="midnight"]{--bg:#12151d;--surface:#1a1e2e;--surface2:#1f2440;--surface3:#252a4a;--border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.15);--text:rgba(255,255,255,.9);--text-dim:rgba(255,255,255,.52);--text-mute:rgba(255,255,255,.25);--accent:#7dd3fc;--accent-glow:rgba(125,211,252,.1)}
+[data-theme="ocean"]{--bg:#0a1929;--surface:#132f4c;--surface2:#1a3d5e;--surface3:#1e4870;--border:rgba(66,165,245,.2);--border2:rgba(66,165,245,.3);--text:rgba(255,255,255,.92);--text-dim:rgba(187,222,251,.72);--text-mute:rgba(176,190,197,.42);--accent:#4fc3f7;--accent-glow:rgba(79,195,247,.1)}
+[data-theme="forest"]{--bg:#0d1b0f;--surface:#1a2f1e;--surface2:#213a26;--surface3:#26452c;--border:rgba(102,187,106,.2);--border2:rgba(102,187,106,.3);--text:rgba(255,255,255,.92);--text-dim:rgba(200,230,201,.72);--text-mute:rgba(165,214,167,.38);--accent:#69f0ae;--accent-glow:rgba(105,240,174,.1)}
+[data-theme="sunset"]{--bg:#1a0e13;--surface:#2e1821;--surface2:#3a2030;--surface3:#45273a;--border:rgba(255,138,101,.2);--border2:rgba(255,138,101,.3);--text:rgba(255,255,255,.93);--text-dim:rgba(255,224,178,.72);--text-mute:rgba(255,183,77,.42);--accent:#ffab91;--accent-glow:rgba(255,171,145,.1)}
+[data-theme="slate"]{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--surface3:#3e4f66;--border:rgba(100,116,139,.3);--border2:rgba(100,116,139,.42);--text:rgba(248,250,252,.95);--text-dim:rgba(148,163,184,.78);--text-mute:rgba(100,116,139,.65);--accent:#94a3b8;--accent-glow:rgba(148,163,184,.1)}
+[data-theme="purple"]{--bg:#1a0d2e;--surface:#2d1b4e;--surface2:#3a2460;--surface3:#452d70;--border:rgba(171,71,188,.25);--border2:rgba(171,71,188,.36);--text:rgba(255,255,255,.93);--text-dim:rgba(225,190,231,.72);--text-mute:rgba(186,104,200,.42);--accent:#ce93d8;--accent-glow:rgba(206,147,216,.1)}
+[data-theme="cyber"]{--bg:#0a0e27;--surface:#1a1f3a;--surface2:#1f2545;--surface3:#252b52;--border:rgba(0,255,255,.18);--border2:rgba(0,255,255,.28);--text:rgba(0,255,255,.95);--text-dim:rgba(150,220,255,.68);--text-mute:rgba(80,160,200,.48);--accent:#00ffff;--accent-glow:rgba(0,255,255,.08)}
+
+/* ── THEME SWITCHER ── */
+#themePicker{position:fixed;bottom:16px;right:16px;z-index:9000;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+#themePickerLabel{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-mute);margin-right:2px;font-family:'Inter',sans-serif}
+.tp-swatch{width:15px;height:15px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .16s;flex-shrink:0}
+.tp-swatch:hover{transform:scale(1.25)}
+.tp-swatch.active{border-color:var(--text);transform:scale(1.15)}
+
+/* ANIMATIONS */
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fu .28s ease forwards}
+
+/* LOCK SCREEN */
+#lockScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif}
+#lockScreen.hidden{display:none}
+.lock-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:44px 40px;text-align:center;width:320px;max-width:90vw}
+.lock-icon{font-size:2.8rem;margin-bottom:14px}
+.lock-title{font-size:1.25rem;font-weight:800;letter-spacing:-0.5px;color:var(--text);margin-bottom:4px}
+.lock-sub{font-size:12.5px;color:var(--text-dim);margin-bottom:28px}
+.lock-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:13px 16px;font-size:1.5rem;font-weight:700;letter-spacing:6px;text-align:center;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .18s}
+.lock-input:focus{border-color:var(--accent)}
+.lock-input.shake{animation:shake .35s ease}
+.lock-error{font-size:11.5px;color:#f87171;margin-top:10px;min-height:16px;font-weight:500}
+.lock-btn{margin-top:18px;width:100%;padding:12px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .18s}
+.lock-btn:hover{opacity:.88}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+/* RESPONSIVE */
+@media(max-width:580px){
+  .stats{gap:2px}.stat{min-width:55px;padding:9px 5px}.stat .n{font-size:1.25rem}
+  .tc{padding:12px 13px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">⛳</div>
+    <div class="lock-title">Tad Collett 2026</div>
+    <div class="lock-sub">Enter the password to view the season calendar</div>
+    <input class="lock-input" id="lockInput" type="password" inputmode="numeric" maxlength="10" placeholder="••••" autofocus>
+    <div class="lock-error" id="lockError"></div>
+    <button class="lock-btn" onclick="checkPass()">Unlock →</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">2026 Season Calendar</div>
+  <h1>Tad Collett ⛳</h1>
+  <p class="sub">Junior &amp; Amateur Golf — Final Season Before College</p>
+  <span class="college">🎓 Mount St. Mary's · D1 Golf · Fall 2026</span>
+</header>
+
+<!-- STATS -->
+<div class="stats" id="stats">
+  <div class="stat st"><div class="n" id="sn-tot">—</div><div class="l">Events</div></div>
+  <div class="stat sr"><div class="n" id="sn-reg">—</div><div class="l">✅ Confirmed</div></div>
+  <div class="stat sa"><div class="n" id="sn-app">—</div><div class="l">⏳ Applied</div></div>
+  <div class="stat si"><div class="n" id="sn-iq">—</div><div class="l">🎯 If Qual</div></div>
+  <div class="stat sv"><div class="n" id="sn-inv">—</div><div class="l">💜 On Radar</div></div>
+  <div class="stat sx"><div class="n" id="sn-can">—</div><div class="l">❌ Canceled</div></div>
+</div>
+
+<!-- ACTION NEEDED -->
+<div class="action-box" id="actionBox">
+  <h2>⚡ Action Needed</h2>
+  <div class="action-list" id="actionList"></div>
+</div>
+
+<!-- DATE NOTICE -->
+<div class="notice">
+  <strong>📅 Date confidence key:</strong>
+  <strong style="color:var(--c-reg)">✓ Confirmed 2026</strong> = verified from official 2026 site &nbsp;·&nbsp;
+  <strong style="color:var(--text)">From Schedule</strong> = Mike's notes &nbsp;·&nbsp;
+  <strong style="color:var(--c-ten)">~ Estimated</strong> = typical timing &nbsp;·&nbsp;
+  <strong style="color:var(--c-dl)">TBD</strong> = not yet announced (check linked site)
+</div>
+
+<!-- FILTERS -->
+<div class="filters" id="filters">
+  <button class="fbtn on" data-f="all">All</button>
+  <button class="fbtn fr" data-f="registered">🟢 Confirmed</button>
+  <button class="fbtn fa" data-f="applied">🟡 Applied</button>
+  <button class="fbtn fi" data-f="if-qual">🔵 If Qual</button>
+  <button class="fbtn fv" data-f="invite-only">🟣 On Radar</button>
+  <button class="fbtn fx" data-f="canceled">⚫ Canceled</button>
+  <div class="fsep"></div>
+  <button class="fbtn" data-f="usga">USGA</button>
+  <button class="fbtn" data-f="illinois">Illinois</button>
+  <button class="fbtn" data-f="national-jr">National Jr</button>
+  <button class="fbtn" data-f="ijga">IJGA</button>
+</div>
+
+<!-- CALENDAR -->
+<div id="cal"></div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <h3>Legend</h3>
+  <div class="lgrid">
+    <div class="li"><div class="ldot" style="background:var(--c-reg)"></div>Confirmed / Registered — Tad IS playing</div>
+    <div class="li"><div class="ldot" style="background:var(--c-app)"></div>Applied / Waiting — submitted, awaiting invite</div>
+    <div class="li"><div class="ldot" style="background:var(--c-iq)"></div>If Qual — depends on qualifying</div>
+    <div class="li"><div class="ldot" style="background:var(--c-inv)"></div>Invite Only / On Radar — not yet applied</div>
+    <div class="li"><div class="ldot" style="background:var(--c-dl)"></div>Orange strip = Signup / Apply deadline</div>
+    <div class="li"><div class="ldot" style="background:var(--c-can)"></div>Canceled / Conflict — will not play</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── LOCK SCREEN ───────────────────────────────────────────────────────
+(function(){
+  const KEY='tad_golf_unlocked';
+  if(sessionStorage.getItem(KEY)==='1'){
+    document.getElementById('lockScreen').classList.add('hidden');
+  }
+  document.getElementById('lockInput').addEventListener('keydown',function(e){
+    if(e.key==='Enter')checkPass();
+  });
+})();
+function checkPass(){
+  const val=document.getElementById('lockInput').value.trim();
+  if(val==='0826'){
+    sessionStorage.setItem('tad_golf_unlocked','1');
+    document.getElementById('lockScreen').classList.add('hidden');
+  } else {
+    const inp=document.getElementById('lockInput');
+    const err=document.getElementById('lockError');
+    err.textContent='Incorrect password. Try again.';
+    inp.classList.add('shake');
+    inp.value='';
+    setTimeout(()=>inp.classList.remove('shake'),400);
+  }
+}
+
+// ── DATA ──────────────────────────────────────────────────────────────
+const TODAY = '2026-02-18';
+const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+const STATUS_LBL = {registered:'Confirmed',applied:'Applied / Waiting',waiting:'Waiting to Register','if-qual':'If Qualifier','invite-only':'Invite Only',canceled:'Canceled',tentative:'On Radar',past:'Past'};
+const STATUS_ICO = {registered:'✅',applied:'⏳',waiting:'🔔','if-qual':'🎯','invite-only':'💜',canceled:'❌',tentative:'📋',past:'🏁'};
+const TYPE_LBL = {usga:'USGA',illinois:'Illinois','national-jr':'Natl Jr',ijga:'IJGA','invite-only':'Invite'};
+
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function fmtD(iso){
+  if(!iso)return '';
+  const [y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  return DOW[dt.getDay()]+' '+dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function mon(iso){return iso?iso.slice(0,7):null}
+
+function sCls(s){
+  return s==='registered'?'sr':s==='applied'?'sa':s==='waiting'?'sw':s==='if-qual'?'siq':s==='invite-only'?'sio':s==='canceled'?'sc':s==='tentative'?'st':'sp';
+}
+function confBadge(c){
+  if(c==='confirmed-2026')return'<span class="cbadge cb-conf">✓ 2026</span>';
+  if(c==='tbd')return'<span class="cbadge cb-tbd">TBD</span>';
+  if(c==='estimated')return'<span class="cbadge cb-est">~est</span>';
+  return'';
+}
+
+// ── RENDER DEADLINE STRIP ─────────────────────────────────────────────
+function renderDL(dl){
+  const cls=dl.canceled?'skip':dl.done?'done':'';
+  const dd=fmtD(dl.date)+(dl.timeDisplay?' @ '+dl.timeDisplay:'');
+  const tag=dl.done?'<span class="done-tag">✅ Done</span>':dl.canceled?'<span class="skip-tag">🚫 Skip</span>':'';
+  const lk=dl.url?`<a href="${dl.url}" target="_blank" style="font-size:10.5px;color:var(--accent)">${dl.url.replace('https://','').replace('http://','').split('/')[0]}</a>`:'';
+  return`<div class="dl ${cls}">
+    <div class="dl-ico">📋</div>
+    <div class="dl-body">
+      <div class="dl-lbl">${dl.label}</div>
+      <div class="dl-meta"><span class="dl-date">${dd}</span>${tag}${lk}</div>
+      ${dl.notes?`<div class="dl-note">${dl.notes}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ── RENDER TOURNAMENT CARD ────────────────────────────────────────────
+function renderTC(t){
+  const sc=sCls(t.status);
+  // Status badge
+  const sbadge=`<span class="bst ${sc}">${STATUS_ICO[t.status]||''} ${STATUS_LBL[t.status]||t.status}</span>`;
+  // Type badges
+  const tbadges=(t.types||[]).filter(tp=>!(tp==='invite-only'&&t.status==='invite-only')).map(tp=>{
+    const c=tp==='usga'?'usga':tp==='illinois'||tp==='ijga'?tp==='ijga'?'ijga':'illinois':tp==='national-jr'?'nj':'inv';
+    return`<span class="btp ${c}">${TYPE_LBL[tp]||tp}</span>`;
+  }).join('');
+  // Location
+  const vc=t.venueNote&&t.venueNote.includes('VENUE CHANGED');
+  const vtbd=!t.venue||t.venue==='TBD';
+  let loc=vtbd?`<span class="vtbd">Venue TBD</span>`:`<span class="vname">${t.venue}</span>`;
+  if(t.city)loc+=` · ${t.city}, ${t.state}`;
+  if(vc)loc+=`<span class="vchg"> ⚠️ VENUE CHANGED</span>`;
+  else if(!t.venueConfirmed&&!vtbd)loc+=`<span class="vchg"> ⚠️ Unconfirmed</span>`;
+  if(t.venueNote&&!vc)loc+=`<br><span class="vtbd">${t.venueNote}</span>`;
+  // Signup row
+  let signRow='';
+  if(t.signup){
+    const s=t.signup;
+    const dt=s.deadline?`Deadline: ${fmtD(s.deadline)}${s.timeDisplay?' @ '+s.timeDisplay:''}`
+             :s.opens?`Opens: ${fmtD(s.opens)||s.opensDisplay}${s.timeDisplay?' @ '+s.timeDisplay:''}`
+             :s.deadlineDisplay||'';
+    const tick=s.done?`<span class="dtick">✅ Done</span>`:'';
+    const inner=s.url?`<a href="${s.url}" target="_blank">${dt}</a>${tick}`:`${dt}${tick}`;
+    const closer=s.deadline&&s.opens?`<span class="sopens"> (closes ${fmtD(s.deadline)})</span>`:'';
+    const note=s.notes?`<br><span class="snote">${s.notes}</span>`:'';
+    signRow=`<div class="crow rsign"><div class="ci">📋</div><div class="cb"><span class="rl">Signup:</span>${inner}${closer}${note}</div></div>`;
+  }
+  // Qualifier row
+  let qualRow='';
+  if(t.qualifier&&t.qualifier.date){
+    const q=t.qualifier;
+    const qv=q.venue&&q.venue!=='TBD'?`${q.venue}, ${q.city} ${q.state}`:(q.city?`${q.city}, ${q.state}`:'TBD');
+    qualRow=`<div class="crow rqual"><div class="ci">🏌️</div><div class="cb"><span class="rl">Qualifier:</span>${q.displayDate} · <span class="qloc">${qv}</span>${confBadge(q.dateConfidence)}</div></div>`;
+  }
+  // Tournament date
+  let tourRow='';
+  if(t.tournament){
+    const tr=t.tournament;
+    tourRow=`<div class="crow rtourn"><div class="ci">⛳</div><div class="cb"><span class="rl">Tournament:</span><span class="tdate">${tr.displayDate}</span>${confBadge(tr.dateConfidence)}</div></div>`;
+  }
+  // Holes
+  const holesRow=t.holes?`<div class="crow"><div class="ci">🏳️</div><div class="cb"><span class="rl">Format:</span>${t.holes} holes</div></div>`:'';
+  // Notes
+  const notesRow=t.notes?`<div class="crow rnotes"><div class="ci">📝</div><div class="cb">${t.notes}</div></div>`:'';
+  // Website — pick best available URL
+  const siteUrl=t.website||(t.signup&&t.signup.url)||null;
+  const webRow=siteUrl?`<div class="crow"><div class="ci">🔗</div><div class="cb"><a href="${siteUrl}" target="_blank" class="sitelink">${siteUrl.replace(/https?:\/\//,'').replace(/\/$/,'')}</a></div></div>`:'';
+  // Stracka
+  const notesLower=(t.notes||'').toLowerCase();
+  const hasStracka=/have stracka|stracka ordered/.test(notesLower);
+  const strackaRow=`<div class="crow"><div class="ci">📌</div><div class="cb"><span class="rl">Stracka:</span> ${hasStracka?'<span class="stracka-yes">✓ Have it</span>':'<span class="stracka-no">✗ Not yet</span>'}</div></div>`;
+  // Prominent date at top — prefer tournament date, fallback to qualifier date
+  const topDate=(t.tournament&&t.tournament.displayDate)||( t.qualifier&&t.qualifier.displayDate)||null;
+  const dateLine=topDate?`<div class="cdate">📅 ${topDate}</div>`:'';
+
+  return`<div class="tc ${sc}" data-status="${t.status}" data-types="${(t.types||[]).join(',')}">
+    <div class="chead"><div class="badges">${sbadge}${tbadges}</div></div>
+    ${dateLine}
+    <div class="cname">${t.name}</div>
+    <div class="crows">
+      <div class="crow rloc"><div class="ci">📍</div><div class="cb">${loc}</div></div>
+      ${signRow}${qualRow}${tourRow}${strackaRow}${holesRow}${webRow}${notesRow}
+    </div>
+  </div>`;
+}
+
+// ── BUILD CALENDAR ENTRIES ────────────────────────────────────────────
+function buildEntries(data){
+  const entries=[];
+  // Standalone deadlines
+  for(const dl of(data.deadlines||[])){
+    if(dl.date)entries.push({type:'deadline',date:dl.date,dl});
+  }
+  // Tournament entries
+  for(const t of(data.tournaments||[])){
+    if(t.tournament&&t.tournament.start){
+      entries.push({type:'tournament',date:t.tournament.start,t});
+    }
+    // Signup deadline strip in a DIFFERENT month from tournament
+    if(t.signup&&(t.signup.deadline||t.signup.opens)&&t.tournament&&t.tournament.start){
+      const dlDate=t.signup.deadline||t.signup.opens;
+      if(dlDate&&mon(dlDate)!==mon(t.tournament.start)){
+        entries.push({type:'deadline',date:dlDate,dl:{
+          id:'dl-'+t.id,
+          label:t.name+' — '+(t.signup.deadline?'Apply Deadline':'Signup Opens'),
+          date:dlDate,timeDisplay:t.signup.timeDisplay,url:t.signup.url,
+          done:t.signup.done,notes:t.signup.notes,canceled:t.status==='canceled'
+        }});
+      }
+    }
+  }
+  entries.sort((a,b)=>a.date!==b.date?a.date.localeCompare(b.date):
+    (a.type==='deadline'&&b.type!=='deadline')?-1:
+    (b.type==='deadline'&&a.type!=='deadline')?1:0);
+  return entries;
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────
+function matches(entry,f){
+  if(f==='all')return true;
+  if(entry.type==='deadline')return f==='all';
+  const t=entry.t;if(!t)return false;
+  if(f==='registered')return t.status==='registered';
+  if(f==='applied')return t.status==='applied'||t.status==='waiting';
+  if(f==='if-qual')return t.status==='if-qual';
+  if(f==='invite-only')return t.status==='invite-only'||t.status==='tentative';
+  if(f==='canceled')return t.status==='canceled';
+  const tp=t.types||[];
+  if(f==='usga')return tp.includes('usga');
+  if(f==='illinois')return tp.includes('illinois')||tp.includes('ijga');
+  if(f==='national-jr')return tp.includes('national-jr');
+  if(f==='ijga')return tp.includes('ijga');
+  return true;
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────
+function updateStats(ts){
+  let tot=0,reg=0,app=0,iq=0,inv=0,can=0;
+  for(const t of ts){
+    if(t.status==='past')continue;
+    tot++;
+    if(t.status==='registered')reg++;
+    else if(t.status==='applied'||t.status==='waiting')app++;
+    else if(t.status==='if-qual')iq++;
+    else if(t.status==='invite-only'||t.status==='tentative')inv++;
+    else if(t.status==='canceled')can++;
+  }
+  document.getElementById('sn-tot').textContent=tot;
+  document.getElementById('sn-reg').textContent=reg;
+  document.getElementById('sn-app').textContent=app;
+  document.getElementById('sn-iq').textContent=iq;
+  document.getElementById('sn-inv').textContent=inv;
+  document.getElementById('sn-can').textContent=can;
+}
+
+// ── ACTION NEEDED ─────────────────────────────────────────────────────
+function renderActions(data){
+  const items=[];
+  for(const dl of(data.deadlines||[])){
+    if(!dl.done&&!dl.canceled&&dl.date>=TODAY){
+      items.push({ico:'📋',nm:dl.label,lbl:`Due: ${fmtD(dl.date)}${dl.timeDisplay?' @ '+dl.timeDisplay:''}`,url:dl.url,nt:dl.notes,urgent:dl.date<='2026-03-18'});
+    }
+  }
+  for(const t of(data.tournaments||[])){
+    if(t.actionNeeded){
+      const d=t.signup?(t.signup.deadline||t.signup.opens):null;
+      items.push({ico:'⛳',nm:t.name,lbl:t.actionLabel||(d?`Deadline: ${fmtD(d)}`:'Action needed'),url:t.website||(t.signup&&t.signup.url),nt:null,urgent:!d||d<='2026-03-18'});
+    }
+  }
+  items.sort((a,b)=>+b.urgent - +a.urgent);
+  const el=document.getElementById('actionList');
+  if(!items.length){
+    el.innerHTML=`<div style="color:var(--c-reg);font-size:13px;font-weight:600">✅ Current deadlines handled. Next up: Northern Jr signup opens Mar 1 @ 7am CT.</div>`;
+    return;
+  }
+  el.innerHTML=items.map(it=>{
+    const urg=it.urgent?'border-left:3px solid var(--c-dl);':'';
+    const lk=it.url?`<a href="${it.url}" target="_blank" class="lk">→ ${it.url.replace('https://','').replace('http://','')}</a>`:'';
+    return`<div class="ai" style="${urg}">
+      <div class="ico">${it.ico}</div>
+      <div class="body">
+        <div class="nm">${it.nm}</div>
+        <div class="lbl">${it.lbl}</div>
+        ${it.nt?`<div class="nt">${it.nt}</div>`:''}
+        ${lk}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER CALENDAR ───────────────────────────────────────────────────
+const MONTH_ORDER=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08'];
+
+function renderCal(data,filter){
+  const all=buildEntries(data);
+  const filt=all.filter(e=>matches(e,filter));
+  // Group by month
+  const groups={};
+  for(const e of filt){
+    const m=mon(e.date);if(!m)continue;
+    if(!groups[m])groups[m]=[];
+    groups[m].push(e);
+  }
+  const cal=document.getElementById('cal');
+  let html='';let any=false;
+  for(const mk of MONTH_ORDER){
+    const es=groups[mk]||[];
+    if(!es.length)continue;
+    any=true;
+    const[,m]=mk.split('-').map(Number);
+    const isCur=mk==='2026-02';
+    const isPast=mk<'2026-02';
+    const coll=isPast;
+    const regC=es.filter(e=>e.t&&e.t.status==='registered').length;
+    let pips='';
+    for(let i=0;i<Math.min(regC,4);i++)pips+=`<div class="pip" style="background:var(--c-reg)"></div>`;
+    html+=`<div class="month" data-mk="${mk}">
+      <div class="mhdr${coll?' coll':''}" onclick="togM('${mk}')">
+        <span class="mlbl">${MONTHS[m]} 2026${isCur?'<span class="mnow">← NOW</span>':''}</span>
+        <div class="mpips">${pips}</div>
+        <span class="mcnt">${es.length} ${es.length===1?'event':'events'}</span>
+        <span class="mchv">▾</span>
+      </div>
+      <div class="mentries${coll?' coll':''}" id="me-${mk}">
+        ${es.map(e=>e.type==='deadline'?renderDL(e.dl):renderTC(e.t)).join('')}
+      </div>
+    </div>`;
+  }
+  if(!any)html=`<div class="empty"><div class="eico">🏌️</div><p>No events match this filter.</p></div>`;
+  cal.innerHTML=html;
+}
+
+// ── TOGGLE MONTH ──────────────────────────────────────────────────────
+function togM(mk){
+  const hdr=document.querySelector(`[data-mk="${mk}"] .mhdr`);
+  const ent=document.getElementById('me-'+mk);
+  if(hdr&&ent){hdr.classList.toggle('coll');ent.classList.toggle('coll')}
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────
+let curFilter='all',gData=null;
+function setupFilters(){
+  document.getElementById('filters').querySelectorAll('.fbtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.getElementById('filters').querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      curFilter=btn.dataset.f;
+      renderCal(gData,curFilter);
+    });
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+async function init(){
+  try{
+    const res=await fetch('./tournaments.json');
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    gData=await res.json();
+  }catch(e){
+    document.getElementById('cal').innerHTML=`<div class="empty"><div class="eico">⚠️</div><p>Failed to load data: ${e.message}</p></div>`;
+    return;
+  }
+  updateStats(gData.tournaments||[]);
+  renderActions(gData);
+  setupFilters();
+  renderCal(gData,'all');
+}
+init();
+
+// ── THEME SWITCHER ────────────────────────────────────────────────────
+const GOLF_THEMES = [
+  {id:'default',  name:'Default',      color:'#7c6ff7'},
+  {id:'midnight', name:'Midnight',     color:'#7dd3fc'},
+  {id:'ocean',    name:'Ocean',        color:'#4fc3f7'},
+  {id:'forest',   name:'Forest Night', color:'#69f0ae'},
+  {id:'sunset',   name:'Sunset',       color:'#ffab91'},
+  {id:'slate',    name:'Slate',        color:'#94a3b8'},
+  {id:'purple',   name:'Purple Haze',  color:'#ce93d8'},
+  {id:'cyber',    name:'Cyberpunk',    color:'#00ffff'},
+];
+
+function applyGolfTheme(id) {
+  if (id === 'default') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', id);
+  localStorage.setItem('tad-golf-theme', id);
+  document.querySelectorAll('.tp-swatch').forEach(el =>
+    el.classList.toggle('active', el.dataset.theme === id));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const saved = localStorage.getItem('tad-golf-theme') || 'default';
+  document.getElementById('themeSwatches').innerHTML = GOLF_THEMES.map(t =>
+    `<div class="tp-swatch${saved===t.id?' active':''}" data-theme="${t.id}"
+      title="${t.name}" style="background:${t.color}"
+      onclick="applyGolfTheme('${t.id}')"></div>`
+  ).join('');
+  applyGolfTheme(saved);
+});
+</script>
+<!-- THEME PICKER -->
+<div id="themePicker">
+  <span id="themePickerLabel">Theme</span>
+  <div id="themeSwatches"></div>
+</div>
+</body>
+</html>
