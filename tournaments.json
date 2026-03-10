@@ -1070,22 +1070,22 @@
       "signup": {
         "opens": "2026-01-05",
         "opensDisplay": "Mon Jan 5, 2026",
-        "deadline": null,
-        "deadlineDisplay": null,
-        "timeDisplay": "10am CT",
+        "deadline": "2026-06-22",
+        "deadlineDisplay": "Mon Jun 22, 2026",
+        "timeDisplay": "11:59 PM CDT",
         "url": null,
         "done": true,
         "notes": "Signed up Mon Jan 5. DONE."
       },
       "qualifier": null,
       "tournament": {
-        "start": "2026-07-07",
-        "end": "2026-07-07",
-        "displayDate": "~Tue Jul 7, 2026",
-        "dateConfidence": "estimated"
+        "start": "2026-06-29",
+        "end": "2026-06-30",
+        "displayDate": "Mon Jun 29\u2013Tue Jun 30, 2026",
+        "dateConfidence": "confirmed-2026"
       },
       "holes": null,
-      "notes": "Exact date TBD. Registered Mon Jan 5. Kevin Streelman Invitational canceled due to conflict with this.",
+      "notes": "Registered Mon Jan 5. Both Tad & Nat confirmed.",
       "results": null,
       "website": null,
       "actionNeeded": false
