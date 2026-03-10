@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tad 2026 Calendar View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08090f;--surface:#0f1018;--surface2:#161822;--border:#2a2d3f;--text:#ececf5;--dim:#8b90b0;--accent:#7c6ff7;--ok:#22c55e;--warn:#f59e0b;--qual:#60a5fa}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:24px 14px 70px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  h1{font-size:1.7rem;margin:0}
+  .btn{padding:8px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;cursor:pointer;text-decoration:none;font-size:12px;font-weight:700}
+  .jumps{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 20px}
+  .jump{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--dim);font-size:11px;font-weight:700;cursor:pointer}
+  .year-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .month{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .mh{padding:10px 12px;background:var(--surface2);font-size:13px;font-weight:800}
+  .dow,.cells{display:grid;grid-template-columns:repeat(7,1fr)}
+  .dow div{font-size:9px;color:var(--dim);text-align:center;padding:6px 0;border-bottom:1px solid var(--border);font-weight:700}
+  .cell{min-height:94px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;background:rgba(255,255,255,.012)}
+  .cell:nth-child(7n){border-right:none}
+  .empty{background:rgba(255,255,255,.004)}
+  .empty .dn{opacity:.45}
+  .dn{font-size:10px;color:var(--dim);font-weight:800;margin-bottom:4px}
+  .ev{font-size:9px;line-height:1.2;padding:3px 5px;border-radius:4px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;text-decoration:none}
+  .ev.link{cursor:pointer}
+  .ev.link:hover{outline:1px solid rgba(255,255,255,.2)}
+  .more{font-size:8.5px;color:var(--dim);font-weight:700;padding-left:2px}
+  .ev.t{background:rgba(124,111,247,.17);color:#c7c4ff}
+  .ev.d{background:rgba(245,158,11,.14);color:#fdba74}
+  .ev.q{background:rgba(96,165,250,.16);color:#bfdbfe}
+  @media(max-width:950px){.year-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){.year-grid{grid-template-columns:1fr}}
+
+  #lockScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+  #lockScreen.hidden{display:none}
+  .lock{width:320px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;text-align:center}
+  .lock input{width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:20px;letter-spacing:6px;text-align:center}
+  .lock button{margin-top:12px;width:100%;padding:10px;border:none;border-radius:10px;background:var(--accent);color:white;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="lockScreen">
+  <div class="lock">
+    <div style="font-size:34px">⛳</div>
+    <div style="font-weight:800">Tad 2026 Calendar View</div>
+    <input id="pw" type="password" maxlength="10" placeholder="••••">
+    <button onclick="unlock()">Unlock</button>
+    <div id="pwerr" style="font-size:12px;color:#f87171;margin-top:8px"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top">
+    <h1>2026 Calendar View</h1>
+    <a class="btn" href="./index.html">← Back to List View</a>
+  </div>
+  <div class="jumps" id="jumpBtns"></div>
+  <div class="year-grid" id="yearGrid"></div>
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+(function(){ if(sessionStorage.getItem('tad_golf_unlocked')==='1') document.getElementById('lockScreen').classList.add('hidden'); })();
+function unlock(){
+  const v=document.getElementById('pw').value.trim();
+  if(v==='0826'){ sessionStorage.setItem('tad_golf_unlocked','1'); document.getElementById('lockScreen').classList.add('hidden'); }
+  else document.getElementById('pwerr').textContent='Incorrect password';
+}
+
+function monthKey(y,m){return `${y}-${String(m).padStart(2,'0')}`}
+function parseDate(s){const [y,m,d]=s.split('-').map(Number); return {y,m,d};}
+
+// Pure date math (timezone-independent)
+function dayOfWeek(y,m,d){
+  // 0=Sun..6=Sat (Sakamoto)
+  const t=[0,3,2,5,0,3,5,1,4,6,2,4];
+  if(m<3) y-=1;
+  return (y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400) + t[m-1] + d) % 7;
+}
+function dim(y,m){
+  return [31, ((y%4===0&&y%100!==0)||y%400===0)?29:28,31,30,31,30,31,31,30,31,30,31][m-1];
+}
+
+function addEvent(map,date,label,type,href=null){
+  if(!date) return;
+  if(!map[date]) map[date]=[];
+  map[date].push({label,type,href});
+}
+
+function addEventRange(map,startDate,endDate,label,type,href=null){
+  if(!startDate) return;
+  const end = endDate || startDate;
+  const d = new Date(startDate + 'T12:00:00Z');
+  const e = new Date(end + 'T12:00:00Z');
+  while(d <= e){
+    const iso = d.toISOString().slice(0,10);
+    addEvent(map, iso, label, type, href);
+    d.setUTCDate(d.getUTCDate()+1);
+  }
+}
+
+async function init(){
+  const r=await fetch('./tournaments.json');
+  const data=await r.json();
+  const evMap={};
+
+  for(const t of (data.tournaments||[])){
+    const href=`./index.html#t=${encodeURIComponent(t.id)}`;
+    if(t.tournament?.start) addEventRange(evMap, t.tournament.start, t.tournament.end || t.tournament.start, t.shortName||t.name, 't', href);
+
+    if(t.qualifier?.date){
+      addEvent(evMap,t.qualifier.date,`Qualifier: ${t.shortName||t.name}`,'q',href);
+    } else if(t.qualifier?.start){
+      addEventRange(evMap, t.qualifier.start, t.qualifier.end || t.qualifier.start, `Qualifier: ${t.shortName||t.name}`,'q',href);
+    }
+
+    if(t.practiceRound?.date) addEvent(evMap,t.practiceRound.date,`Practice: ${t.shortName||t.name}`,'q',href);
+    const s=t.signup||{};
+    if(s.deadline) addEvent(evMap,s.deadline,`Signup deadline: ${t.shortName||t.name}`,'d',href);
+    else if(s.opens) addEvent(evMap,s.opens,`Signup opens: ${t.shortName||t.name}`,'d',href);
+  }
+
+  for(const d of (data.deadlines||[])){
+    if(d.date) addEvent(evMap,d.date,d.label,'d');
+  }
+
+  const jumpHost=document.getElementById('jumpBtns');
+  const monthsToJump=[4,5,6,7,8];
+  jumpHost.innerHTML=monthsToJump.map(m=>`<button class='jump' onclick="goMonth('${monthKey(2026,m)}')">${MONTHS[m-1]}</button>`).join('');
+
+  const host=document.getElementById('yearGrid');
+  let html='';
+  for(let m=1;m<=12;m++){
+    const mk=monthKey(2026,m);
+    const total=42; // always 6 weeks for consistent boxed layout
+
+    // Start from the Sunday on/before the 1st of this month
+    const monthStart = new Date(Date.UTC(2026, m-1, 1, 12, 0, 0));
+    const startOffset = monthStart.getUTCDay();
+    const gridStart = new Date(monthStart);
+    gridStart.setUTCDate(gridStart.getUTCDate() - startOffset);
+
+    html+=`<section class='month' id='m-${mk}'><div class='mh'>${MONTHS[m-1]} 2026</div><div class='dow'>${DOW.map(x=>`<div>${x}</div>`).join('')}</div><div class='cells'>`;
+
+    for(let i=0;i<total;i++){
+      const d = new Date(gridStart);
+      d.setUTCDate(gridStart.getUTCDate() + i);
+
+      const yearNum = d.getUTCFullYear();
+      const monthNum = d.getUTCMonth() + 1;
+      const day = d.getUTCDate();
+      const muted = monthNum !== m;
+
+      const iso=`${yearNum}-${String(monthNum).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const allEvs=(evMap[iso]||[]);
+      const evs=allEvs.slice(0,2);
+      const more=allEvs.length>2 ? `<div class='more'>+${allEvs.length-2} more</div>` : '';
+      html+=`<div class='cell${muted?' empty':''}'><div class='dn'>${day}</div>${evs.map(e=> e.href ? `<a class='ev link ${e.type}' href='${e.href}' title="${e.label}">${e.label}</a>` : `<div class='ev ${e.type}' title="${e.label}">${e.label}</div>`).join('')}${more}</div>`;
+    }
+
+    html+=`</div></section>`;
+  }
+  host.innerHTML=html;
+
+  const hash=location.hash.replace('#','');
+  if(hash) goMonth(hash, false);
+}
+
+function goMonth(mk, setHash=true){
+  const el=document.getElementById(`m-${mk}`);
+  if(!el) return;
+  if(setHash) history.replaceState(null,'',`#${mk}`);
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+init();
+</script>
+</body>
+</html>

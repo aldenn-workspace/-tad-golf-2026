@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tad 2026 Full Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#090b12;--surface:#111522;--surface2:#171c2d;--border:#2a3044;--text:#e9ecf8;--dim:#98a1bf;--accent:#7c6ff7}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif}
+    .wrap{max-width:1300px;margin:0 auto;padding:20px 14px 60px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .title{font-size:1.55rem;font-weight:800}
+    .btn{display:inline-block;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);text-decoration:none;font-size:12px;font-weight:700}
+
+    .month-jump{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+    .jump{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--dim);font-size:11px;font-weight:700;cursor:pointer}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:14px}
+    .lg{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.35px}
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+
+    .year{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.year.single{grid-template-columns:1fr;max-width:980px;margin:0 auto}
+.year.single .cell{min-height:120px}
+.year.single .ev{font-size:10.5px}
+    .month{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .month h3{margin:0;padding:10px 12px;background:var(--surface2);font-size:13px;font-weight:800}
+    .month table{width:100%;border-collapse:collapse;table-layout:fixed}
+    .month thead th{font-size:9px;text-transform:uppercase;letter-spacing:.4px;text-align:center;color:var(--dim);padding:6px 0;border-bottom:1px solid var(--border);font-weight:700}
+    .month tbody td{height:96px;vertical-align:top;padding:6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(255,255,255,.01)}
+    .month tbody td:last-child{border-right:none}
+    .month tbody tr:last-child td{border-bottom:none}
+    .month tbody td.out{opacity:.35}
+    .day{font-size:10px;color:var(--dim);font-weight:800;margin-bottom:4px}
+
+    .ev{display:block;font-size:9px;line-height:1.2;padding:3px 5px;margin-bottom:3px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+    .ev.t{background:rgba(124,111,247,.18);color:#cbc7ff}
+    .ev.q{background:rgba(96,165,250,.15);color:#cbe1ff}
+    .ev.d{background:rgba(245,158,11,.15);color:#ffd38d}
+
+    /* status colors aligned with list view */
+    .ev.registered{background:rgba(34,197,94,.16);color:#86efac}
+    .ev.applied{background:rgba(245,158,11,.16);color:#fcd34d}
+    .ev.waiting{background:rgba(249,115,22,.16);color:#fdba74}
+    .ev.if-qual{background:rgba(96,165,250,.16);color:#bfdbfe}
+    .ev.practice-round{background:rgba(34,211,238,.16);color:#a5f3fc}
+    .ev.invite-only{background:rgba(192,132,252,.16);color:#e9d5ff}
+    .ev.tentative{background:rgba(107,114,128,.16);color:#d1d5db}
+    .ev.canceled{background:rgba(75,85,99,.2);color:#d1d5db}
+    .ev:hover{outline:1px solid rgba(255,255,255,.22)}
+    .more{font-size:8px;color:var(--dim);font-weight:700;padding-left:2px}
+
+    @media (max-width:980px){.year{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:680px){.year{grid-template-columns:1fr}}
+
+    #lockScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+    #lockScreen.hidden{display:none}
+    .lock{width:320px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center}
+    .lock input{width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:20px;letter-spacing:6px;text-align:center}
+    .lock button{margin-top:12px;width:100%;padding:10px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="lockScreen">
+    <div class="lock">
+      <div style="font-size:32px">⛳</div>
+      <div style="font-weight:800">Tad 2026 Full Calendar</div>
+      <input id="pw" type="password" maxlength="10" placeholder="••••">
+      <button onclick="unlock()">Unlock</button>
+      <div id="pwerr" style="font-size:12px;color:#f87171;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="top">
+      <div class="title">2026 Full Calendar (List-Linked)</div>
+      <a class="btn" href="./index.html">← Back to Master List</a>
+    </div>
+
+    <div class="month-jump" id="jumps"></div>
+    <div class="legend">
+      <div class="lg"><span class="dot" style="background:rgba(34,197,94,.9)"></span> Confirmed</div>
+      <div class="lg"><span class="dot" style="background:rgba(245,158,11,.9)"></span> Applied</div>
+      <div class="lg"><span class="dot" style="background:rgba(249,115,22,.9)"></span> Waiting</div>
+      <div class="lg"><span class="dot" style="background:rgba(96,165,250,.9)"></span> If Qualified</div>
+      <div class="lg"><span class="dot" style="background:rgba(34,211,238,.9)"></span> Practice Round</div>
+      <div class="lg"><span class="dot" style="background:rgba(192,132,252,.9)"></span> Invite Only</div>
+      <div class="lg"><span class="dot" style="background:rgba(107,114,128,.9)"></span> Tentative</div>
+      <div class="lg"><span class="dot" style="background:rgba(75,85,99,.9)"></span> Canceled</div>
+    </div>
+    <div class="year" id="year"></div>
+  </div>
+
+  <script>
+    const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    (function(){ if(sessionStorage.getItem('tad_golf_unlocked')==='1') document.getElementById('lockScreen').classList.add('hidden'); })();
+    function unlock(){
+      const v=document.getElementById('pw').value.trim();
+      if(v==='0826'){ sessionStorage.setItem('tad_golf_unlocked','1'); document.getElementById('lockScreen').classList.add('hidden'); }
+      else document.getElementById('pwerr').textContent='Incorrect password';
+    }
+
+    const iso = (d)=>d.toISOString().slice(0,10);
+    const addDays = (d,n)=>{ const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; };
+
+    function addEvent(map, dayIso, e){
+      if(!map[dayIso]) map[dayIso]=[];
+      map[dayIso].push(e);
+    }
+
+    function addRange(map, startIso, endIso, e){
+      if(!startIso) return;
+      let s=new Date(startIso+'T12:00:00Z');
+      const end=new Date((endIso||startIso)+'T12:00:00Z');
+      while(s<=end){ addEvent(map, iso(s), e); s=addDays(s,1); }
+    }
+
+    function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
+
+    async function init(){
+      const r=await fetch('./tournaments.json');
+      const data=await r.json();
+      const eventsByDay={};
+
+      const baseName = (s='') => s.toLowerCase()
+        .replace(/qualifier|open qualifier|if qualified|if qualify|practice round|junior|invitational|championship|\-|\(|\)|\./g,' ')
+        .replace(/\s+/g,' ')
+        .trim();
+
+      // Detect standalone qualifier cards so we don't duplicate with parent qualifier sub-rows
+      const standaloneQualifierKeys = new Set();
+      for(const t of (data.tournaments||[])){
+        const short=t.shortName||t.name||'';
+        const isQualifierCard = /qualifier/i.test(t.name||'') || /qualifier/i.test(short);
+        if(isQualifierCard && t.tournament?.start){
+          standaloneQualifierKeys.add(`${t.tournament.start}|${baseName(short)}`);
+        }
+      }
+
+      for(const t of (data.tournaments||[])){
+        const href=`./index.html#t=${encodeURIComponent(t.id)}`;
+        const short=t.shortName||t.name;
+
+        const status = t.status || '';
+        if(t.tournament?.start){
+          addRange(eventsByDay, t.tournament.start, t.tournament.end||t.tournament.start, {label: short, type:'t', status, href});
+        }
+
+        if(t.qualifier?.date){
+          const k = `${t.qualifier.date}|${baseName(short)}`;
+          if(!standaloneQualifierKeys.has(k) || status==='if-qual') {
+            addEvent(eventsByDay, t.qualifier.date, {label:`Qualifier: ${short}`, type:'q', status, href});
+          }
+        } else if(t.qualifier?.start){
+          const k = `${t.qualifier.start}|${baseName(short)}`;
+          if(!standaloneQualifierKeys.has(k) || status==='if-qual') {
+            addRange(eventsByDay, t.qualifier.start, t.qualifier.end||t.qualifier.start, {label:`Qualifier: ${short}`, type:'q', status, href});
+          }
+        }
+
+        if(t.practiceRound?.date){
+          addEvent(eventsByDay, t.practiceRound.date, {label:`Practice: ${short}`, type:'q', status:'practice-round', href});
+        }
+
+        const s=t.signup||{};
+        if(s.opens) addEvent(eventsByDay, s.opens, {label:`Signup opens: ${short}`, type:'d', href});
+        if(s.deadline) addEvent(eventsByDay, s.deadline, {label:`Signup deadline: ${short}`, type:'d', href});
+      }
+
+      for(const d of (data.deadlines||[])){
+        if(d.date) addEvent(eventsByDay, d.date, {label:d.label, type:'d', href:'#'});
+      }
+
+      const jumpHost=document.getElementById('jumps');
+      jumpHost.innerHTML = [`<button class="jump" onclick="setView('all')">All</button>`, ...MONTHS.map((m,i)=>`<button class="jump" onclick="setView('2026-${String(i+1).padStart(2,'0')}')">${m}</button>`)].join('');
+
+      window.__eventsByDay = eventsByDay;
+      const hash = (location.hash || '').replace('#','');
+      if(hash && /^2026-\d{2}$/.test(hash)) setView(hash);
+      else setView('all');
+    }
+
+    function renderCalendar(view){
+      const host=document.getElementById('year');
+      const eventsByDay = window.__eventsByDay || {};
+      const months = view==='all' ? Array.from({length:12}, (_,i)=>i+1) : [parseInt(view.slice(5,7),10)];
+
+      host.classList.toggle('single', view!=='all');
+
+      let html='';
+      for(const m of months){
+        const ms=new Date(Date.UTC(2026,m-1,1,12));
+        const startOffset=ms.getUTCDay();
+        const gridStart=addDays(ms,-startOffset);
+
+        html += `<section class="month" id="m-2026-${String(m).padStart(2,'0')}"><h3>${MONTHS[m-1]} 2026</h3><table><thead><tr>${DOW.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+
+        for(let r=0;r<6;r++){
+          html += '<tr>';
+          for(let c=0;c<7;c++){
+            const i=r*7+c;
+            const d=addDays(gridStart,i);
+            const y=d.getUTCFullYear();
+            const mm=d.getUTCMonth()+1;
+            const dd=d.getUTCDate();
+            const dayIso=`${y}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+            const out=mm!==m;
+
+            const all=(eventsByDay[dayIso]||[]);
+            const show=all.slice(0, view==='all' ? 2 : 5);
+            const more=all.length>show.length ? `<div class="more">+${all.length-show.length} more</div>` : '';
+
+            html += `<td class="${out?'out':''}"><div class="day">${dd}</div>${show.map(e=>`<a class="ev ${e.type} ${e.status||''}" href="${e.href}" title="${e.label}">${e.label}</a>`).join('')}${more}</td>`;
+          }
+          html += '</tr>';
+        }
+
+        html += `</tbody></table></section>`;
+      }
+
+      host.innerHTML=html;
+      if(view!=='all'){
+        const el=document.getElementById(`m-${view}`);
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }
+
+    function setView(view){
+      if(view==='all') history.replaceState(null,'',`#all`);
+      else history.replaceState(null,'',`#${view}`);
+      renderCalendar(view);
+    }
+
+    init();
+  </script>
+</body>
+</html>
