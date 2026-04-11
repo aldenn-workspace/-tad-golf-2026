@@ -297,11 +297,11 @@
       "signup": {
         "opens": "2026-03-16",
         "opensDisplay": "Mon Mar 16, 2026",
-        "deadline": "2026-04-20",
+        "deadline": null,
         "deadlineDisplay": "Mon Apr 20, 2026",
         "timeDisplay": null,
         "url": "https://thedogwood.com/qualifier-registration",
-        "done": false,
+        "done": true,
         "notes": "Registration opens Mon Mar 16, closes Mon Apr 20. Entry fee ."
       },
       "qualifier": null,
@@ -581,11 +581,11 @@
       "signup": {
         "opens": "2026-03-16",
         "opensDisplay": "Mon Mar 16, 2026",
-        "deadline": "2026-04-20",
+        "deadline": null,
         "deadlineDisplay": "Mon Apr 20, 2026",
         "timeDisplay": null,
         "url": "https://thedogwood.com/qualifier-registration",
-        "done": false,
+        "done": true,
         "notes": "Registration opens Mon Mar 16. 100-player field, 6 advance. GHIN <3.0. Entry fee $275."
       },
       "qualifier": {
