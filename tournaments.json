@@ -532,7 +532,7 @@
       "id": "sunnehanna-am",
       "name": "Sunnehanna Amateur",
       "shortName": "Sunnehanna Am",
-      "status": "tentative",
+      "status": "canceled",
       "types": [
         "national-jr"
       ],
@@ -559,10 +559,11 @@
         "dateConfidence": "from-schedule"
       },
       "holes": null,
-      "notes": "Decided not to register \u2014 qualifier on bad date.",
+      "notes": "Decided not to register \u2014 qualifier on bad date. Canceled \u2014 conflicts with Katherine graduation.",
       "results": null,
       "website": "https://sunnehannacc.org",
-      "actionNeeded": false
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "dogwood-inv",
