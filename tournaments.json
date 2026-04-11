@@ -358,7 +358,7 @@
       "id": "us-jr-am-qual",
       "name": "US Junior Amateur Qualifier",
       "shortName": "US Jr Am Qualifier",
-      "status": "registered",
+      "status": "canceled",
       "types": [
         "usga",
         "national-jr"
@@ -389,7 +389,8 @@
       "notes": "Have Stracka. US Jr Am is Mon Jul 20\u2013Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264; entries open Wed Mar 11 at 9am ET.",
       "results": null,
       "website": "https://champ-admin.usga.org",
-      "actionNeeded": false
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "jr-pga-qual-1",
