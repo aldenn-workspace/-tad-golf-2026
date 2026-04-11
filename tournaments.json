@@ -286,7 +286,7 @@
       "id": "dogwood-inv-qual",
       "name": "Dogwood Invitational \u2014 Open Qualifier",
       "shortName": "Dogwood Qualifier",
-      "status": "waiting",
+      "status": "canceled",
       "types": [
         "national-jr"
       ],
@@ -314,7 +314,8 @@
       "holes": 18,
       "notes": "18-hole stroke play. 100-player field. 6 advance to Mon Jun 15\u2013Sat Jun 20 championship. GHIN <3.0 required. Tee times start 8:30am.",
       "website": "https://thedogwood.com/qualifier-registration",
-      "actionNeeded": false
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "usga-qual-dallas-ac-2026-05-18",
@@ -567,7 +568,7 @@
       "id": "dogwood-inv",
       "name": "Dogwood Invitational",
       "shortName": "Dogwood",
-      "status": "waiting",
+      "status": "canceled",
       "types": [
         "national-jr"
       ],
@@ -603,7 +604,8 @@
       "holes": 18,
       "notes": "Open qualifier. 6 advance to championship. Registration opens Mon Mar 16.",
       "website": "https://thedogwood.com",
-      "actionNeeded": false
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "western-jr-am",
@@ -1441,7 +1443,7 @@
         "deadlineDisplay": "Opens March 2026",
         "timeDisplay": "7am CT",
         "url": "https://northernjunior.com/qualifier/",
-        "done": false,
+        "done": true,
         "notes": "Signup opens Sun Mar 1 at 7am CT. Applications open in March 2026. 2026 Entry Procedure will be posted by March 2026."
       },
       "qualifier": {
@@ -1462,8 +1464,8 @@
       "notes": "36-hole stroke play. Venue confirmed: Wethersfield CC, Wethersfield CT (NOT New Haven CC). ~84 player field. Two qualifiers held \u2014 dates/sites posted by March 2026. Invite-only for non-qualifiers.",
       "results": null,
       "website": "https://northernjunior.com",
-      "actionNeeded": true,
-      "actionLabel": "Sign up Sun Mar 1 @ 7am CT at northernjunior.com/qualifier/"
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "hope-valley-jr",
