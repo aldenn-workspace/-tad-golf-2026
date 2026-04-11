@@ -371,7 +371,7 @@
       "signup": {
         "opens": "2026-03-11",
         "opensDisplay": "Wed Mar 11, 2026",
-        "deadline": "2026-05-14",
+        "deadline": null,
         "deadlineDisplay": "Thu May 14, 2026",
         "timeDisplay": "8am CT",
         "url": "https://champ-admin.usga.org/player#/apply",
@@ -549,7 +549,7 @@
         "deadlineDisplay": null,
         "timeDisplay": "7:30am CT",
         "url": "https://sunnehannacc.org",
-        "done": false,
+        "done": true,
         "notes": "NOT registering \u2014 qualifier date conflicts."
       },
       "qualifier": null,
