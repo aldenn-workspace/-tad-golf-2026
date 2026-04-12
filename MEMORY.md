@@ -45,6 +45,12 @@
 - **Telegram:** Primary messaging channel.
 - **OpenClaw:** Running 2026.2.17, Claude Sonnet 4.6 default (switched back from OpenAI Codex Mar 8 — Mike preferred Claude quality), Homebrew Node, OpenAI embeddings active.
 
+## Hard Lessons (Apr 12, 2026)
+1. **Explicit confirmation before any destructive/irreversible action** — no autonomous destructive ops, ever
+2. **Streaming config issue permanently fixed on 2026.4.11** — don't touch that config
+3. **Session resets must summarize to MEMORY.md first** — never start fresh without writing down what's known
+4. **Git history rewrite is a planned operation only** — never autonomous, always Mike-approved
+
 ## Mike's Working Preferences (confirmed Feb 19, reinforced Mar 27)
 - Loves proactive work done without being asked
 - Loves task/todo tracking — keep Mission Control updated
