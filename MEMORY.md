@@ -128,6 +128,12 @@ _Confirmed by Mike, March 11 2026. Source: MC Q4 2025 Combined SOI V2 Draft._
 - PV V fundraise deck summary: `/Users/mini/finn/workspace/knowledge/promus-v-fundraise.md`
 - **Quarterly workflow:** Mike shares updated SOI spreadsheets each quarter → pull fund returns (Net TVPI, IRR, DPI, MOIC) for Slide 6 of deck (most important slide) + update portfolio FMVs
 
+## ⛔ DO NOT TOUCH — Git History Rewrite
+- GitHub push is blocked due to secrets in older commits (Anthropic key in serve.js, OpenAI/Slack keys in mission.db, GitHub PAT in old MEMORY.md)
+- **Do NOT attempt to rewrite git history or force-push autonomously** — this is a risky planned operation only
+- Local memory is restored and functional; GitHub is cosmetic for now
+- When tackled: deliberate, planned, with Mike's explicit sign-off
+
 ## ⛔ DO NOT TOUCH — lossless-claw
 - lossless-claw context engine (`@martian-engineering/lossless-claw`) was installed Mar 21 2026
 - It caused a catastrophic failure — lost all conversation, 6 hours of recovery work
