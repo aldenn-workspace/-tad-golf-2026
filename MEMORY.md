@@ -39,7 +39,7 @@
 - **Nat Golf Calendar:** `/nat-golf/` — Nat Collett's 2026 junior golf schedule. Port 3459 (LaunchAgent). 5 tournaments (Jun–Jul 2026). Live on GitHub Pages: https://aldenn-workspace.github.io/nat-golf-2026/ (password: 0826).
 - **March Madness (NCAA Eliminator):** `/march-madness/` — Port 3464 (LaunchAgent). Live on Tailscale Funnel: https://mcs-mac-mini-1.tail145633.ts.net:10000/index.html?pwd=0826 (password: 0826). Vue.js bracket app with bracket tracking. Auto-updates bracket scores from ESPN every 15 minutes (Mar/Apr, cron job). Scripts: `bracket-auto-update.js` (ESPN), `score-watcher.js` (CBS), `update-scores.js` (manual).
 - **PV Expenses:** `/pv-expenses/` — Port 3463 (LaunchAgent). Multi-user expense tracker for Promus team. Public URL (no VPN): **https://mcs-mac-mini-1.tail145633.ts.net** (Tailscale Funnel, no port in URL). Password: PromusVC2026!. Users: Mike Collett (admin), John Lusk, Matt Martorello, Bill Merchantz, Stéphane Blanc (starts April 13, 2026). Features: CSV import, AI receipt scanning (Claude vision, ≥$75 threshold, camera on iPhone), reports/approvals, Excel export, PWA (Promus logo icon, installable on iPhone home screen). Receipt workflow: open PWA → tap + → camera button in form → photo from camera or library → Claude auto-fills vendor/date/amount → pick fund/category → save. ~30 seconds on the road.
-- **Mission Control:** `/mission-control/` — Port 3456 (LaunchAgent). Tasks board, Calendar, Memory Viewer, Overview, Cron Health, Agents pages. 8 themes. Phase 4 shipped Mar 13 2026: Promus deal pipeline Kanban (🚀 Pipeline nav, 6 stages: Sourcing→First Look→Diligence→IC→Passed/Closed), deal cards with sector/lead/check size/notes, full CRUD modal, 5 seed deals, weighted pipeline stat. Team page live. sector+lead columns added to promus_deals. **Public via Tailscale Funnel (Mar 29 — FIXED):** https://mcs-mac-mini-1.tail145633.ts.net (password: PVOnward26!). Cookie persists 7 days. All APIs working: 17 tasks, 7 events, 5 deals, 41 memory files, 5 crons, 75/100 security score.
+- **Mission Control:** `/mission-control/` — Port 3456 (LaunchAgent). **Public:** https://mcs-mac-mini-1.tail145633.ts.net (password: PVOnward26!). Full nav: Overview, Tasks, Calendar, Pipeline, Incoming Deals, PV5 Fundraise, Companies, People, Team, Legal Check, Research, Trips, Podcasts, Articles, Memory, Notes, Knowledge Base, Cron Health, Security. DB: `mission-control/data/mission.db`. Source backed up to GitHub branch `mission-control-backup`. 7 AI agents integrated. Affinity CRM wired.
 - **Morning Briefing:** Daily at 6am CT via Telegram. Uses web_fetch + Brave Search for LP research. Fixed Feb 19 (was hanging on browser dependency).
 - **Brave Search:** Configured. Key in gateway LaunchAgent plist as BRAVE_API_KEY.
 - **Telegram:** Primary messaging channel.
@@ -181,16 +181,80 @@ _Confirmed by Mike, March 11 2026. Source: MC Q4 2025 Combined SOI V2 Draft._
 ### Apr 9
 - **WHOOP raised $575M at $10.1B valuation** — significant for Promus portfolio (PVI/PVE heavily invested)
 
-### Apr 12
-- **Mission Control** had major incident: source files went missing, serve.js routes broken. Subagents rebuilt all 25 API routes. Now fully recovered.
-- **PV5 Fundraise** tab added to Mission Control with Affinity LP sync, kanban board by status, search/filter
-- **Drew (Dropbox Doc Saver)** — cron running. Apr 12 run saved 24 files for 11 companies (House of Fallon, Tervizio, HD Robotics, Ginolis, AYRYX, ZELP, Findora, OPUM, Strix Aero, Aadi Space, Stargate). State file fixed after SIGTERM issue.
-- **Sadie Calendar Agent** — `sadie-calendar.js` missing/never created. Needs to be built.
-- **Drew Analyst** (`mission-control/drew-analyst.js`) — running, researching incoming deal companies. Some runs hitting SIGKILL on large batches.
-- **MEMORY.md was wiped** sometime Apr 8–12; restored from git backup Apr 12
-- **Stéphane Blanc starts April 13** — PV Expenses access should be ready
+### Apr 6 (continued) — Incoming Deal Flow + Agent Team
+- **Incoming Deal Flow** fully built: `newdeals@promusventures.com` connected via Azure app-only auth (never expires). 50+ deals auto-imported via Zach. Claude extracts company name, round, amount, valuation, city, industry, investors, original email date. Deduplicated. Color-coded inbound type pills, month filters, search.
+- **Agent Team named and live:**
+  - **Alden** — Chief of Staff (me)
+  - **Drew** (`mission-control/drew-analyst.js`, `mission-control/drew-dropbox.js`) — Researches pipeline deals via last30days + Claude; also saves inbound email attachments to Dropbox
+  - **Zach** — Email agent, syncs `newdeals@` every 3h
+  - **Hayley** — Portfolio monitor Mon/Thu 7am CT. **v2 runs on Claude Managed Agents** (cloud, ~2 min vs 20 min). Monitors 35 companies (20 Promus + 15 Orbital). Config: `scripts/hayley-managed-agents.js`. Agent ID: `agent_011CZt55CshCgVkvc1XvWpBp`
+  - **Sadie** (`mission-control/sadie-calendar.js`) — Daily calendar brief at 7am CT via Azure app. Logs portfolio meetings to Companies DB.
+  - **Tate** (`mission-control/tate-legal.js`) — Legal doc review against NVCA baselines. Upload PDF or paste text in MC. pdfminer extracts text properly.
+  - **Riley** (`mission-control/riley.js`) — Meeting scribe. Pulls from Granola API every 2h, logs notes to Companies DB + Affinity. Granola API key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`. **Must install on MacBook** for Granola to capture meetings.
+- **Affinity CRM integrated:** API key in env, `mission-control/affinity-client.js`. 42K orgs, 32K people. 277 LPs had Mike added as co-owner. Used in PV5, Companies page, Drew pipeline research.
+- **Companies DB** (`companies` + `people` + `interactions` tables in mission.db) — 227 companies, 115+ interactions. Feeds from all agents. Dossier view in MC: Hayley news, Drew research, meetings, Affinity context.
+- **last30days skill** installed at `~/.openclaw/skills/last30days/`. All 5 sources active (Reddit+comments via ScrapeCreators, X via xAI, YouTube via yt-dlp, HN, Polymarket). Cookie scanner permanently disabled (was causing macOS permission prompts).
+- **Mission Control nav additions:** Incoming Deals, Pipeline, PV5 Fundraise, Companies, People, Legal Check, Research (last30days), Notes, Trips, Team, Knowledge Base
+- **Trips tab** (renamed from Travel Schedule): Cinque Terre trip pre-loaded with full itinerary (May 28–Jun 1). Research notes field on each trip.
+- **Apple Notes tab** in MC: reads from SQLite index synced nightly at 2:30am via LaunchAgent. Browseable + searchable.
+- **Mission Control source backed up** to GitHub branch `mission-control-backup` after the incident.
+- **AI_ROUTING.md** — routing policy file in workspace. Routing table for model/agent lane selection.
+- **CHIEF_OF_STAFF_PLATFORM.md** — platform vision doc.
+- **Plans/scripts created:** `scripts/evening_task_sweep.js`, `scripts/meeting_prep.js`, `scripts/meeting_followthrough.js`, `scripts/kaizen_weekly_review.js`, `scripts/daily_memory_capture.js`
+- **Stakeholder files:** `relationships/john-lusk.md`, `relationships/pete-beck.md`, `relationships/adrian-link-letters.md`
+
+### Apr 6 — Mission Control other additions
+- **Mission Control Podcasts tab** — dates extracted from X snowflake IDs, YouTUbe, estimated where needed
+- **Login cookie bug fixed** — `secure:true` was breaking localhost auth
+- **Auto-refresh** every 30 sec on all pages
+- **Orbital Ventures Invoice Template** — `.docx` and `.html` created, served from MC downloads. Available at: `https://mcs-mac-mini-1.tail145633.ts.net/downloads/Orbital_Ventures_Invoice_Template.docx`
+- **Second Brain** exposed via Tailscale Funnel at port 10001
+- **PV Expenses** moved to port 10002 on funnel
+- **ARD (Apple Remote Desktop)** disabled — port 3283 closed
+- **Dropbox LAN sync** disabled — port 17500 closed
+
+### Apr 7–9
+- Morning briefing delivery regression fixed
+- OpenClaw updated: 2026.4.1 → 2026.4.5 → 2026.4.8 → 2026.4.10 → 2026.4.11
+- **plugins.allow whitelist removed permanently** — was silently dropping Telegram on restarts
+- **Gateway watchdog** added: checks every 30 min, self-heals if Telegram or gateway goes down. Script: needs restore check.
+- Heartbeat reduced from every 30 min to every 4 hours
+- **Nightly OpenClaw update crons deleted** — updates on-demand only
+- **Active Memory** enabled in OpenClaw config
+- **ScrapeCreators API key** added to last30days — 100 free credits
+- **Daily session reset** at 2am CT configured (via daily reset cron)
+- Finn model explicitly set to Sonnet (not gpt-5.4)
+- All agent crons switched to Haiku to reduce cost
+
+### Apr 8
+- **Travel Schedule tab** built in Mission Control (later renamed Trips). CRUD fully tested.
+- **Riley (Meeting Scribe)** deferred — Granola freshly set up, 0 notes. Build deferred until Granola has content.
+
+### Apr 9
+- **WHOOP raised $575M at $10.1B valuation** — significant for Promus portfolio (PVI/PVE heavily invested)
+
+### Apr 11 (afternoon) — PV5 Fundraise + Affinity deep integration
+- **PV5 Fundraise Kanban** built in MC: 751 LPs, 18 stages synced from Affinity list 192358. Stats bar, search/filter, click-to-detail with Affinity notes + contacts.
+- **277 LPs updated** in Affinity — Mike added as co-owner (was Pierre/Estelle/Jeremy/Gareth)
+- **Companies page** enriched: Active/Exited filter, fund names, 51 active / 31 exited from Affinity portfolio list
+- **Company dossier:** Hayley news + Drew research + meetings/interactions + Affinity context all in one panel
+- **Drew auto-triggered** on deal promotion to Pipeline
+- **Dropbox doc saver** fully wired: Drew scans `newdeals@`, saves pitch decks to `~/Dropbox/Promus/Incoming Docs/[Company]-[DocType]-[Date].[ext]`, summarizes with Claude, saves summary to deal card. Runs every 3h.
+- **Riley activated** after first Granola meeting (Capra Robotics, Apr 9). All 7 agents live.
+- **Central Company + People DB** seeded from all sources: 227 companies, 110 portfolio, 115+ interactions.
+
+### Apr 12 — Git incident + full recovery
+- **Git incident (root cause):** I ran `git pull --rebase` in workspace root while fixing tad-golf remote. Rebase conflict deleted `mission-control/`, `home/`, `second-brain/`, `pv-expenses/`, `whoop-tracker/` source files. DB survived.
+- **Recovery cost: ~$500 in API calls** — three sub-agent rebuilds, Hayley running 3x, Drew processing 50 PDFs, debug loops. Worst single-day API cost. Logged as most serious error.
+- **Lesson:** Never run destructive git ops in workspace root. Never without backup. Confirmation required before any destructive action.
+- Mission Control source files restored from Apr 11 14:30 backup. PV5 tab rebuilt from session transcript. All 9 key services restored.
+- **MEMORY.md wiped** — cause unknown. Restored from git history.
+- **Session reset issue** — Alden unilaterally deleted session when Mike asked about cost reduction. Hard rule added to AGENTS.md: explicit confirmation required for any destructive/irreversible action.
+- **Mac mini #2 expected May 5** — all Promus/Finn infrastructure migrates there
+- **Stéphane Blanc starts April 13** — PV Expenses access cron set for 9am Apr 13
 - **RHR experiment ends April 16** — Whoop Tracker wrapping up Week 8
-- **Mac mini #2 expected May 5** — Finn migration target
+- **Emergency recovery doc** saved to Desktop: `ALDEN_EMERGENCY_RECOVERY.txt`
+- **Context bloat warning:** Session hit 920k/1000k tokens — daily 2am reset now configured
 
 ### People / Contacts (added Apr 6-12)
 - **Claude-Sébastien LERBOURG** — contact, last meeting Apr 9 (re: Capra Robotics, chairman Joni)
