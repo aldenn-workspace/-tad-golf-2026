@@ -146,7 +146,7 @@ _Confirmed by Mike, March 11 2026. Source: MC Q4 2025 Combined SOI V2 Draft._
 - **MEMORY.md was wiped** sometime Apr 8–12; restored from git backup Apr 12
 
 ## Unfinished Business
-- **Finn** — Promus firm agent (chosen Mar 11 2026). Deployed as second OpenClaw agent (agents.list). Workspace: ~/finn/workspace/. Channel: **Slack only** (Socket Mode, bound via `openclaw agents bind --agent finn --bind slack`). Status: LIVE. Stays on Mac mini #1 (this machine) until Mac mini #2 arrives **May 5, 2026** (updated Mar 26). Git push method: /tmp/tad-golf-fix/ and /tmp/nat-golf-fix/ clean repos using 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.
+- **Finn** — Promus firm agent (chosen Mar 11 2026). Deployed as second OpenClaw agent (agents.list). Workspace: ~/finn/workspace/. Channel: **Slack only** (Socket Mode, bound via `openclaw agents bind --agent finn --bind slack`). Status: LIVE. Stays on Mac mini #1 (this machine) until Mac mini #2 arrives **May 5, 2026** (updated Mar 26). Git push method: /tmp/tad-golf-fix/ and /tmp/nat-golf-fix/ clean repos using the aldenn-push PAT (stored securely, not in this file).
 - **STRICT SEPARATION:** Alden = Telegram + personal workspace. Finn = Slack + Promus workspace. Never cross streams. After any reinstall/reset, MUST run `openclaw agents bind --agent finn --bind slack` to restore routing.
 - Morning briefing email: needs SMTP setup (Gmail app password for aldenncos@gmail.com or Mail.app auth)
 - Learn Promus Ventures portfolio
