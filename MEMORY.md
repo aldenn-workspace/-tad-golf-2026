@@ -134,6 +134,17 @@ _Confirmed by Mike, March 11 2026. Source: MC Q4 2025 Combined SOI V2 Draft._
 - **NEVER reinstall, restore, or enable lossless-claw under any circumstances**
 - Current context engine: `legacy` — leave it alone
 
+## Recent Events (Apr 8–12, 2026)
+- **Riley (Meeting Scribe)** — Deferred. Granola set up (key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`), 0 notes yet. Next meetings: Capra Robotics (Apr 9), Lunar Outpost board (Apr 10). Build deferred until Granola has content.
+- **WHOOP raised $575M at $10.1B valuation** (Apr 9) — significant for Promus portfolio (PVI/PVE heavily invested)
+- **Hayley (portfolio monitor)** is live: Mon + Thu 7am CT, Claude Managed Agents. Config: `scripts/hayley-agent-config.yaml`
+- **Mission Control** had major incident Apr 12: source files went missing, subagents rebuilt routes. Now recovered and running.
+- **Drew (Dropbox Doc Saver)** — Cron running, saving deal emails from newdeals@ to `~/Dropbox/Promus/Incoming Docs/`. Apr 12 run saved 24 files for 11 companies (House of Fallon, Tervizio, HD Robotics, Ginolis, AYRYX, ZELP, Findora, OPUM, Strix Aero, Aadi Space, Stargate). State file issue fixed.
+- **Stéphane Blanc starts April 13** — PV Expenses access should be ready
+- **RHR experiment ends April 16** — Whoop Tracker wrapping up Week 8
+- **Mac mini #2 expected May 5** — Finn migration target
+- **MEMORY.md was wiped** sometime Apr 8–12; restored from git backup Apr 12
+
 ## Unfinished Business
 - **Finn** — Promus firm agent (chosen Mar 11 2026). Deployed as second OpenClaw agent (agents.list). Workspace: ~/finn/workspace/. Channel: **Slack only** (Socket Mode, bound via `openclaw agents bind --agent finn --bind slack`). Status: LIVE. Stays on Mac mini #1 (this machine) until Mac mini #2 arrives **May 5, 2026** (updated Mar 26). Git push method: /tmp/tad-golf-fix/ and /tmp/nat-golf-fix/ clean repos using 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.
 - **STRICT SEPARATION:** Alden = Telegram + personal workspace. Finn = Slack + Promus workspace. Never cross streams. After any reinstall/reset, MUST run `openclaw agents bind --agent finn --bind slack` to restore routing.
