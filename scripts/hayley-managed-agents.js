@@ -156,6 +156,35 @@ Format your response exactly as:
     console.log('\nPreview:\n', result.substring(0, 400));
     await sendTelegram(result);
     console.log('\n✅ Sent to Telegram');
+
+    // Parse and save each company's news to the Companies DB
+    try {
+      const Database = require('/Users/mini/.openclaw/workspace/mission-control/node_modules/better-sqlite3');
+      const db = new Database('/Users/mini/.openclaw/workspace/mission-control/data/mission.db');
+      const today = new Date().toISOString().slice(0, 10);
+
+      // Parse company sections from the briefing
+      // Format: **Company Name**\n• bullets
+      const companyBlocks = result.matchAll(/\*\*([^*]+)\*\*\n((?:[•\-][^\n]+\n?)+)/g);
+      let saved = 0;
+      for (const match of companyBlocks) {
+        const name = match[1].trim();
+        const summary = match[2].trim();
+        if (name && summary && !summary.includes('PROMUS') && !summary.includes('ORBITAL')) {
+          // Find company in DB by name (fuzzy)
+          const co = db.prepare('SELECT id FROM companies WHERE name LIKE ? COLLATE NOCASE').get('%' + name.split(' ')[0] + '%');
+          if (co) {
+            db.prepare("UPDATE companies SET hayley_summary = ?, hayley_updated = ?, latest_news = ?, latest_news_date = ?, updated = datetime('now') WHERE id = ?").run(
+              summary, today, summary.substring(0, 300), today, co.id
+            );
+            saved++;
+          }
+        }
+      }
+      console.log('\n✅ Saved', saved, 'company news summaries to DB');
+      db.close();
+    } catch(e) { console.log('DB save error:', e.message); }
+
   } else {
     console.log('⚠️ Short result:', result);
     await sendTelegram(`Hayley v2: completed in ${elapsed}s but result was short (${result.length} chars). May need longer polling.`);

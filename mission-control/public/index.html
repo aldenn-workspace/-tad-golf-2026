@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mission Control – PromusVC</title>
+<style>
+/* ── Reset & Base ───────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;
+  --muted:#94a3b8;--accent:#3b82f6;--accent2:#8b5cf6;--green:#22c55e;
+  --yellow:#eab308;--red:#ef4444;--orange:#f97316;
+  --sidebar:240px;
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);
+     display:flex;min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── Sidebar ────────────────────────────────────────────────────── */
+#sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);
+         display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;
+         height:100vh;overflow-y:auto;z-index:100}
+#sidebar .logo{padding:1.25rem 1rem;font-size:1rem;font-weight:700;color:var(--accent);
+               border-bottom:1px solid var(--border);letter-spacing:.5px}
+#sidebar .logo span{color:var(--muted);font-weight:400;font-size:.75rem;display:block;margin-top:2px}
+nav{flex:1;padding:.5rem 0}
+nav a{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;color:var(--muted);
+      text-decoration:none;border-radius:6px;margin:.1rem .5rem;transition:all .15s;font-size:.875rem}
+nav a:hover{background:var(--border);color:var(--text)}
+nav a.active{background:#1d4ed820;color:var(--accent);font-weight:600}
+nav .section{font-size:.7rem;font-weight:600;color:#475569;padding:.75rem 1rem .25rem;
+             letter-spacing:.08em;text-transform:uppercase}
+#sidebar .bottom{padding:.75rem;border-top:1px solid var(--border)}
+#sidebar .bottom button{width:100%;padding:.5rem;background:transparent;border:1px solid var(--border);
+                        border-radius:6px;color:var(--muted);cursor:pointer;font-size:.8rem}
+#sidebar .bottom button:hover{border-color:var(--red);color:var(--red)}
+
+/* ── Main Content ───────────────────────────────────────────────── */
+#main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;
+        display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+#topbar h1{font-size:1.125rem;font-weight:700}
+#topbar .actions{display:flex;gap:.5rem}
+#content{padding:1.5rem;flex:1}
+
+/* ── Cards & Layout ─────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+           padding:1rem;text-align:center}
+.stat-card .num{font-size:2rem;font-weight:700;color:var(--accent)}
+.stat-card .lbl{color:var(--muted);font-size:.8rem;margin-top:.25rem}
+
+/* ── Tables ─────────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--border);
+   color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+td{padding:.6rem .75rem;border-bottom:1px solid #1e2d3d;vertical-align:top}
+tr:hover td{background:#1a2642}
+tr:last-child td{border-bottom:none}
+
+/* ── Badges ─────────────────────────────────────────────────────── */
+.badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.72rem;font-weight:600}
+.badge-blue{background:#1d4ed820;color:#60a5fa}
+.badge-green{background:#16a34a20;color:#4ade80}
+.badge-yellow{background:#ca8a0420;color:#fbbf24}
+.badge-red{background:#dc262620;color:#f87171}
+.badge-purple{background:#7c3aed20;color:#c084fc}
+.badge-gray{background:#33415520;color:#94a3b8}
+.badge-orange{background:#c2410c20;color:#fb923c}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .9rem;border:none;
+     border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#16a34a}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--text);color:var(--text)}
+.btn-sm{padding:.3rem .6rem;font-size:.78rem}
+
+/* ── Forms ───────────────────────────────────────────────────────── */
+.form-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.form-group{display:flex;flex-direction:column;gap:.3rem;flex:1;min-width:140px}
+label{font-size:.78rem;color:var(--muted);font-weight:600}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  color:var(--text);padding:.5rem .75rem;font-size:.875rem;width:100%;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+
+/* ── Modal ───────────────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:#00000080;z-index:200;display:none;
+          align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+       padding:1.5rem;width:min(600px,95vw);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.1rem;margin-bottom:1rem}
+.modal-footer{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem}
+
+/* ── Search / Filters ─────────────────────────────────────────────  */
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.search-input{flex:1;min-width:200px;max-width:320px}
+
+/* ── Pipeline Kanban ─────────────────────────────────────────────── */
+.kanban{display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem}
+.kanban-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+            min-width:220px;flex-shrink:0}
+.kanban-col .col-hdr{padding:.75rem 1rem;border-bottom:1px solid var(--border);
+                     font-weight:700;font-size:.85rem;display:flex;justify-content:space-between}
+.kanban-col .cards{padding:.5rem;min-height:100px;display:flex;flex-direction:column;gap:.5rem}
+.k-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.75rem;
+        cursor:pointer;transition:border-color .15s}
+.k-card:hover{border-color:var(--accent)}
+.k-card .kc-name{font-weight:600;font-size:.875rem}
+.k-card .kc-meta{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+
+/* ── Progress bar ─────────────────────────────────────────────────── */
+.prog-wrap{background:#1a2442;border-radius:999px;height:6px;overflow:hidden;margin:.25rem 0}
+.prog-bar{height:100%;border-radius:999px;background:var(--accent)}
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:#1e293b;border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;
+       font-size:.875rem;animation:toastIn .2s ease;max-width:320px}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── Misc ────────────────────────────────────────────────────────── */
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.loading{text-align:center;padding:2rem;color:var(--muted)}
+.flex{display:flex}.gap{gap:.5rem}.jcsb{justify-content:space-between}.aic{align-items:center}
+.mt{margin-top:.75rem}.mb{margin-bottom:.75rem}.fw{width:100%}
+.text-muted{color:var(--muted)}.text-sm{font-size:.8rem}
+.truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="logo">🚀 Mission Control<span>PromusVC Ops</span></div>
+  <nav id="nav">
+    <div class="section">Overview</div>
+    <a href="#dashboard" class="nav-link">📊 Dashboard</a>
+    <a href="#todos" class="nav-link">✅ Todos</a>
+    <a href="#tasks" class="nav-link">📋 Tasks</a>
+
+    <div class="section">Deals</div>
+    <a href="#pipeline" class="nav-link">💼 Pipeline</a>
+    <a href="#incoming" class="nav-link">📨 Incoming Deals</a>
+    <a href="#pv5" class="nav-link">💰 PV5 LPs</a>
+
+    <div class="section">CRM</div>
+    <a href="#companies" class="nav-link">🏢 Companies</a>
+    <a href="#people" class="nav-link">👥 People</a>
+
+    <div class="section">Operations</div>
+    <a href="#travel" class="nav-link">✈️ Travel</a>
+    <a href="#calendar" class="nav-link">📅 Calendar</a>
+    <a href="#legal" class="nav-link">⚖️ Legal</a>
+    <a href="#research" class="nav-link">🔬 Research</a>
+
+    <div class="section">Knowledge</div>
+    <a href="#podcasts" class="nav-link">🎙️ Podcasts</a>
+    <a href="#articles" class="nav-link">📰 Articles</a>
+    <a href="#riley" class="nav-link">📝 Riley Notes</a>
+    <a href="#roi" class="nav-link">📈 ROI Log</a>
+
+    <div class="section">Team</div>
+    <a href="#team" class="nav-link">👤 Team</a>
+  </nav>
+  <div class="bottom">
+    <button onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <div id="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="actions" id="topbar-actions"></div>
+  </div>
+  <div id="content"><div class="loading">Loading...</div></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box">
+    <h2 id="modal-title"></h2>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── Utilities ─────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('/api' + path, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+const get = (p, q) => api('GET', p + (q ? '?' + new URLSearchParams(q) : ''));
+const post = (p, b) => api('POST', p, b);
+const put  = (p, b) => api('PUT',  p, b);
+const del  = (p)    => api('DELETE', p);
+
+function toast(msg, type='ok') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toast').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+function showErr(e) { toast(e.message || String(e), 'err'); }
+
+function badge(text, color='gray') {
+  const map = { sourcing:'blue', 'initial screening':'blue', diligence:'purple',
+    committed:'green', passed:'gray', 'soft circle':'yellow', new:'blue',
+    promoted:'green', todo:'blue', 'in-progress':'yellow', done:'green', blocked:'red',
+    open:'blue', closed:'green', planned:'blue', active:'green', completed:'green',
+    urgent:'red', high:'orange', normal:'blue', low:'gray' };
+  const c = map[String(text).toLowerCase()] || color;
+  return `<span class="badge badge-${c}">${text || '—'}</span>`;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+function fmtMoney(n) {
+  if (!n) return '—';
+  return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(n);
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openModal(title, body, footer='') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-footer').innerHTML = footer + `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>`;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+
+// ── Router ────────────────────────────────────────────────────────
+const PAGES = {};
+function route(hash) {
+  const page = hash.replace('#','') || 'dashboard';
+  document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#'+page);
+  });
+  const titles = { dashboard:'Dashboard', todos:'Todos', tasks:'Tasks', pipeline:'Pipeline',
+    incoming:'Incoming Deals', pv5:'PV5 LPs', companies:'Companies', people:'People',
+    travel:'Travel', calendar:'Calendar', legal:'Legal Reviews', research:'Research',
+    podcasts:'Podcasts', articles:'Articles', riley:'Riley Notes', roi:'ROI Log', team:'Team' };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('topbar-actions').innerHTML = '';
+  if (PAGES[page]) PAGES[page]();
+  else document.getElementById('content').innerHTML = `<div class="empty">Page not found: ${page}</div>`;
+}
+window.addEventListener('hashchange', () => route(location.hash));
+
+// ── Dashboard ─────────────────────────────────────────────────────
+PAGES.dashboard = async () => {
+  document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const stats = await get('/system/stats');
+    const c = stats.counts;
+    document.getElementById('content').innerHTML = `
+    <div class="grid4" style="margin-bottom:1.5rem">
+      <div class="stat-card"><div class="num">${c.promus_deals||0}</div><div class="lbl">Pipeline Deals</div></div>
+      <div class="stat-card"><div class="num">${c.incoming_deals||0}</div><div class="lbl">Incoming Deals</div></div>
+      <div class="stat-card"><div class="num">${c.pv5_lps||0}</div><div class="lbl">PV5 LPs</div></div>
+      <div class="stat-card"><div class="num">${c.companies||0}</div><div class="lbl">Companies</div></div>
+    </div>
+    <div class="grid4" style="margin-bottom:1.5rem">
+      <div class="stat-card"><div class="num">${c.todos||0}</div><div class="lbl">Todos</div></div>
+      <div class="stat-card"><div class="num">${c.tasks||0}</div><div class="lbl">Tasks</div></div>
+      <div class="stat-card"><div class="num">${c.people||0}</div><div class="lbl">People</div></div>
+      <div class="stat-card"><div class="num">${c.travel_trips||0}</div><div class="lbl">Trips</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3 style="margin-bottom:.75rem">Quick Links</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <a href="#pipeline" class="btn btn-ghost">💼 Pipeline</a>
+          <a href="#incoming" class="btn btn-ghost">📨 Incoming</a>
+          <a href="#pv5" class="btn btn-ghost">💰 PV5 LPs</a>
+          <a href="#todos" class="btn btn-ghost">✅ Todos</a>
+          <a href="#travel" class="btn btn-ghost">✈️ Travel</a>
+          <a href="#companies" class="btn btn-ghost">🏢 Companies</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:.75rem">System</h3>
+        <div class="text-muted text-sm">
+          <div>Uptime: ${Math.round(stats.uptime/60)} min</div>
+          <div>DB: ${Object.values(c).reduce((a,b)=>a+b,0)} total rows</div>
+          <div>Last refresh: ${new Date().toLocaleTimeString()}</div>
+        </div>
+      </div>
+    </div>`;
+  } catch(e) { showErr(e); }
+};
+
+// ── Todos ─────────────────────────────────────────────────────────
+PAGES.todos = async () => {
+  const listFilter = document.querySelector('#todo-list-filter')?.value || '';
+  const statusFilter = 'open';
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-primary" onclick="addTodo()">+ Add Todo</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <select id="todo-list-filter" class="btn btn-ghost" onchange="PAGES.todos()">
+        <option value="">All Lists</option>
+        <option value="personal">Personal</option>
+        <option value="work">Work</option>
+        <option value="promus">Promus</option>
+        <option value="pv5">PV5</option>
+      </select>
+      <select id="todo-status-filter" class="btn btn-ghost" onchange="PAGES.todos()">
+        <option value="open">Open</option>
+        <option value="">All</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div class="loading" id="todo-list">Loading...</div>`;
+  try {
+    const q = {};
+    const lf = document.getElementById('todo-list-filter')?.value;
+    const sf = document.getElementById('todo-status-filter')?.value;
+    if (lf) q.list = lf;
+    if (sf) q.status = sf;
+    const rows = await get('/todos', Object.keys(q).length ? q : null);
+    if (!rows.length) { document.getElementById('todo-list').innerHTML = '<div class="empty">No todos found</div>'; return; }
+    document.getElementById('todo-list').innerHTML = rows.map(t => `
+      <div class="card" style="padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem">
+        <input type="checkbox" ${t.status==='closed'?'checked':''} style="width:16px;height:16px;cursor:pointer"
+          onchange="toggleTodo(${t.id}, this.checked)">
+        <div style="flex:1;${t.status==='closed'?'opacity:.5;text-decoration:line-through':''}">
+          <div style="font-weight:600">${esc(t.text)}</div>
+          ${t.notes ? `<div class="text-muted text-sm">${esc(t.notes)}</div>` : ''}
+          <div class="text-sm" style="margin-top:.2rem">
+            ${badge(t.priority)} ${badge(t.list,'purple')}
+            ${t.due_date ? `<span class="text-muted">Due: ${fmtDate(t.due_date)}</span>` : ''}
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="editTodo(${t.id})">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteTodo(${t.id})" style="color:var(--red)">✕</button>
+      </div>`).join('');
+  } catch(e) { showErr(e); }
+};
+window.toggleTodo = async (id, closed) => {
+  try { await put(`/todos/${id}`, { status: closed ? 'closed' : 'open' }); PAGES.todos(); }
+  catch(e) { showErr(e); }
+};
+window.addTodo = () => openModal('Add Todo', `
+  <div class="form-row"><div class="form-group fw"><label>Text</label><input id="t-text" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>List</label><select id="t-list">
+      <option>personal</option><option>work</option><option>promus</option><option>pv5</option>
+    </select></div>
+    <div class="form-group"><label>Priority</label><select id="t-pri">
+      <option>normal</option><option>high</option><option>urgent</option><option>low</option>
+    </select></div>
+    <div class="form-group"><label>Due Date</label><input id="t-due" type="date"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="t-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveTodo()">Save</button>`);
+window.saveTodo = async () => {
+  const text = document.getElementById('t-text').value.trim();
+  if (!text) return toast('Text required','err');
+  try {
+    await post('/todos', { text, list: document.getElementById('t-list').value,
+      priority: document.getElementById('t-pri').value,
+      due_date: document.getElementById('t-due').value,
+      notes: document.getElementById('t-notes').value });
+    closeModal(); toast('Todo added'); PAGES.todos();
+  } catch(e) { showErr(e); }
+};
+window.deleteTodo = async (id) => {
+  if (!confirm('Delete this todo?')) return;
+  try { await del(`/todos/${id}`); toast('Deleted'); PAGES.todos(); } catch(e) { showErr(e); }
+};
+window.editTodo = async (id) => {
+  const rows = await get('/todos');
+  const t = rows.find(x => x.id === id);
+  if (!t) return;
+  openModal('Edit Todo', `
+    <div class="form-row"><div class="form-group fw"><label>Text</label><input id="t-text" value="${esc(t.text)}"></div></div>
+    <div class="form-row">
+      <div class="form-group"><label>List</label><select id="t-list">
+        ${['personal','work','promus','pv5'].map(v=>`<option ${t.list===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Priority</label><select id="t-pri">
+        ${['normal','high','urgent','low'].map(v=>`<option ${t.priority===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Due Date</label><input id="t-due" type="date" value="${t.due_date||''}"></div>
+    </div>
+    <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="t-notes">${esc(t.notes||'')}</textarea></div></div>`,
+    `<button class="btn btn-primary" onclick="updateTodo(${id})">Update</button>`);
+};
+window.updateTodo = async (id) => {
+  try {
+    await put(`/todos/${id}`, { text: document.getElementById('t-text').value,
+      list: document.getElementById('t-list').value, priority: document.getElementById('t-pri').value,
+      due_date: document.getElementById('t-due').value, notes: document.getElementById('t-notes').value });
+    closeModal(); toast('Updated'); PAGES.todos();
+  } catch(e) { showErr(e); }
+};
+
+// ── Tasks ─────────────────────────────────────────────────────────
+PAGES.tasks = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addTask()">+ Add Task</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <select id="task-status" class="btn btn-ghost" onchange="PAGES.tasks()">
+        <option value="todo">Todo</option><option value="">All</option>
+        <option value="in-progress">In Progress</option><option value="done">Done</option>
+      </select>
+    </div>
+    <div class="loading" id="task-list">Loading...</div>`;
+  try {
+    const q = {};
+    const sf = document.getElementById('task-status')?.value;
+    if (sf) q.status = sf;
+    const rows = await get('/tasks', Object.keys(q).length ? q : null);
+    if (!rows.length) { document.getElementById('task-list').innerHTML = '<div class="empty">No tasks</div>'; return; }
+    document.getElementById('task-list').innerHTML = `<div class="card tbl-wrap"><table>
+      <tr><th>Title</th><th>Assignee</th><th>Priority</th><th>Status</th><th>Created</th><th></th></tr>
+      ${rows.map(t=>`<tr>
+        <td><strong>${esc(t.title)}</strong>${t.notes?`<div class="text-muted text-sm">${esc(t.notes)}</div>`:''}</td>
+        <td>${esc(t.assignee)}</td><td>${badge(t.priority)}</td><td>${badge(t.status)}</td>
+        <td class="text-muted">${fmtDate(t.created)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="deleteTask(${t.id})" style="color:var(--red)">✕</button></td>
+      </tr>`).join('')}
+    </table></div>`;
+  } catch(e) { showErr(e); }
+};
+window.addTask = () => openModal('Add Task', `
+  <div class="form-row"><div class="form-group fw"><label>Title</label><input id="tk-title" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>Assignee</label><input id="tk-assignee" value="aldenn"></div>
+    <div class="form-group"><label>Priority</label><select id="tk-pri">
+      <option>normal</option><option>high</option><option>urgent</option><option>low</option>
+    </select></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="tk-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveTask()">Save</button>`);
+window.saveTask = async () => {
+  const title = document.getElementById('tk-title').value.trim();
+  if (!title) return toast('Title required','err');
+  try {
+    await post('/tasks', { title, assignee: document.getElementById('tk-assignee').value,
+      priority: document.getElementById('tk-pri').value, notes: document.getElementById('tk-notes').value });
+    closeModal(); toast('Task added'); PAGES.tasks();
+  } catch(e) { showErr(e); }
+};
+window.deleteTask = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/tasks/${id}`); toast('Deleted'); PAGES.tasks(); } catch(e) { showErr(e); }
+};
+
+// ── Pipeline ──────────────────────────────────────────────────────
+PAGES.pipeline = async () => {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-primary" onclick="addDeal()">+ Add Deal</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <input class="search-input" id="deal-search" placeholder="Search deals..." oninput="filterDeals()">
+      <select id="deal-status" class="btn btn-ghost" onchange="PAGES.pipeline()">
+        <option value="">All Statuses</option>
+        <option value="sourcing">Sourcing</option><option value="active">Active</option>
+        <option value="passed">Passed</option><option value="invested">Invested</option>
+      </select>
+      <button class="btn btn-ghost" onclick="togglePipelineView()" id="view-toggle">📋 Table</button>
+    </div>
+    <div id="pipeline-content"><div class="loading">Loading...</div></div>`;
+  window._pipelineData = [];
+  window._pipelineView = 'kanban';
+  try {
+    const q = {};
+    const sf = document.getElementById('deal-status')?.value;
+    if (sf) q.status = sf;
+    window._pipelineData = await get('/pipeline', Object.keys(q).length ? q : null);
+    renderPipeline();
+  } catch(e) { showErr(e); }
+};
+window.filterDeals = () => renderPipeline();
+window.togglePipelineView = () => {
+  window._pipelineView = window._pipelineView === 'kanban' ? 'table' : 'kanban';
+  document.getElementById('view-toggle').textContent = window._pipelineView === 'kanban' ? '📋 Table' : '🗂 Kanban';
+  renderPipeline();
+};
+function renderPipeline() {
+  const search = (document.getElementById('deal-search')?.value||'').toLowerCase();
+  const data = window._pipelineData.filter(d => !search || d.company.toLowerCase().includes(search));
+  const el = document.getElementById('pipeline-content');
+  if (!data.length) { el.innerHTML = '<div class="empty">No deals found</div>'; return; }
+  if (window._pipelineView === 'table') {
+    el.innerHTML = `<div class="card tbl-wrap"><table>
+      <tr><th>Company</th><th>Stage</th><th>Status</th><th>Owner</th><th>Prob%</th><th>Check Size</th><th>Next Step</th><th></th></tr>
+      ${data.map(d=>`<tr>
+        <td><strong>${esc(d.company)}</strong>${d.sector?`<div class="text-muted text-sm">${esc(d.sector)}</div>`:''}</td>
+        <td>${esc(d.stage||'—')}</td><td>${badge(d.status)}</td>
+        <td>${esc(d.owner)}</td><td>${d.probability}%</td>
+        <td>${fmtMoney(d.check_size_usd)}</td>
+        <td class="truncate text-muted">${esc(d.next_step||'—')}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="editDeal(${d.id})">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="researchDeal(${d.id},'${esc(d.company)}')">🔬</button>
+            <button class="btn btn-ghost btn-sm" onclick="deleteDeal(${d.id})" style="color:var(--red)">✕</button></td>
+      </tr>`).join('')}
+    </table></div>`;
+  } else {
+    const stages = ['sourcing','initial screening','diligence','term sheet','closing','invested','passed'];
+    const cols = {};
+    for (const s of stages) cols[s] = data.filter(d => (d.stage||'sourcing').toLowerCase() === s);
+    const other = data.filter(d => !stages.includes((d.stage||'sourcing').toLowerCase()));
+    el.innerHTML = `<div class="kanban">${stages.map(s => `
+      <div class="kanban-col">
+        <div class="col-hdr">${s.charAt(0).toUpperCase()+s.slice(1)}<span class="badge badge-gray">${(cols[s]||[]).length}</span></div>
+        <div class="cards">${(cols[s]||[]).map(d=>`
+          <div class="k-card" onclick="editDeal(${d.id})">
+            <div class="kc-name">${esc(d.company)}</div>
+            <div class="kc-meta">${d.sector||''} · ${d.owner}</div>
+            <div class="kc-meta">${badge(d.status)} ${d.probability}%</div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+}
+window.addDeal = () => openModal('Add Pipeline Deal', `
+  <div class="form-row">
+    <div class="form-group"><label>Company *</label><input id="d-company" autofocus></div>
+    <div class="form-group"><label>Sector</label><input id="d-sector"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Stage</label><select id="d-stage">
+      ${['sourcing','initial screening','diligence','term sheet','closing','invested','passed'].map(s=>`<option>${s}</option>`).join('')}
+    </select></div>
+    <div class="form-group"><label>Owner</label><input id="d-owner" value="mike"></div>
+    <div class="form-group"><label>Probability%</label><input id="d-prob" type="number" value="10" min="0" max="100"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Check Size ($)</label><input id="d-check" type="number" value="0"></div>
+    <div class="form-group"><label>Amount Raising</label><input id="d-raising"></div>
+    <div class="form-group"><label>Valuation</label><input id="d-val"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Next Step</label><input id="d-next"></div></div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="d-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveDeal()">Save</button>`);
+window.saveDeal = async () => {
+  const company = document.getElementById('d-company').value.trim();
+  if (!company) return toast('Company required','err');
+  try {
+    await post('/pipeline', { company, sector: document.getElementById('d-sector').value,
+      stage: document.getElementById('d-stage').value, owner: document.getElementById('d-owner').value,
+      probability: +document.getElementById('d-prob').value,
+      check_size_usd: +document.getElementById('d-check').value,
+      amount_raising: document.getElementById('d-raising').value,
+      valuation: document.getElementById('d-val').value,
+      next_step: document.getElementById('d-next').value,
+      notes: document.getElementById('d-notes').value });
+    closeModal(); toast('Deal added'); PAGES.pipeline();
+  } catch(e) { showErr(e); }
+};
+window.editDeal = async (id) => {
+  const d = window._pipelineData.find(x => x.id === id);
+  if (!d) return;
+  openModal(`Edit: ${d.company}`, `
+    <div class="form-row">
+      <div class="form-group"><label>Company</label><input id="d-company" value="${esc(d.company)}"></div>
+      <div class="form-group"><label>Sector</label><input id="d-sector" value="${esc(d.sector||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Stage</label><select id="d-stage">
+        ${['sourcing','initial screening','diligence','term sheet','closing','invested','passed'].map(s=>`<option ${d.stage===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Status</label><select id="d-status">
+        ${['sourcing','active','passed','invested','on hold'].map(s=>`<option ${d.status===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Probability%</label><input id="d-prob" type="number" value="${d.probability}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Check Size ($)</label><input id="d-check" type="number" value="${d.check_size_usd||0}"></div>
+      <div class="form-group"><label>Amount Raising</label><input id="d-raising" value="${esc(d.amount_raising||'')}"></div>
+      <div class="form-group"><label>Valuation</label><input id="d-val" value="${esc(d.valuation||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group fw"><label>Next Step</label><input id="d-next" value="${esc(d.next_step||'')}"></div>
+    </div>
+    <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="d-notes">${esc(d.notes||'')}</textarea></div></div>
+    ${d.research_summary ? `<div class="card" style="background:var(--bg);margin-top:.5rem"><h4 style="margin-bottom:.5rem">Research Summary</h4><div class="text-sm text-muted" style="white-space:pre-wrap">${esc(d.research_summary)}</div></div>` : ''}`,
+    `<button class="btn btn-primary" onclick="updateDeal(${id})">Update</button>`);
+};
+window.updateDeal = async (id) => {
+  try {
+    await put(`/pipeline/${id}`, { company: document.getElementById('d-company').value,
+      sector: document.getElementById('d-sector').value, stage: document.getElementById('d-stage').value,
+      status: document.getElementById('d-status').value, probability: +document.getElementById('d-prob').value,
+      check_size_usd: +document.getElementById('d-check').value,
+      amount_raising: document.getElementById('d-raising').value,
+      valuation: document.getElementById('d-val').value,
+      next_step: document.getElementById('d-next').value,
+      notes: document.getElementById('d-notes').value });
+    closeModal(); toast('Updated'); PAGES.pipeline();
+  } catch(e) { showErr(e); }
+};
+window.deleteDeal = async (id) => {
+  if (!confirm('Delete deal?')) return;
+  try { await del(`/pipeline/${id}`); toast('Deleted'); PAGES.pipeline(); } catch(e) { showErr(e); }
+};
+window.researchDeal = async (id, company) => {
+  toast(`Researching ${company}...`);
+  try { await post(`/pipeline/${id}/research`, {}); toast('Research complete'); PAGES.pipeline(); }
+  catch(e) { showErr(e); }
+};
+
+// ── Incoming Deals ────────────────────────────────────────────────
+PAGES.incoming = async () => {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost" onclick="syncEmail()">📨 Sync Email</button>
+    <button class="btn btn-primary" onclick="addIncoming()">+ Add</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="inc-list">Loading...</div>';
+  try {
+    const rows = await get('/incoming-deals', { status: 'new' });
+    if (!rows.length) { document.getElementById('inc-list').innerHTML = '<div class="empty">No incoming deals</div>'; return; }
+    document.getElementById('inc-list').innerHTML = `<div class="card tbl-wrap"><table>
+      <tr><th>Deal Name</th><th>Industry</th><th>Raising</th><th>Source</th><th>Date</th><th>Status</th><th></th></tr>
+      ${rows.map(d=>`<tr>
+        <td><strong>${esc(d.deal_name)}</strong>${d.company_name&&d.company_name!==d.deal_name?`<div class="text-muted text-sm">${esc(d.company_name)}</div>`:''}</td>
+        <td>${esc(d.industry||'—')}</td>
+        <td>${esc(d.amount_raising||'—')}</td>
+        <td>${esc(d.inbound_type||d.source_channel||'—')}</td>
+        <td>${fmtDate(d.intake_date)}</td>
+        <td>${badge(d.status)}</td>
+        <td>
+          <button class="btn btn-success btn-sm" onclick="promoteIncoming(${d.id})">→ Pipeline</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteIncoming(${d.id})" style="color:var(--red)">✕</button>
+        </td>
+      </tr>`).join('')}
+    </table></div>`;
+  } catch(e) { showErr(e); }
+};
+window.syncEmail = async () => {
+  toast('Syncing email...');
+  try { const r = await post('/incoming-deals/sync-email', {}); toast(`Synced ${r.synced} emails`); PAGES.incoming(); }
+  catch(e) { showErr(e); }
+};
+window.addIncoming = () => openModal('Add Incoming Deal', `
+  <div class="form-row">
+    <div class="form-group"><label>Deal Name *</label><input id="i-name" autofocus></div>
+    <div class="form-group"><label>Industry</label><input id="i-industry"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Amount Raising</label><input id="i-raising"></div>
+    <div class="form-group"><label>Valuation</label><input id="i-val"></div>
+    <div class="form-group"><label>Type</label><select id="i-type">
+      <option>Inbound Email</option><option>Referral</option><option>Conference</option><option>Other</option>
+    </select></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="i-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveIncoming()">Save</button>`);
+window.saveIncoming = async () => {
+  const deal_name = document.getElementById('i-name').value.trim();
+  if (!deal_name) return toast('Deal name required','err');
+  try {
+    await post('/incoming-deals', { deal_name, industry: document.getElementById('i-industry').value,
+      amount_raising: document.getElementById('i-raising').value, valuation: document.getElementById('i-val').value,
+      inbound_type: document.getElementById('i-type').value, notes: document.getElementById('i-notes').value });
+    closeModal(); toast('Added'); PAGES.incoming();
+  } catch(e) { showErr(e); }
+};
+window.promoteIncoming = async (id) => {
+  if (!confirm('Promote to pipeline?')) return;
+  try { const r = await post(`/incoming-deals/${id}/promote`, {}); toast('Promoted to pipeline'); PAGES.incoming(); }
+  catch(e) { showErr(e); }
+};
+window.deleteIncoming = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/incoming-deals/${id}`); toast('Deleted'); PAGES.incoming(); } catch(e) { showErr(e); }
+};
+
+// ── PV5 LPs ───────────────────────────────────────────────────────
+PAGES.pv5 = async () => {
+  document.getElementById('topbar-actions').innerHTML = `
+    <button class="btn btn-ghost" onclick="syncPv5()">🔄 Sync Affinity</button>
+    <button class="btn btn-primary" onclick="addPv5Lp()">+ Add LP</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="pv5-list">Loading...</div>';
+  try {
+    const rows = await get('/pv5');
+    if (!rows.length) { document.getElementById('pv5-list').innerHTML = '<div class="empty">No LPs</div>'; return; }
+    // Stats
+    const committed = rows.filter(r => r.status==='Committed');
+    const totalCommitted = committed.reduce((s,r) => s + (r.fund2_commitment||0), 0);
+    document.getElementById('pv5-list').innerHTML = `
+      <div class="grid3" style="margin-bottom:1rem">
+        <div class="stat-card"><div class="num">${rows.length}</div><div class="lbl">Total LPs</div></div>
+        <div class="stat-card"><div class="num">${committed.length}</div><div class="lbl">Committed</div></div>
+        <div class="stat-card"><div class="num">${fmtMoney(totalCommitted)}</div><div class="lbl">Total Committed</div></div>
+      </div>
+      <div class="card tbl-wrap"><table>
+        <tr><th>Name</th><th>Status</th><th>Type</th><th>Commitment</th><th>Owner</th><th>Location</th><th></th></tr>
+        ${rows.map(r=>`<tr>
+          <td><strong>${esc(r.name)}</strong>${r.domain?`<div class="text-muted text-sm">${esc(r.domain)}</div>`:''}</td>
+          <td>${badge(r.status,'blue')}</td>
+          <td class="text-muted">${esc(r.investor_type||'—')}</td>
+          <td>${r.fund2_commitment?fmtMoney(r.fund2_commitment):'—'}</td>
+          <td>${esc(r.owner||'—')}</td>
+          <td class="text-muted">${esc(r.location||'—')}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="editPv5(${r.id})">Edit</button></td>
+        </tr>`).join('')}
+      </table></div>`;
+  } catch(e) { showErr(e); }
+};
+window.syncPv5 = async () => {
+  toast('Syncing from Affinity...');
+  try { const r = await post('/pv5/sync', {}); toast(`Synced ${r.synced} LPs from ${r.list}`); PAGES.pv5(); }
+  catch(e) { showErr(e); }
+};
+window.addPv5Lp = () => openModal('Add LP', `
+  <div class="form-row">
+    <div class="form-group"><label>Name *</label><input id="lp-name" autofocus></div>
+    <div class="form-group"><label>Affinity Entity ID *</label><input id="lp-aeid"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Status</label><select id="lp-status">
+      ${['','Outreach','In Discussion','High Interest','Soft Circle','Committed','Passed','Dormant'].map(s=>`<option>${s}</option>`).join('')}
+    </select></div>
+    <div class="form-group"><label>Type</label><input id="lp-type"></div>
+    <div class="form-group"><label>Commitment ($)</label><input id="lp-commit" type="number" value="0"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Owner</label><input id="lp-owner"></div>
+    <div class="form-group"><label>Location</label><input id="lp-loc"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="lp-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="savePv5Lp()">Save</button>`);
+window.savePv5Lp = async () => {
+  const name = document.getElementById('lp-name').value.trim();
+  const aeid = document.getElementById('lp-aeid').value.trim();
+  if (!name || !aeid) return toast('Name and Affinity Entity ID required','err');
+  try {
+    await post('/pv5', { name, affinity_entity_id: aeid,
+      status: document.getElementById('lp-status').value,
+      investor_type: document.getElementById('lp-type').value,
+      fund2_commitment: +document.getElementById('lp-commit').value,
+      owner: document.getElementById('lp-owner').value,
+      location: document.getElementById('lp-loc').value,
+      notes: document.getElementById('lp-notes').value });
+    closeModal(); toast('LP added'); PAGES.pv5();
+  } catch(e) { showErr(e); }
+};
+window.editPv5 = async (id) => {
+  const rows = await get('/pv5');
+  const r = rows.find(x => x.id === id); if (!r) return;
+  openModal(`Edit: ${r.name}`, `
+    <div class="form-row">
+      <div class="form-group"><label>Status</label><select id="lp-status">
+        ${['','Outreach','In Discussion','High Interest','Soft Circle','Committed','Passed','Dormant'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Commitment ($)</label><input id="lp-commit" type="number" value="${r.fund2_commitment||0}"></div>
+      <div class="form-group"><label>Owner</label><input id="lp-owner" value="${esc(r.owner||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Investment Potential</label><input id="lp-pot" value="${esc(r.investment_potential||'')}"></div>
+      <div class="form-group"><label>Close Date</label><input id="lp-close" type="date" value="${r.close_date||''}"></div>
+    </div>
+    <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="lp-notes">${esc(r.notes||'')}</textarea></div></div>`,
+    `<button class="btn btn-primary" onclick="updatePv5(${id})">Update</button>`);
+};
+window.updatePv5 = async (id) => {
+  try {
+    await put(`/pv5/${id}`, { status: document.getElementById('lp-status').value,
+      fund2_commitment: +document.getElementById('lp-commit').value,
+      owner: document.getElementById('lp-owner').value,
+      investment_potential: document.getElementById('lp-pot').value,
+      close_date: document.getElementById('lp-close').value,
+      notes: document.getElementById('lp-notes').value });
+    closeModal(); toast('Updated'); PAGES.pv5();
+  } catch(e) { showErr(e); }
+};
+
+// ── Companies ─────────────────────────────────────────────────────
+PAGES.companies = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addCompany()">+ Add Company</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters"><input class="search-input" id="co-search" placeholder="Search companies..." oninput="renderCompanies()">
+      <select id="co-rel" class="btn btn-ghost" onchange="loadCompanies()">
+        <option value="">All</option><option value="portfolio">Portfolio</option>
+        <option value="prospect">Prospect</option><option value="partner">Partner</option>
+      </select>
+    </div>
+    <div id="co-list" class="loading">Loading...</div>`;
+  await loadCompanies();
+};
+window._companyData = [];
+async function loadCompanies() {
+  const q = {};
+  const rel = document.getElementById('co-rel')?.value;
+  if (rel) q.relationship = rel;
+  window._companyData = await get('/companies', Object.keys(q).length ? q : null);
+  renderCompanies();
+}
+function renderCompanies() {
+  const s = (document.getElementById('co-search')?.value||'').toLowerCase();
+  const data = window._companyData.filter(c => !s || c.name.toLowerCase().includes(s) || (c.sector||'').toLowerCase().includes(s));
+  if (!data.length) { document.getElementById('co-list').innerHTML = '<div class="empty">No companies</div>'; return; }
+  document.getElementById('co-list').innerHTML = `<div class="card tbl-wrap"><table>
+    <tr><th>Company</th><th>Sector</th><th>Stage</th><th>HQ</th><th>Relationship</th><th>Last Touched</th><th></th></tr>
+    ${data.map(c=>`<tr>
+      <td><strong>${esc(c.name)}</strong>${c.domain?`<div class="text-muted text-sm">${esc(c.domain)}</div>`:''}</td>
+      <td>${esc(c.sector||'—')}</td><td>${esc(c.stage||'—')}</td>
+      <td>${esc(c.hq||'—')}</td><td>${badge(c.relationship,'blue')}</td>
+      <td class="text-muted">${fmtDate(c.last_touched)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="editCompany(${c.id})">Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteCompany(${c.id})" style="color:var(--red)">✕</button></td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+window.addCompany = () => openModal('Add Company', `
+  <div class="form-row">
+    <div class="form-group"><label>Name *</label><input id="c-name" autofocus></div>
+    <div class="form-group"><label>Domain</label><input id="c-domain" placeholder="example.com"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Sector</label><input id="c-sector"></div>
+    <div class="form-group"><label>Stage</label><input id="c-stage"></div>
+    <div class="form-group"><label>HQ</label><input id="c-hq"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Relationship</label><select id="c-rel">
+      <option>prospect</option><option>portfolio</option><option>partner</option><option>contact</option>
+    </select></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Description</label><textarea id="c-desc"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveCompany()">Save</button>`);
+window.saveCompany = async () => {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) return toast('Name required','err');
+  try {
+    await post('/companies', { name, domain: document.getElementById('c-domain').value,
+      sector: document.getElementById('c-sector').value, stage: document.getElementById('c-stage').value,
+      hq: document.getElementById('c-hq').value, relationship: document.getElementById('c-rel').value,
+      description: document.getElementById('c-desc').value });
+    closeModal(); toast('Company added'); loadCompanies();
+  } catch(e) { showErr(e); }
+};
+window.editCompany = async (id) => {
+  const c = window._companyData.find(x=>x.id===id); if (!c) return;
+  openModal(`Edit: ${c.name}`, `
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input id="c-name" value="${esc(c.name)}"></div>
+      <div class="form-group"><label>Domain</label><input id="c-domain" value="${esc(c.domain||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Sector</label><input id="c-sector" value="${esc(c.sector||'')}"></div>
+      <div class="form-group"><label>Stage</label><input id="c-stage" value="${esc(c.stage||'')}"></div>
+      <div class="form-group"><label>HQ</label><input id="c-hq" value="${esc(c.hq||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Relationship</label><select id="c-rel">
+        ${['prospect','portfolio','partner','contact'].map(v=>`<option ${c.relationship===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Portfolio Status</label><input id="c-pstatus" value="${esc(c.portfolio_status||'')}"></div>
+    </div>
+    <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="c-notes">${esc(c.notes||'')}</textarea></div></div>
+    ${c.drew_summary ? `<div class="card" style="background:var(--bg);margin-top:.5rem"><h4 style="margin-bottom:.5rem">Drew Summary</h4><div class="text-sm text-muted" style="white-space:pre-wrap">${esc(c.drew_summary)}</div></div>` : ''}`,
+    `<button class="btn btn-primary" onclick="updateCompany(${id})">Update</button>`);
+};
+window.updateCompany = async (id) => {
+  try {
+    await put(`/companies/${id}`, { name: document.getElementById('c-name').value,
+      domain: document.getElementById('c-domain').value, sector: document.getElementById('c-sector').value,
+      stage: document.getElementById('c-stage').value, hq: document.getElementById('c-hq').value,
+      relationship: document.getElementById('c-rel').value, portfolio_status: document.getElementById('c-pstatus').value,
+      notes: document.getElementById('c-notes').value });
+    closeModal(); toast('Updated'); loadCompanies();
+  } catch(e) { showErr(e); }
+};
+window.deleteCompany = async (id) => {
+  if (!confirm('Delete company?')) return;
+  try { await del(`/companies/${id}`); toast('Deleted'); loadCompanies(); } catch(e) { showErr(e); }
+};
+
+// ── People ────────────────────────────────────────────────────────
+PAGES.people = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addPerson()">+ Add Person</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters"><input class="search-input" id="ppl-search" placeholder="Search people..."></div>
+    <div class="loading" id="ppl-list">Loading...</div>`;
+  try {
+    const rows = await get('/people');
+    const search = () => {
+      const s = document.getElementById('ppl-search')?.value?.toLowerCase()||'';
+      const data = rows.filter(p => !s || p.name.toLowerCase().includes(s) || (p.company||'').toLowerCase().includes(s));
+      document.getElementById('ppl-list').innerHTML = data.length ? `<div class="card tbl-wrap"><table>
+        <tr><th>Name</th><th>Company</th><th>Role</th><th>Email</th><th>Relationship</th><th></th></tr>
+        ${data.map(p=>`<tr>
+          <td><strong>${esc(p.name)}</strong></td>
+          <td>${esc(p.company||'—')}</td><td class="text-muted">${esc(p.role||'—')}</td>
+          <td><a href="mailto:${esc(p.email)}" style="color:var(--accent)">${esc(p.email||'—')}</a></td>
+          <td>${badge(p.relationship,'blue')}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="deletePerson(${p.id})" style="color:var(--red)">✕</button></td>
+        </tr>`).join('')}
+      </table></div>` : '<div class="empty">No people found</div>';
+    };
+    document.getElementById('ppl-search').addEventListener('input', search);
+    search();
+  } catch(e) { showErr(e); }
+};
+window.addPerson = () => openModal('Add Person', `
+  <div class="form-row">
+    <div class="form-group"><label>Name *</label><input id="p-name" autofocus></div>
+    <div class="form-group"><label>Email</label><input id="p-email" type="email"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Company</label><input id="p-company"></div>
+    <div class="form-group"><label>Role</label><input id="p-role"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="p-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="savePerson()">Save</button>`);
+window.savePerson = async () => {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) return toast('Name required','err');
+  try {
+    await post('/people', { name, email: document.getElementById('p-email').value,
+      company: document.getElementById('p-company').value, role: document.getElementById('p-role').value,
+      notes: document.getElementById('p-notes').value });
+    closeModal(); toast('Person added'); PAGES.people();
+  } catch(e) { showErr(e); }
+};
+window.deletePerson = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/people/${id}`); toast('Deleted'); PAGES.people(); } catch(e) { showErr(e); }
+};
+
+// ── Travel ────────────────────────────────────────────────────────
+PAGES.travel = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addTrip()">+ Add Trip</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="travel-list">Loading...</div>';
+  try {
+    const rows = await get('/travel');
+    if (!rows.length) { document.getElementById('travel-list').innerHTML = '<div class="empty">No trips planned</div>'; return; }
+    document.getElementById('travel-list').innerHTML = rows.map(t => `
+      <div class="card">
+        <div class="flex aic jcsb">
+          <div>
+            <div style="font-weight:700;font-size:1rem">${esc(t.name)}</div>
+            <div class="text-muted text-sm">${fmtDate(t.start_date)} → ${fmtDate(t.end_date)} · ${esc(t.primary_location)}</div>
+            <div style="margin-top:.4rem">${badge(t.status)} ${badge(t.purpose,'purple')}</div>
+          </div>
+          <div class="flex gap">
+            <button class="btn btn-ghost btn-sm" onclick="editTrip(${t.id})">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="deleteTrip(${t.id})" style="color:var(--red)">✕</button>
+          </div>
+        </div>
+        ${t.notes ? `<div class="text-muted text-sm mt">${esc(t.notes)}</div>` : ''}
+        ${t.attendees ? `<div class="text-sm mt">👥 ${esc(t.attendees)}</div>` : ''}
+      </div>`).join('');
+  } catch(e) { showErr(e); }
+};
+window.addTrip = () => openModal('Add Trip', `
+  <div class="form-row"><div class="form-group fw"><label>Trip Name *</label><input id="tr-name" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>Start Date *</label><input id="tr-start" type="date"></div>
+    <div class="form-group"><label>End Date *</label><input id="tr-end" type="date"></div>
+    <div class="form-group"><label>Location *</label><input id="tr-loc"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Purpose</label><select id="tr-purpose">
+      <option>business</option><option>conference</option><option>personal</option><option>fundraising</option>
+    </select></div>
+    <div class="form-group"><label>Status</label><select id="tr-status">
+      <option>planned</option><option>confirmed</option><option>completed</option><option>cancelled</option>
+    </select></div>
+    <div class="form-group"><label>Budget ($)</label><input id="tr-budget" type="number" value="0"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Attendees</label><input id="tr-att"></div></div>
+  <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="tr-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveTrip()">Save</button>`);
+window.saveTrip = async () => {
+  const name = document.getElementById('tr-name').value.trim();
+  const start_date = document.getElementById('tr-start').value;
+  const end_date = document.getElementById('tr-end').value;
+  const primary_location = document.getElementById('tr-loc').value.trim();
+  if (!name||!start_date||!end_date||!primary_location) return toast('Name, dates, and location required','err');
+  try {
+    await post('/travel', { name, start_date, end_date, primary_location,
+      purpose: document.getElementById('tr-purpose').value,
+      status: document.getElementById('tr-status').value,
+      budget_usd: +document.getElementById('tr-budget').value,
+      attendees: document.getElementById('tr-att').value,
+      notes: document.getElementById('tr-notes').value });
+    closeModal(); toast('Trip added'); PAGES.travel();
+  } catch(e) { showErr(e); }
+};
+window.editTrip = async (id) => {
+  const rows = await get('/travel');
+  const t = rows.find(x=>x.id===id); if (!t) return;
+  openModal(`Edit: ${t.name}`, `
+    <div class="form-row"><div class="form-group fw"><label>Trip Name</label><input id="tr-name" value="${esc(t.name)}"></div></div>
+    <div class="form-row">
+      <div class="form-group"><label>Start Date</label><input id="tr-start" type="date" value="${t.start_date||''}"></div>
+      <div class="form-group"><label>End Date</label><input id="tr-end" type="date" value="${t.end_date||''}"></div>
+      <div class="form-group"><label>Location</label><input id="tr-loc" value="${esc(t.primary_location)}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Status</label><select id="tr-status">
+        ${['planned','confirmed','completed','cancelled'].map(v=>`<option ${t.status===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Budget ($)</label><input id="tr-budget" type="number" value="${t.budget_usd||0}"></div>
+    </div>
+    <div class="form-row"><div class="form-group fw"><label>Notes</label><textarea id="tr-notes">${esc(t.notes||'')}</textarea></div></div>`,
+    `<button class="btn btn-primary" onclick="updateTrip(${id})">Update</button>`);
+};
+window.updateTrip = async (id) => {
+  try {
+    await put(`/travel/${id}`, { name: document.getElementById('tr-name').value,
+      start_date: document.getElementById('tr-start').value, end_date: document.getElementById('tr-end').value,
+      primary_location: document.getElementById('tr-loc').value,
+      status: document.getElementById('tr-status').value,
+      budget_usd: +document.getElementById('tr-budget').value,
+      notes: document.getElementById('tr-notes').value });
+    closeModal(); toast('Updated'); PAGES.travel();
+  } catch(e) { showErr(e); }
+};
+window.deleteTrip = async (id) => {
+  if (!confirm('Delete trip?')) return;
+  try { await del(`/travel/${id}`); toast('Deleted'); PAGES.travel(); } catch(e) { showErr(e); }
+};
+
+// ── Calendar ──────────────────────────────────────────────────────
+PAGES.calendar = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addEvent()">+ Add Event</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="cal-list">Loading...</div>';
+  try {
+    const rows = await get('/calendar');
+    document.getElementById('cal-list').innerHTML = rows.length ? `<div class="card tbl-wrap"><table>
+      <tr><th>Title</th><th>Type</th><th>Scheduled</th><th>Recurrence</th><th>Status</th><th></th></tr>
+      ${rows.map(e=>`<tr>
+        <td><strong>${esc(e.title)}</strong>${e.description?`<div class="text-muted text-sm">${esc(e.description)}</div>`:''}</td>
+        <td>${badge(e.event_type,'purple')}</td>
+        <td>${fmtDate(e.scheduled)}</td>
+        <td class="text-muted">${esc(e.recurrence||'—')}</td>
+        <td>${badge(e.status)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="deleteEvent(${e.id})" style="color:var(--red)">✕</button></td>
+      </tr>`).join('')}
+    </table></div>` : '<div class="empty">No events</div>';
+  } catch(e) { showErr(e); }
+};
+window.addEvent = () => openModal('Add Event', `
+  <div class="form-row"><div class="form-group fw"><label>Title *</label><input id="ev-title" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>Type</label><select id="ev-type">
+      <option>cron</option><option>meeting</option><option>deadline</option><option>reminder</option>
+    </select></div>
+    <div class="form-group"><label>Scheduled</label><input id="ev-sched" type="datetime-local"></div>
+    <div class="form-group"><label>Recurrence</label><input id="ev-rec" placeholder="daily, weekly..."></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Description</label><textarea id="ev-desc"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveEvent()">Save</button>`);
+window.saveEvent = async () => {
+  const title = document.getElementById('ev-title').value.trim();
+  if (!title) return toast('Title required','err');
+  try {
+    await post('/calendar', { title, event_type: document.getElementById('ev-type').value,
+      scheduled: document.getElementById('ev-sched').value,
+      recurrence: document.getElementById('ev-rec').value,
+      description: document.getElementById('ev-desc').value });
+    closeModal(); toast('Event added'); PAGES.calendar();
+  } catch(e) { showErr(e); }
+};
+window.deleteEvent = async (id) => {
+  if (!confirm('Delete event?')) return;
+  try { await del(`/calendar/${id}`); toast('Deleted'); PAGES.calendar(); } catch(e) { showErr(e); }
+};
+
+// ── Legal ─────────────────────────────────────────────────────────
+PAGES.legal = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addLegal()">+ Submit Doc</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="legal-list">Loading...</div>';
+  try {
+    const rows = await get('/legal');
+    document.getElementById('legal-list').innerHTML = rows.length ? `<div class="card tbl-wrap"><table>
+      <tr><th>Document</th><th>Status</th><th>Date</th><th>Result</th><th></th></tr>
+      ${rows.map(r=>`<tr>
+        <td><strong>${esc(r.doc_name)}</strong></td>
+        <td>${badge(r.status)}</td>
+        <td>${fmtDate(r.created)}</td>
+        <td class="text-muted text-sm">${r.result ? esc(r.result.substring(0,100))+'...' : '—'}</td>
+        <td>
+          ${r.result ? `<button class="btn btn-ghost btn-sm" onclick="viewLegal(${r.id})">View</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="deleteLegal(${r.id})" style="color:var(--red)">✕</button>
+        </td>
+      </tr>`).join('')}
+    </table></div>` : '<div class="empty">No legal reviews</div>';
+  } catch(e) { showErr(e); }
+};
+window.addLegal = () => openModal('Submit Legal Document', `
+  <div class="form-row"><div class="form-group fw"><label>Document Name *</label><input id="lg-name" autofocus></div></div>
+  <div class="form-row"><div class="form-group fw"><label>Document Text</label><textarea id="lg-text" style="min-height:200px" placeholder="Paste document text here..."></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveLegal()">Submit for Review</button>`);
+window.saveLegal = async () => {
+  const doc_name = document.getElementById('lg-name').value.trim();
+  if (!doc_name) return toast('Name required','err');
+  try {
+    await post('/legal', { doc_name, doc_text: document.getElementById('lg-text').value });
+    closeModal(); toast('Submitted for review'); PAGES.legal();
+  } catch(e) { showErr(e); }
+};
+window.viewLegal = async (id) => {
+  const rows = await get('/legal');
+  const r = rows.find(x=>x.id===id); if (!r) return;
+  openModal(r.doc_name, `<div style="white-space:pre-wrap;font-size:.85rem;color:var(--muted)">${esc(r.result||'No result yet')}</div>`);
+};
+window.deleteLegal = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/legal/${id}`); toast('Deleted'); PAGES.legal(); } catch(e) { showErr(e); }
+};
+
+// ── Research ──────────────────────────────────────────────────────
+PAGES.research = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addResearch()">+ New Research</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="res-list">Loading...</div>';
+  try {
+    const rows = await get('/research');
+    document.getElementById('res-list').innerHTML = rows.length ? `<div class="card tbl-wrap"><table>
+      <tr><th>Query</th><th>Status</th><th>Date</th><th>Result</th></tr>
+      ${rows.map(r=>`<tr>
+        <td><strong>${esc(r.query)}</strong></td>
+        <td>${badge(r.status)}</td>
+        <td>${fmtDate(r.created)}</td>
+        <td class="text-muted text-sm">${r.result ? esc(r.result.substring(0,150))+'...' : '—'}</td>
+      </tr>`).join('')}
+    </table></div>` : '<div class="empty">No research history</div>';
+  } catch(e) { showErr(e); }
+};
+window.addResearch = () => openModal('New Research Query', `
+  <div class="form-row"><div class="form-group fw"><label>Query *</label><input id="rq-query" autofocus placeholder="Company name, topic, or question"></div></div>`,
+  `<button class="btn btn-primary" onclick="saveResearch()">Run Research</button>`);
+window.saveResearch = async () => {
+  const query = document.getElementById('rq-query').value.trim();
+  if (!query) return toast('Query required','err');
+  try { await post('/research', { query }); closeModal(); toast('Research submitted (running in background)'); PAGES.research(); }
+  catch(e) { showErr(e); }
+};
+
+// ── Podcasts ──────────────────────────────────────────────────────
+PAGES.podcasts = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addPodcast()">+ Add Podcast</button>`;
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <select id="pod-status" class="btn btn-ghost" onchange="PAGES.podcasts()">
+        <option value="">All</option><option value="want-to-watch">Want to Watch</option>
+        <option value="watched">Watched</option><option value="in-progress">In Progress</option>
+      </select>
+    </div>
+    <div class="loading" id="pod-list">Loading...</div>`;
+  try {
+    const q = {};
+    const sf = document.getElementById('pod-status')?.value;
+    if (sf) q.status = sf;
+    const rows = await get('/podcasts', Object.keys(q).length ? q : null);
+    document.getElementById('pod-list').innerHTML = rows.length ? `<div class="card tbl-wrap"><table>
+      <tr><th>Show / Episode</th><th>Guest</th><th>Duration</th><th>Status</th><th>Date</th><th></th></tr>
+      ${rows.map(p=>`<tr>
+        <td>
+          <strong>${esc(p.episode_title)}</strong>
+          <div class="text-muted text-sm">${esc(p.show_name)}</div>
+        </td>
+        <td>${esc(p.guest||'—')}</td>
+        <td>${p.duration_mins ? p.duration_mins+'m' : '—'}</td>
+        <td>${badge(p.status,'blue')}</td>
+        <td>${fmtDate(p.date_published)}</td>
+        <td>
+          ${p.url ? `<a href="${esc(p.url)}" target="_blank" class="btn btn-ghost btn-sm">▶ Watch</a>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="deletePodcast(${p.id})" style="color:var(--red)">✕</button>
+        </td>
+      </tr>`).join('')}
+    </table></div>` : '<div class="empty">No podcasts</div>';
+  } catch(e) { showErr(e); }
+};
+window.addPodcast = () => openModal('Add Podcast', `
+  <div class="form-row">
+    <div class="form-group"><label>Show Name *</label><input id="pod-show" autofocus></div>
+    <div class="form-group"><label>Episode Title *</label><input id="pod-ep"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Guest</label><input id="pod-guest"></div>
+    <div class="form-group"><label>URL</label><input id="pod-url" type="url"></div>
+    <div class="form-group"><label>Duration (min)</label><input id="pod-dur" type="number" value="0"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Status</label><select id="pod-status">
+      <option>want-to-watch</option><option>in-progress</option><option>watched</option>
+    </select></div>
+    <div class="form-group"><label>Date Published</label><input id="pod-date" type="date"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Mike Notes</label><textarea id="pod-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="savePodcast()">Save</button>`);
+window.savePodcast = async () => {
+  const show_name = document.getElementById('pod-show').value.trim();
+  const episode_title = document.getElementById('pod-ep').value.trim();
+  if (!show_name||!episode_title) return toast('Show and episode title required','err');
+  try {
+    await post('/podcasts', { show_name, episode_title, guest: document.getElementById('pod-guest').value,
+      url: document.getElementById('pod-url').value, duration_mins: +document.getElementById('pod-dur').value,
+      status: document.getElementById('pod-status').value, date_published: document.getElementById('pod-date').value,
+      mike_notes: document.getElementById('pod-notes').value });
+    closeModal(); toast('Podcast added'); PAGES.podcasts();
+  } catch(e) { showErr(e); }
+};
+window.deletePodcast = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/podcasts/${id}`); toast('Deleted'); PAGES.podcasts(); } catch(e) { showErr(e); }
+};
+
+// ── Articles ──────────────────────────────────────────────────────
+PAGES.articles = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addArticle()">+ Add Article</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="art-list">Loading...</div>';
+  try {
+    const rows = await get('/articles');
+    document.getElementById('art-list').innerHTML = rows.length ? `<div class="card tbl-wrap"><table>
+      <tr><th>Title</th><th>Source</th><th>Status</th><th>Date</th><th></th></tr>
+      ${rows.map(a=>`<tr>
+        <td><strong>${esc(a.title)}</strong>${a.author?`<div class="text-muted text-sm">${esc(a.author)}</div>`:''}</td>
+        <td>${a.url?`<a href="${esc(a.url)}" target="_blank" style="color:var(--accent)">${esc(a.source||a.url.substring(0,30))}</a>`:esc(a.source||'—')}</td>
+        <td>${badge(a.status,'blue')}</td>
+        <td>${fmtDate(a.date_published||a.date_added)}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="deleteArticle(${a.id})" style="color:var(--red)">✕</button></td>
+      </tr>`).join('')}
+    </table></div>` : '<div class="empty">No articles</div>';
+  } catch(e) { showErr(e); }
+};
+window.addArticle = () => openModal('Add Article', `
+  <div class="form-row"><div class="form-group fw"><label>Title *</label><input id="ar-title" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>Author</label><input id="ar-author"></div>
+    <div class="form-group"><label>Source</label><input id="ar-source"></div>
+    <div class="form-group"><label>URL</label><input id="ar-url" type="url"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Status</label><select id="ar-status">
+      <option>saved</option><option>read</option><option>archived</option>
+    </select></div>
+    <div class="form-group"><label>Tags</label><input id="ar-tags" placeholder="vc, ai, fintech..."></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Mike Notes</label><textarea id="ar-notes"></textarea></div></div>`,
+  `<button class="btn btn-primary" onclick="saveArticle()">Save</button>`);
+window.saveArticle = async () => {
+  const title = document.getElementById('ar-title').value.trim();
+  if (!title) return toast('Title required','err');
+  try {
+    await post('/articles', { title, author: document.getElementById('ar-author').value,
+      source: document.getElementById('ar-source').value, url: document.getElementById('ar-url').value,
+      status: document.getElementById('ar-status').value, tags: document.getElementById('ar-tags').value,
+      mike_notes: document.getElementById('ar-notes').value });
+    closeModal(); toast('Article added'); PAGES.articles();
+  } catch(e) { showErr(e); }
+};
+window.deleteArticle = async (id) => {
+  if (!confirm('Delete?')) return;
+  try { await del(`/articles/${id}`); toast('Deleted'); PAGES.articles(); } catch(e) { showErr(e); }
+};
+
+// ── Riley Notes ───────────────────────────────────────────────────
+PAGES.riley = async () => {
+  document.getElementById('content').innerHTML = '<div class="loading" id="riley-list">Loading...</div>';
+  try {
+    const rows = await get('/riley');
+    document.getElementById('riley-list').innerHTML = rows.length ? rows.map(r => `
+      <div class="card" onclick="viewRiley('${esc(r.id)}')" style="cursor:pointer">
+        <div class="flex aic jcsb">
+          <div>
+            <div style="font-weight:700">${esc(r.title||'Meeting Notes')}</div>
+            <div class="text-muted text-sm">${fmtDate(r.meeting_date)} · ${esc(r.attendees||'')}</div>
+            ${r.companies ? `<div class="text-sm mt">🏢 ${esc(r.companies)}</div>` : ''}
+          </div>
+          <div class="text-muted text-sm">${fmtDate(r.processed_at)}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">No meeting notes</div>';
+  } catch(e) { showErr(e); }
+};
+window.viewRiley = async (id) => {
+  try {
+    const r = await get(`/riley/${id}`);
+    openModal(r.title||'Meeting Notes', `
+      <div class="text-muted text-sm mb">📅 ${fmtDate(r.meeting_date)} · ${esc(r.attendees||'')}</div>
+      ${r.summary ? `<div style="white-space:pre-wrap;font-size:.875rem;margin-bottom:1rem">${esc(r.summary)}</div>` : ''}
+      ${r.action_items ? `<div><strong>Action Items:</strong><div style="white-space:pre-wrap;font-size:.85rem;color:var(--muted)">${esc(r.action_items)}</div></div>` : ''}`);
+  } catch(e) { showErr(e); }
+};
+
+// ── ROI Log ───────────────────────────────────────────────────────
+PAGES.roi = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addRoi()">+ Log ROI</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="roi-list">Loading...</div>';
+  try {
+    const { rows, totals } = await get('/roi');
+    document.getElementById('roi-list').innerHTML = `
+      <div class="grid3" style="margin-bottom:1rem">
+        <div class="stat-card"><div class="num">${Math.round((totals.mins||0)/60)}h</div><div class="lbl">Hours Saved</div></div>
+        <div class="stat-card"><div class="num">${fmtMoney(totals.value||0)}</div><div class="lbl">Value Created</div></div>
+        <div class="stat-card"><div class="num">${fmtMoney(totals.cost||0)}</div><div class="lbl">AI Cost</div></div>
+      </div>
+      ${rows.length ? `<div class="card tbl-wrap"><table>
+        <tr><th>Date</th><th>Agent</th><th>Category</th><th>Description</th><th>Min Saved</th><th>Value</th></tr>
+        ${rows.map(r=>`<tr>
+          <td>${fmtDate(r.date)}</td>
+          <td>${badge(r.agent,'purple')}</td>
+          <td>${esc(r.category)}</td>
+          <td>${esc(r.description)}</td>
+          <td>${r.mins_saved}</td>
+          <td>${fmtMoney(r.value_usd)}</td>
+        </tr>`).join('')}
+      </table></div>` : '<div class="empty">No ROI entries yet</div>'}`;
+  } catch(e) { showErr(e); }
+};
+window.addRoi = () => openModal('Log ROI', `
+  <div class="form-row">
+    <div class="form-group"><label>Agent</label><input id="roi-agent" value="Alden"></div>
+    <div class="form-group"><label>Category</label><input id="roi-cat" value="General"></div>
+  </div>
+  <div class="form-row"><div class="form-group fw"><label>Description *</label><input id="roi-desc" autofocus></div></div>
+  <div class="form-row">
+    <div class="form-group"><label>Minutes Saved</label><input id="roi-mins" type="number" value="0"></div>
+    <div class="form-group"><label>Value ($)</label><input id="roi-val" type="number" value="0"></div>
+    <div class="form-group"><label>Token Cost ($)</label><input id="roi-cost" type="number" value="0" step="0.001"></div>
+  </div>`,
+  `<button class="btn btn-primary" onclick="saveRoi()">Save</button>`);
+window.saveRoi = async () => {
+  const description = document.getElementById('roi-desc').value.trim();
+  if (!description) return toast('Description required','err');
+  try {
+    await post('/roi', { agent: document.getElementById('roi-agent').value,
+      category: document.getElementById('roi-cat').value, description,
+      mins_saved: +document.getElementById('roi-mins').value,
+      value_usd: +document.getElementById('roi-val').value,
+      token_cost_usd: +document.getElementById('roi-cost').value });
+    closeModal(); toast('Logged'); PAGES.roi();
+  } catch(e) { showErr(e); }
+};
+
+// ── Team ──────────────────────────────────────────────────────────
+PAGES.team = async () => {
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="addTeamMember()">+ Add Member</button>`;
+  document.getElementById('content').innerHTML = '<div class="loading" id="team-list">Loading...</div>';
+  try {
+    const rows = await get('/team');
+    document.getElementById('team-list').innerHTML = rows.length ? `<div class="grid3">
+      ${rows.map(m=>`<div class="card">
+        <div style="font-weight:700;font-size:1rem">${esc(m.name)}</div>
+        <div class="text-muted text-sm">@${esc(m.handle)} · ${esc(m.role||'')}</div>
+        <div style="margin-top:.5rem">${badge(m.status)}</div>
+        <div style="margin-top:.5rem">
+          <div class="prog-wrap"><div class="prog-bar" style="width:${m.capacity_pct||0}%"></div></div>
+          <div class="text-muted text-sm">${m.capacity_pct}% capacity</div>
+        </div>
+        ${m.focus ? `<div class="text-sm mt">Focus: ${esc(m.focus)}</div>` : ''}
+      </div>`).join('')}
+    </div>` : '<div class="empty">No team members</div>';
+  } catch(e) { showErr(e); }
+};
+window.addTeamMember = () => openModal('Add Team Member', `
+  <div class="form-row">
+    <div class="form-group"><label>Name *</label><input id="tm-name" autofocus></div>
+    <div class="form-group"><label>Handle *</label><input id="tm-handle" placeholder="@handle"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Role</label><input id="tm-role"></div>
+    <div class="form-group"><label>Focus</label><input id="tm-focus"></div>
+    <div class="form-group"><label>Capacity %</label><input id="tm-cap" type="number" value="100" min="0" max="100"></div>
+  </div>`,
+  `<button class="btn btn-primary" onclick="saveTeamMember()">Save</button>`);
+window.saveTeamMember = async () => {
+  const name = document.getElementById('tm-name').value.trim();
+  const handle = document.getElementById('tm-handle').value.trim();
+  if (!name||!handle) return toast('Name and handle required','err');
+  try {
+    await post('/team', { name, handle: handle.replace('@',''), role: document.getElementById('tm-role').value,
+      focus: document.getElementById('tm-focus').value, capacity_pct: +document.getElementById('tm-cap').value });
+    closeModal(); toast('Team member added'); PAGES.team();
+  } catch(e) { showErr(e); }
+};
+
+// ── Auth ──────────────────────────────────────────────────────────
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+route(location.hash || '#dashboard');
+</script>
+</body>
+</html>
