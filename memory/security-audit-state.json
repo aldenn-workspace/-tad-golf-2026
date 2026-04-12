@@ -1,0 +1,17 @@
+{
+  "lastAudit": "2026-04-12T14:00:00Z",
+  "summary": "1 critical · 3 warn · 1 info",
+  "critical": [
+    "skills.code_safety: Skill 'last30days' contains env-harvesting patterns (5 issues in vendor/twitter files)"
+  ],
+  "warnings": [
+    "gateway.trusted_proxies_missing: Reverse proxy headers not trusted",
+    "tools.exec.security_full_configured: exec security=full enabled for main, finn",
+    "security.trust_model.multi_user_heuristic: Multi-user setup heuristic triggered"
+  ],
+  "firewall": "enabled",
+  "openPorts": {
+    "public": ["ControlCenter:5000", "ControlCenter:7000", "Dropbox:17500", "rapportd:49159"],
+    "loopback_only": ["Dropbox:17600/17603", "node:multiple"]
+  }
+}

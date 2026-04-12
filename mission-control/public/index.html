@@ -4188,6 +4188,8 @@ async function searchAffinity() {
   }
 }
 
+
+
 async function loadCompanies(search = '') {
   const list = document.getElementById('companies-list');
   if (!list) return;
@@ -4202,7 +4204,6 @@ async function loadCompanies(search = '') {
     '<div style="color:var(--text-muted);grid-column:1/-1">No companies found</div>';
 }
 
-const REL_COLORS = { portfolio: '#22c55e', pipeline: '#60a5fa', prospect: '#f59e0b', contact: '#a78bfa' };
 
 function renderCompanyCard(co) {
   const relColor = REL_COLORS[co.relationship] || '#6b7280';
@@ -4221,6 +4222,7 @@ function renderCompanyCard(co) {
     </div>`;
 }
 
+const REL_COLORS = { portfolio: '#22c55e', pipeline: '#60a5fa', prospect: '#f59e0b', contact: '#a78bfa' };
 async function openCompanyDetail(id) {
   const res = await fetch('/api/companies/' + id);
   const co = await res.json();
@@ -4230,7 +4232,8 @@ async function openCompanyDetail(id) {
   if (!panel) {
     panel = document.createElement('div');
     panel.id = 'company-detail-panel';
-    panel.style.cssText = 'position:fixed;right:0;top:0;bottom:0;width:480px;max-width:95vw;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:32px 28px;box-shadow:-8px 0 40px rgba(0,0,0,.35);z-index:200;transition:transform .2s';
+    const isMob = window.innerWidth < 640;
+    panel.style.cssText = `position:fixed;right:0;top:0;bottom:0;width:${isMob?'100vw':'480px'};background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:${isMob?'16px':'32px 28px'};box-shadow:-8px 0 40px rgba(0,0,0,.35);z-index:500;transition:transform .2s`;
     panel.onclick = e => e.stopPropagation();
     document.body.appendChild(panel);
   }
@@ -4254,7 +4257,21 @@ async function openCompanyDetail(id) {
     ${co.hayley_summary ? `<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;color:#60a5fa;margin-bottom:6px">📰 HAYLEY NEWS</div><div style="font-size:12px;color:var(--text);line-height:1.7;padding:12px;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.2);border-radius:8px;white-space:pre-wrap">${esc(co.hayley_summary)}</div></div>` : ''}
     ${co.drew_summary ? `<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;color:#34d399;margin-bottom:6px">🔍 DREW'S RESEARCH</div><div style="font-size:12px;color:var(--text);line-height:1.6;padding:12px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:8px">${esc(co.drew_summary)}</div></div>` : ''}
     ${co.people?.length ? `<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">👥 PEOPLE</div>${co.people.map(p => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)"><strong>${esc(p.name)}</strong>${p.role?' · '+esc(p.role):''}${p.email?' · <span style="color:var(--text-muted)">'+esc(p.email)+'</span>':''}</div>`).join('')}</div>` : ''}
-    ${co.interactions?.length ? `<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">📅 MEETINGS & INTERACTIONS</div>${co.interactions.map(i => `<div style="padding:8px 10px;margin-bottom:6px;background:var(--surface2);border-radius:6px;font-size:12px"><div style="font-weight:600;color:var(--text)">${esc(i.title)}</div><div style="color:var(--text-muted);margin-top:2px">${i.date} · ${i.source}</div>${i.notes?'<div style="color:var(--text-muted);margin-top:4px;font-size:11px">'+esc(i.notes.substring(0,120))+'</div>':''}</div>`).join('')}</div>` : ''}
+    ${co.interactions?.length ? `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:8px">📅 MEETINGS & INTERACTIONS (${co.interactions.length})</div>
+      ${co.interactions.map((i,idx) => `
+        <div style="padding:10px 12px;margin-bottom:8px;background:var(--surface2);border-radius:8px;font-size:12px;border:1px solid var(--border2)">
+          <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="const d=document.getElementById('int-${co.id}-'+${idx});d.style.display=d.style.display==='none'?'block':'none'">
+            <div>
+              <div style="font-weight:600;color:var(--text)">${esc(i.title)}</div>
+              <div style="color:var(--text-muted);font-size:11px;margin-top:2px">${i.date} · ${i.type} · ${i.source}</div>
+            </div>
+            <span style="color:var(--text-muted);font-size:18px;padding:0 4px">›</span>
+          </div>
+          <div id="int-${co.id}-${idx}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text);line-height:1.7;white-space:pre-wrap">${esc(i.notes||'No notes available.')}</div>
+        </div>
+      `).join('')}
+    </div>` : ''}
     <div id="affinity-section-${co.id}" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
       <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:8px">🖲 AFFINITY CRM <span style="font-size:10px;font-weight:400;color:var(--text-muted)">(loading...)</span></div>
     </div>

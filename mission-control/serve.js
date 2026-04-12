@@ -1402,8 +1402,26 @@ app.get('/api/companies', (req, res) => {
 app.get('/api/companies/:id', (req, res) => {
   const co = db.prepare('SELECT * FROM companies WHERE id = ?').get(parseInt(req.params.id));
   if (!co) return res.status(404).json({ error: 'Not found' });
-  const interactions = db.prepare('SELECT * FROM interactions WHERE company_id = ? ORDER BY date DESC').all(co.id);
-  const people = db.prepare('SELECT * FROM people WHERE company_id = ? OR company = ? COLLATE NOCASE ORDER BY name').all(co.id, co.name);
+  const rawInteractions = db.prepare('SELECT * FROM interactions WHERE company_id = ? ORDER BY date DESC').all(co.id);
+  const interactions = rawInteractions.map(i => {
+    if (i.source === 'riley' && i.source_id) {
+      try {
+        const rn = db.prepare('SELECT summary, raw_summary, action_items, attendees FROM riley_notes WHERE id = ?').get(i.source_id);
+        if (rn) {
+          const parts = [];
+          if (rn.summary) parts.push('Summary: ' + rn.summary);
+          if (rn.attendees) parts.push('Attendees: ' + rn.attendees);
+          try {
+            const actions = JSON.parse(rn.action_items || '[]');
+            if (actions.length) parts.push('Action Items: ' + actions.join(' | '));
+          } catch(e2) {}
+          if (rn.raw_summary) parts.push('Full Notes: ' + rn.raw_summary.substring(0, 2000));
+          return Object.assign({}, i, { notes: parts.join(' -- ') || i.notes });
+        }
+      } catch(e) {}
+    }
+    return i;
+  }); const people = db.prepare('SELECT * FROM people WHERE company_id = ? OR company = ? COLLATE NOCASE ORDER BY name').all(co.id, co.name);
   res.json({ ...co, interactions, people });
 });
 
