@@ -134,16 +134,64 @@ _Confirmed by Mike, March 11 2026. Source: MC Q4 2025 Combined SOI V2 Draft._
 - **NEVER reinstall, restore, or enable lossless-claw under any circumstances**
 - Current context engine: `legacy` — leave it alone
 
-## Recent Events (Apr 8–12, 2026)
-- **Riley (Meeting Scribe)** — Deferred. Granola set up (key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`), 0 notes yet. Next meetings: Capra Robotics (Apr 9), Lunar Outpost board (Apr 10). Build deferred until Granola has content.
-- **WHOOP raised $575M at $10.1B valuation** (Apr 9) — significant for Promus portfolio (PVI/PVE heavily invested)
-- **Hayley (portfolio monitor)** is live: Mon + Thu 7am CT, Claude Managed Agents. Config: `scripts/hayley-agent-config.yaml`
-- **Mission Control** had major incident Apr 12: source files went missing, subagents rebuilt routes. Now recovered and running.
-- **Drew (Dropbox Doc Saver)** — Cron running, saving deal emails from newdeals@ to `~/Dropbox/Promus/Incoming Docs/`. Apr 12 run saved 24 files for 11 companies (House of Fallon, Tervizio, HD Robotics, Ginolis, AYRYX, ZELP, Findora, OPUM, Strix Aero, Aadi Space, Stargate). State file issue fixed.
+## Recent Events (Apr 6–12, 2026)
+### Apr 6 — Chief of Staff Platform Build (major session)
+- Built **AI routing policy**: Opus thinks, Sonata executes, scripts grind. Docs: `AI_ROUTING.md`, `CHIEF_OF_STAFF_PLATFORM.md`
+- Added **Incoming Deals** page to Mission Control (separate from Pipeline). Fields: deal name, city, amount, valuation, industry, originated by, inbound type, source email. **Promote to Pipeline** button works.
+- Added **Personal** button on task cards to move tasks to My Todos
+- Redesigned **My Todos** to match task board (board-style, 2 columns)
+- Removed **PV Todos** duplicate nav item from Mission Control
+- Removed **ROI** from Mission Control nav (still in code, not visible)
+- Added **Alden Guide** as its own nav page in Mission Control (cheat sheet for how to use Alden)
+- Built working scripts: `scripts/evening_task_sweep.js`, `scripts/meeting_prep.js`, `scripts/meeting_followthrough.js`, `scripts/kaizen_weekly_review.js`, `scripts/daily_memory_capture.js`
+- Built stakeholder files: `relationships/john-lusk.md`, `relationships/adrian-link-letters.md`, `relationships/pete-beck.md`
+- Fixed Mission Control login cookie (`secure: true` was breaking localhost auth)
+- Wired **browser plugin** (Chrome, port 18800, profile: openclaw) — X links now readable
+- Discussions: agent routing, Kaizen loop, email-to-CRM design (deferred), PPAC meeting, Pete Beck relationship
+- Set up **Azure app** for Outlook read-only access (`Alden Incoming Deals Reader`). Auth eventually worked. Mailbox read still returning 403 — deferred.
+  - Tenant ID: `6db61128-12b4-4d09-b0d2-0e22fc61e1b1`, Client ID: `6da1a0c3-860a-42cb-92e9-3608c15dd4bb`
+  - Config saved at: `deal-intake-outlook-config.json`
+  - `@azure/msal-node` installed in workspace
+- Switched model wiring: Anthropic provider configured via `openclaw onboard --anthropic-api-key`. **Default model is now `anthropic/claude-sonnet-4-6`** (confirmed from session status). Opus/Sonata routing is the goal; actual runtime uses Claude Sonnet 4.6.
+- Fixed **gateway service entrypoint mismatch** (old Cellar path vs current Homebrew path) by manual LaunchAgent reinstall
+- OpenClaw updated to **2026.4.5**
+- Gateway responsiveness issues discussed — context compaction at 75%+ token usage causes lag. Behavioral fix: fast ack first, then work.
+
+### Apr 7-9
+- **Morning briefing delivery** regressed — briefing generated but not auto-sent. Fixed mid-session (delivery step issue).
+- Gateway doctor --fix cycle done; entrypoint mismatch fully resolved Apr 7
+- **Hayley (portfolio monitor)** live: Mon + Thu 7am CT, Claude Managed Agents. Config: `scripts/hayley-agent-config.yaml`
+
+### Apr 8
+- **Travel Schedule tab** built in Mission Control: nav item, list/calendar view, create/edit modal, detail panel, CRUD fully tested (8 tests pass, 28 checks pass). Fields: name, dates, location, purpose, status, attendees, budget, notes.
+- **Riley (Meeting Scribe)** — Granola set up (key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`), 0 notes yet. Build deferred until Granola has meeting content. Next meetings flagged: Capra Robotics (Apr 9), Lunar Outpost board (Apr 10).
+
+### Apr 9
+- **WHOOP raised $575M at $10.1B valuation** — significant for Promus portfolio (PVI/PVE heavily invested)
+
+### Apr 12
+- **Mission Control** had major incident: source files went missing, serve.js routes broken. Subagents rebuilt all 25 API routes. Now fully recovered.
+- **PV5 Fundraise** tab added to Mission Control with Affinity LP sync, kanban board by status, search/filter
+- **Drew (Dropbox Doc Saver)** — cron running. Apr 12 run saved 24 files for 11 companies (House of Fallon, Tervizio, HD Robotics, Ginolis, AYRYX, ZELP, Findora, OPUM, Strix Aero, Aadi Space, Stargate). State file fixed after SIGTERM issue.
+- **Sadie Calendar Agent** — `sadie-calendar.js` missing/never created. Needs to be built.
+- **Drew Analyst** (`mission-control/drew-analyst.js`) — running, researching incoming deal companies. Some runs hitting SIGKILL on large batches.
+- **MEMORY.md was wiped** sometime Apr 8–12; restored from git backup Apr 12
 - **Stéphane Blanc starts April 13** — PV Expenses access should be ready
 - **RHR experiment ends April 16** — Whoop Tracker wrapping up Week 8
 - **Mac mini #2 expected May 5** — Finn migration target
-- **MEMORY.md was wiped** sometime Apr 8–12; restored from git backup Apr 12
+
+### People / Contacts (added Apr 6-12)
+- **Claude-Sébastien LERBOURG** — contact, last meeting Apr 9 (re: Capra Robotics, chairman Joni)
+- **Pete Beck** — high-context relationship, active open loop: new Pete Beck deal, Auckland meeting/timing
+- **John Lusk** — Partner at Promus (stakeholder file created)
+- **Adrian (Link Letters)** — recurring relationship (stakeholder file created)
+
+### Mission Control Agents (as of Apr 12)
+- **Drew** (`drew-analyst.js`, `drew-dropbox.js`) — Incoming deals analyst + Dropbox saver
+- **Tate** (`tate-legal.js`) — Legal check
+- **Sadie** — Calendar agent (missing, needs build)
+- **Sync agents**: `sync-email.js`, `sync-pv5.js`, `add-mike-as-owner.js`
+- **Affinity client**: `affinity-client.js` — AFFINITY_API_KEY not yet set in environment
 
 ## Unfinished Business
 - **Finn** — Promus firm agent (chosen Mar 11 2026). Deployed as second OpenClaw agent (agents.list). Workspace: ~/finn/workspace/. Channel: **Slack only** (Socket Mode, bound via `openclaw agents bind --agent finn --bind slack`). Status: LIVE. Stays on Mac mini #1 (this machine) until Mac mini #2 arrives **May 5, 2026** (updated Mar 26). Git push method: /tmp/tad-golf-fix/ and /tmp/nat-golf-fix/ clean repos using the aldenn-push PAT (stored securely, not in this file).
