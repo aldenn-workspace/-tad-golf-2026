@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain 🧠</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a26; --border: #2a2a3a;
+    --text: #e4e4ef; --text-dim: #8888a0; --accent: #7c6ff7;
+    --accent-glow: rgba(124, 111, 247, 0.15);
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  header { text-align: center; margin-bottom: 48px; }
+  header h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.5px; }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--text-dim); margin-top: 8px; font-size: 0.95rem; }
+
+  /* Stats bar */
+  .stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 40px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* Search */
+  .search-wrap { max-width: 500px; margin: 0 auto 40px; position: relative; }
+  .search-wrap input {
+    width: 100%; padding: 14px 20px 14px 48px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); font-size: 0.95rem; outline: none; transition: border 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap .icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 1.1rem; }
+
+  /* Back button */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer;
+    font-size: 0.9rem; margin-bottom: 24px; transition: all 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent); background: var(--surface2); }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 24px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(124,111,247,0.1); }
+  .card .card-icon { font-size: 2rem; margin-bottom: 12px; }
+  .card .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; text-transform: capitalize; }
+  .card .card-count { font-size: 0.8rem; color: var(--text-dim); }
+  .card .card-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.25s; }
+  .card:hover .card-bar { opacity: 1; }
+
+  /* File list */
+  .file-list { display: flex; flex-direction: column; gap: 12px; }
+  .file-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 24px; cursor: pointer; transition: all 0.2s;
+  }
+  .file-item:hover { border-color: var(--accent); transform: translateX(4px); }
+  .file-item .file-title { font-weight: 600; font-size: 1rem; text-transform: capitalize; }
+  .file-item .file-date { font-size: 0.78rem; color: var(--text-dim); margin-top: 4px; }
+
+  /* Article view */
+  .article { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; }
+  .article h1, .article h2, .article h3 { color: var(--accent); margin: 1.2em 0 0.5em; }
+  .article h1 { font-size: 1.8rem; }
+  .article h2 { font-size: 1.4rem; }
+  .article h3 { font-size: 1.15rem; }
+  .article p { line-height: 1.7; margin-bottom: 1em; color: var(--text); }
+  .article ul, .article ol { margin: 0.8em 0 0.8em 1.5em; line-height: 1.7; }
+  .article blockquote { border-left: 3px solid var(--accent); padding-left: 16px; color: var(--text-dim); margin: 1em 0; font-style: italic; }
+  .article code { font-family: 'JetBrains Mono', monospace; background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 0.88em; }
+  .article pre { background: var(--surface2); padding: 16px; border-radius: 10px; overflow-x: auto; margin: 1em 0; }
+  .article pre code { background: none; padding: 0; }
+  .article a { color: var(--accent); }
+  .article strong { color: #fff; }
+
+  /* Search results */
+  .search-result .snippet { font-size: 0.85rem; color: var(--text-dim); margin-top: 6px; font-style: italic; }
+  .search-result .folder-tag {
+    display: inline-block; font-size: 0.7rem; background: var(--accent-glow); color: var(--accent);
+    padding: 2px 8px; border-radius: 6px; margin-top: 6px;
+  }
+
+  .empty { text-align: center; color: var(--text-dim); padding: 60px 0; font-size: 1.1rem; }
+
+  /* Fade in */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeUp 0.35s ease forwards; }
+  .fade-in:nth-child(2) { animation-delay: 0.04s; }
+  .fade-in:nth-child(3) { animation-delay: 0.08s; }
+  .fade-in:nth-child(4) { animation-delay: 0.12s; }
+  .fade-in:nth-child(5) { animation-delay: 0.16s; }
+  .fade-in:nth-child(6) { animation-delay: 0.2s; }
+  .fade-in:nth-child(7) { animation-delay: 0.24s; }
+  .fade-in:nth-child(8) { animation-delay: 0.28s; }
+  .fade-in:nth-child(9) { animation-delay: 0.32s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🧠 Second <span>Brain</span></h1>
+    <p>Your personal knowledge base</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="search-wrap">
+    <span class="icon">🔍</span>
+    <input type="text" id="search" placeholder="Search across all files..." />
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const content = $('#content');
+const searchInput = $('#search');
+let searchTimeout;
+
+async function api(url) { return (await fetch(url)).json(); }
+
+function renderStats({ totalItems, totalFolders, daysActive }) {
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="num">${totalItems}</div><div class="label">Items</div></div>
+    <div class="stat"><div class="num">${totalFolders}</div><div class="label">Folders</div></div>
+    <div class="stat"><div class="num">${daysActive}</div><div class="label">Days Active</div></div>
+  `;
+}
+
+async function showFolders() {
+  const data = await api('/api/folders');
+  renderStats(data);
+  content.innerHTML = '<div class="grid">' + data.folders.map((f, i) => `
+    <div class="card fade-in" onclick="showFolder('${f.name}')" style="animation-delay:${i*0.04}s">
+      <div class="card-bar" style="background:${f.color}"></div>
+      <div class="card-icon">${f.icon}</div>
+      <div class="card-title">${f.name.replace(/-/g, ' ')}</div>
+      <div class="card-count">${f.count} item${f.count !== 1 ? 's' : ''}</div>
+    </div>
+  `).join('') + '</div>';
+}
+
+async function showFolder(name) {
+  const data = await api('/api/folders/' + name);
+  let html = `<button class="back-btn" onclick="showFolders()">← Back to folders</button>`;
+  html += `<h2 style="margin-bottom:20px;font-size:1.5rem">${data.icon} ${name.replace(/-/g, ' ')}</h2>`;
+  if (data.files.length === 0) {
+    html += '<div class="empty">No files yet</div>';
+  } else {
+    html += '<div class="file-list">' + data.files.map((f, i) => `
+      <div class="file-item fade-in" onclick="showFile('${name}','${f.file}')" style="animation-delay:${i*0.04}s">
+        <div class="file-title">${f.title}</div>
+        <div class="file-date">${f.file.includes('2026') ? f.file.substring(0,10) : ''}</div>
+      </div>
+    `).join('') + '</div>';
+  }
+  content.innerHTML = html;
+}
+
+async function showFile(folder, file) {
+  const data = await api(`/api/folders/${folder}/${file}`);
+  // Simple markdown-ish renderer
+  let html = data.content
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hul]|<\/)/gm, '<p>')
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>(<[hul])/g, '$1');
+  
+  content.innerHTML = `
+    <button class="back-btn" onclick="showFolder('${folder}')">← Back to ${folder.replace(/-/g, ' ')}</button>
+    <div class="article fade-in">${html}</div>
+  `;
+}
+
+async function doSearch(q) {
+  if (!q) return showFolders();
+  const data = await api('/api/search?q=' + encodeURIComponent(q));
+  if (data.results.length === 0) {
+    content.innerHTML = '<div class="empty">No results found</div>';
+    return;
+  }
+  content.innerHTML = '<div class="file-list">' + data.results.map((r, i) => `
+    <div class="file-item search-result fade-in" onclick="showFile('${r.folder}','${r.file}')" style="animation-delay:${i*0.04}s">
+      <div class="file-title">${r.title}</div>
+      <div class="snippet">${r.snippet.replace(/</g,'&lt;')}...</div>
+      <div class="folder-tag">${r.icon} ${r.folder}</div>
+    </div>
+  `).join('') + '</div>';
+}
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearch(searchInput.value.trim()), 300);
+});
+
+showFolders();
+</script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aldenn Home</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0c0e13;
+  color: #c9d1e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+header {
+  padding: 40px 40px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.owl { font-size: 2.2rem; line-height: 1; }
+.header-text h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #e4eaf4;
+  letter-spacing: -0.02em;
+}
+.header-text p {
+  font-size: 0.82rem;
+  color: #4a5878;
+  margin-top: 3px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 36px 40px 60px;
+  max-width: 1200px;
+}
+
+.section-label {
+  grid-column: 1 / -1;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #2a3450;
+  padding-top: 8px;
+}
+
+.card {
+  background: #0f1118;
+  border: 1px solid #1c2030;
+  border-radius: 12px;
+  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.card:hover {
+  border-color: #2a3a60;
+  background: #111520;
+  transform: translateY(-1px);
+}
+.card:active { transform: translateY(0); }
+
+.card-header { display: flex; align-items: center; justify-content: space-between; }
+.card-icon { font-size: 1.6rem; line-height: 1; }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #2a3450;
+  flex-shrink: 0;
+}
+.status-dot.online  { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+.status-dot.offline { background: #ef4444; }
+.status-dot.external { background: #6366f1; }
+
+.card-name {
+  font-size: 1.0rem;
+  font-weight: 600;
+  color: #d0daf0;
+  letter-spacing: -0.01em;
+}
+.card-desc {
+  font-size: 0.78rem;
+  color: #4a5878;
+  line-height: 1.5;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.card-port {
+  font-size: 0.7rem;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: #2a3860;
+  background: #0a0c14;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #1a2030;
+}
+.card-arrow {
+  font-size: 0.85rem;
+  color: #2a3450;
+  transition: color 0.15s, transform 0.15s;
+}
+.card:hover .card-arrow { color: #5b8ef0; transform: translateX(3px); }
+
+.card.external { border-style: dashed; }
+.card.external .card-port { color: #4a4070; border-color: #2a2050; }
+
+/* Accent glow per card */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: 12px 12px 0 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.card:hover::before { opacity: 1; }
+.accent-blue::before  { background: linear-gradient(90deg, #3a6af8, #818cf8); }
+.accent-green::before { background: linear-gradient(90deg, #22c55e, #34d399); }
+.accent-orange::before { background: linear-gradient(90deg, #f97316, #fbbf24); }
+.accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+.accent-red::before { background: linear-gradient(90deg, #ef4444, #f97316); }
+.accent-indigo::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+
+.updated {
+  position: fixed;
+  bottom: 16px;
+  right: 20px;
+  font-size: 0.68rem;
+  color: #1e2840;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="owl">🦉</div>
+  <div class="header-text">
+    <h1>Aldenn Home</h1>
+    <p>Mike's dashboards &amp; tools — all in one place</p>
+  </div>
+</header>
+
+<div class="grid">
+
+  <div class="section-label">Local Dashboards</div>
+
+  <a class="card accent-blue" href="http://localhost:3456" target="_blank" data-port="3456">
+    <div class="card-header">
+      <span class="card-icon">🎛️</span>
+      <span class="status-dot" id="status-3456"></span>
+    </div>
+    <div class="card-name">Mission Control</div>
+    <div class="card-desc">Tasks board, calendar, memory viewer. The nerve center.</div>
+    <div class="card-meta">
+      <span class="card-port">localhost:3456</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="card accent-green" href="http://localhost:3461" target="_blank" data-port="3461">
+    <div class="card-header">
+      <span class="card-icon">🫀</span>
+      <span class="status-dot" id="status-3461"></span>
+    </div>
+    <div class="card-name">RHR 60 → 55 Tracker</div>
+    <div class="card-desc">8-week Zone 2+ &amp; HIIT experiment. Pulls live Whoop data.</div>
+    <div class="card-meta">
+      <span class="card-port">localhost:3461</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="card accent-orange" href="http://localhost:3458" target="_blank" data-port="3458">
+    <div class="card-header">
+      <span class="card-icon">⛳</span>
+      <span class="status-dot" id="status-3458"></span>
+    </div>
+    <div class="card-name">Tad's Golf Calendar</div>
+    <div class="card-desc">Tad's 2026 junior golf schedule. Tournaments, deadlines, signups.</div>
+    <div class="card-meta">
+      <span class="card-port">localhost:3458</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="card accent-purple" href="http://localhost:3457" target="_blank" data-port="3457">
+    <div class="card-header">
+      <span class="card-icon">🧠</span>
+      <span class="status-dot" id="status-3457"></span>
+    </div>
+    <div class="card-name">Second Brain</div>
+    <div class="card-desc">Mike's knowledge base. Text me stuff, I file it.</div>
+    <div class="card-meta">
+      <span class="card-port">localhost:3457</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+  <div class="section-label">Live on the Web</div>
+
+  <a class="card accent-orange external" href="https://aldenn-workspace.github.io/-tad-golf-2026/" target="_blank">
+    <div class="card-header">
+      <span class="card-icon">⛳</span>
+      <span class="status-dot external"></span>
+    </div>
+    <div class="card-name">Tad's Golf — Public</div>
+    <div class="card-desc">Shareable version of the 2026 golf calendar. Password: 0826.</div>
+    <div class="card-meta">
+      <span class="card-port">GitHub Pages</span>
+      <span class="card-arrow">↗</span>
+    </div>
+  </a>
+
+  <a class="card accent-indigo external" href="https://aldenn-workspace.github.io/privacy-policy/" target="_blank">
+    <div class="card-header">
+      <span class="card-icon">🔒</span>
+      <span class="status-dot external"></span>
+    </div>
+    <div class="card-name">Privacy Policy</div>
+    <div class="card-desc">Aldenn's privacy policy. Required for Whoop developer app.</div>
+    <div class="card-meta">
+      <span class="card-port">GitHub Pages</span>
+      <span class="card-arrow">↗</span>
+    </div>
+  </a>
+
+</div>
+
+<div class="updated" id="updated"></div>
+
+<script>
+const LOCAL_PORTS = [3456, 3457, 3458, 3461];
+
+async function checkPort(port) {
+  const dot = document.getElementById('status-' + port);
+  if (!dot) return;
+  try {
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 3000);
+    await fetch('http://localhost:' + port + '/', { signal: ctrl.signal, mode: 'no-cors' });
+    clearTimeout(timeout);
+    dot.className = 'status-dot online';
+  } catch(e) {
+    dot.className = 'status-dot offline';
+  }
+}
+
+async function checkAll() {
+  await Promise.all(LOCAL_PORTS.map(checkPort));
+  document.getElementById('updated').textContent = 'Checked ' + new Date().toLocaleTimeString();
+}
+
+checkAll();
+setInterval(checkAll, 30000);
+</script>
+</body>
+</html>

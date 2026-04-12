@@ -8,7 +8,7 @@
 
 const BOT_TOKEN = '8395890971:AAHwb27dmD9SWCIfyvOToU5TXfMVAt-3aDo';
 const CHAT_ID = '8345634392';
-const API_KEY = 'REDACTED_ANTHROPIC_API_KEY';
+const API_KEY = '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';
 const AGENT_ID = 'agent_011CZt6VVtv8YPucp57JH6Md';
 const ENV_ID = 'env_016qXEtYAvxxeNFdRAjE6Zyo';
 

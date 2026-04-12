@@ -1,963 +1,1560 @@
-'use strict';
-
 const express = require('express');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-const Database = require('better-sqlite3');
 const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
+const cookieParser = require('cookie-parser');
+const { db, tasks, calendar, vc, pipeline, team, incomingDeals, podcasts, articles, roi, todos, travel, research } = require('./db');
+const { spawn } = require('child_process');
 
-// ── Config ────────────────────────────────────────────────────────────────────
-const PORT     = process.env.PORT || 3456;
-const PASSWORD = process.env.MC_PASSWORD || 'PVOnward26!';
-const DB_PATH  = path.join(__dirname, 'data', 'mission.db');
-const PUBLIC   = path.join(__dirname, 'public');
-const DOWNLOADS = path.join(__dirname, 'downloads');
-
-// ── Database ──────────────────────────────────────────────────────────────────
-const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-
-// ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
+const PORT = 3456;
+const STARTED_AT = new Date();
+
 app.use(cookieParser());
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Multer for file uploads
-const upload = multer({ dest: path.join(__dirname, 'uploads') });
-fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
-fs.mkdirSync(DOWNLOADS, { recursive: true });
+// ── PASSWORD PROTECTION (for public Tailscale Funnel) ────────────────
+const PASSWORD = 'PVOnward26!';
 
-// ── Auth middleware ───────────────────────────────────────────────────────────
-function requireAuth(req, res, next) {
-  if (req.cookies.mc_auth === 'yes') return next();
-  if (req.path === '/login' || req.path === '/api/login') return next();
-  // For API routes, return 401
-  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
-  // Redirect to login page
-  res.redirect('/login');
-}
+// Login endpoint (must be BEFORE auth middleware)
+app.post('/login', (req, res) => {
+  const pwd = req.body?.password || '';
+  if (pwd === PASSWORD) {
+    res.cookie('mc_auth', 'yes', {
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: false,
+      sameSite: 'strict'
+    });
+    return res.redirect('/');
+  }
+  // Wrong password — show form again with error
+  res.status(401).send(getPasswordPage(true));
+});
 
-app.use(requireAuth);
+// Auth check middleware (must be BEFORE static files)
+app.use((req, res, next) => {
+  // Public endpoints (no auth required)
+  if (req.path === '/login' || req.path.startsWith('/api/') || req.path.startsWith('/downloads/') || req.path.match(/\.(png|jpg|svg|ico|webp)$/i)) {
+    return next();
+  }
+  
+  // Check auth cookie for everything else
+  if (req.cookies?.mc_auth === 'yes') {
+    return next();
+  }
+  
+  // Redirect root to password page
+  if (req.path === '/' || req.path === '/index.html') {
+    return res.send(getPasswordPage(false));
+  }
+  
+  // Block everything else
+  res.status(401).json({ error: 'Unauthorized' });
+});
 
-// ── Login routes ──────────────────────────────────────────────────────────────
-app.get('/login', (req, res) => {
-  if (req.cookies.mc_auth === 'yes') return res.redirect('/');
-  res.send(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Mission Control – Login</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0f172a; color: #e2e8f0; font-family: system-ui, sans-serif;
-         display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  .card { background: #1e293b; border-radius: 12px; padding: 2rem; width: 360px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-  h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-  p { color: #94a3b8; font-size: 0.875rem; margin-bottom: 1.5rem; }
-  input { width: 100%; padding: 0.75rem; background: #0f172a; border: 1px solid #334155;
-          border-radius: 8px; color: #e2e8f0; font-size: 1rem; margin-bottom: 1rem; }
-  button { width: 100%; padding: 0.75rem; background: #3b82f6; border: none;
-           border-radius: 8px; color: white; font-size: 1rem; cursor: pointer; font-weight: 600; }
-  button:hover { background: #2563eb; }
-  .err { color: #f87171; font-size: 0.875rem; margin-top: 0.5rem; display: none; }
-</style></head>
+function getPasswordPage(showError) {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Control — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 340px;
+    }
+    h1 { 
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #333;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #5568d3; }
+    .error {
+      color: #dc2626;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+      display: ${showError ? 'block' : 'none'};
+    }
+  </style>
+</head>
 <body>
-  <div class="card">
-    <h1>🚀 Mission Control</h1>
-    <p>PromusVC Operations Hub</p>
-    <form id="f">
-      <input type="password" id="pw" placeholder="Password" autofocus>
-      <button type="submit">Enter</button>
-      <div class="err" id="err">Wrong password</div>
+  <div class="container">
+    <h1>🎙️ Mission Control</h1>
+    <div class="subtitle">Enter password to continue</div>
+    <div class="error">Incorrect password. Try again.</div>
+    <form method="POST" action="/login">
+      <input type="password" name="password" placeholder="Password" autofocus required>
+      <button type="submit">Sign In</button>
     </form>
   </div>
-  <script>
-    document.getElementById('f').addEventListener('submit', async e => {
-      e.preventDefault();
-      const r = await fetch('/api/login', { method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ password: document.getElementById('pw').value }) });
-      if (r.ok) { window.location.href = '/'; }
-      else { document.getElementById('err').style.display = 'block'; }
-    });
-  </script>
-</body></html>`);
-});
+</body>
+</html>`;
+}
 
-app.post('/api/login', (req, res) => {
-  const { password } = req.body;
-  if (password === PASSWORD) {
-    res.cookie('mc_auth', 'yes', { httpOnly: true, maxAge: 90 * 24 * 3600 * 1000 });
-    return res.json({ ok: true });
-  }
-  res.status(401).json({ error: 'Wrong password' });
-});
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/legal-docs', express.static('/Users/mini/.openclaw/workspace/legal-docs'));
 
-app.post('/api/logout', (req, res) => {
-  res.clearCookie('mc_auth');
-  res.json({ ok: true });
-});
-
-// ── Static files ──────────────────────────────────────────────────────────────
-app.use(express.static(PUBLIC));
-
-// ── Downloads ─────────────────────────────────────────────────────────────────
-app.use('/downloads', express.static(DOWNLOADS));
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// API Routes
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ── System ────────────────────────────────────────────────────────────────────
-app.get('/api/system/stats', (req, res) => {
+// ── HEALTH API ────────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
   try {
-    const tables = ['tasks','calendar_events','promus_deals','incoming_deals',
-                    'companies','people','pv5_lps','todos','podcasts','articles',
-                    'travel_trips','legal_reviews','research_history','riley_notes'];
-    const stats = {};
-    for (const t of tables) {
-      try { stats[t] = db.prepare(`SELECT COUNT(*) as c FROM ${t}`).get().c; }
-      catch { stats[t] = 0; }
-    }
-    res.json({ ok: true, counts: stats, uptime: process.uptime(), ts: new Date().toISOString() });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+    db.prepare('SELECT 1 AS ok').get();
+    const taskCount = db.prepare("SELECT COUNT(*) AS count FROM tasks").get().count;
+    const eventCount = db.prepare("SELECT COUNT(*) AS count FROM calendar_events").get().count;
+    const activeVcSessions = db.prepare("SELECT COUNT(*) AS count FROM vc_sessions WHERE status = 'active'").get().count;
+    const openPipelineDeals = db.prepare("SELECT COUNT(*) AS count FROM promus_deals WHERE status NOT IN ('pass', 'closed')").get().count;
+    const activeTeamMembers = db.prepare("SELECT COUNT(*) AS count FROM promus_team WHERE status = 'active'").get().count;
+
+    res.json({
+      status: 'ok',
+      service: 'mission-control',
+      uptimeSeconds: Math.floor((Date.now() - STARTED_AT.getTime()) / 1000),
+      startedAt: STARTED_AT.toISOString(),
+      checks: {
+        sqlite: 'ok',
+        tasks: taskCount,
+        calendarEvents: eventCount,
+        activeVcSessions,
+        openPipelineDeals,
+        activeTeamMembers
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', service: 'mission-control', error: e.message });
+  }
 });
 
-// ── Tasks ─────────────────────────────────────────────────────────────────────
+// ── TASKS API ─────────────────────────────────────────────────────────
 app.get('/api/tasks', (req, res) => {
-  const { status, assignee } = req.query;
-  let q = 'SELECT * FROM tasks WHERE 1=1';
-  const p = [];
-  if (status)   { q += ' AND status = ?';   p.push(status); }
-  if (assignee) { q += ' AND assignee = ?'; p.push(assignee); }
-  q += ' ORDER BY priority DESC, created DESC';
-  res.json(db.prepare(q).all(...p));
+  res.json(tasks.all());
 });
 
 app.post('/api/tasks', (req, res) => {
-  const { title, notes='', status='todo', assignee='aldenn', priority='normal' } = req.body;
-  if (!title) return res.status(400).json({ error: 'title required' });
-  const r = db.prepare(`INSERT INTO tasks (title,notes,status,assignee,priority) VALUES (?,?,?,?,?)`)
-    .run(title, notes, status, assignee, priority);
-  res.json({ id: r.lastInsertRowid, ok: true });
+  try {
+    const task = tasks.create(req.body);
+    res.json(task);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.put('/api/tasks/:id', (req, res) => {
-  const fields = ['title','notes','status','assignee','priority'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE tasks SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
+  try {
+    const task = tasks.update(parseInt(req.params.id), req.body);
+    res.json(task);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.delete('/api/tasks/:id', (req, res) => {
-  db.prepare('DELETE FROM tasks WHERE id=?').run(req.params.id);
+  tasks.delete(parseInt(req.params.id));
   res.json({ ok: true });
 });
 
-// ── Todos ─────────────────────────────────────────────────────────────────────
-app.get('/api/todos', (req, res) => {
-  const { list, status } = req.query;
-  let q = 'SELECT * FROM todos WHERE 1=1';
-  const p = [];
-  if (list)   { q += ' AND list=?';   p.push(list); }
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += " ORDER BY CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, created DESC";
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/todos', (req, res) => {
-  const { list='personal', text, notes='', priority='normal', status='open', due_date='' } = req.body;
-  if (!text) return res.status(400).json({ error: 'text required' });
-  const r = db.prepare(`INSERT INTO todos (list,text,notes,priority,status,due_date) VALUES (?,?,?,?,?,?)`)
-    .run(list, text, notes, priority, status, due_date);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/todos/:id', (req, res) => {
-  const fields = ['list','text','notes','priority','status','due_date'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE todos SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.delete('/api/todos/:id', (req, res) => {
-  db.prepare('DELETE FROM todos WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// ── Calendar / Events ─────────────────────────────────────────────────────────
+// ── CALENDAR API ──────────────────────────────────────────────────────
 app.get('/api/calendar', (req, res) => {
-  res.json(db.prepare('SELECT * FROM calendar_events ORDER BY scheduled ASC').all());
+  res.json(calendar.all());
+});
+
+// Expand recurring events for a given month
+app.get('/api/calendar/month', (req, res) => {
+  const year  = parseInt(req.query.year)  || new Date().getFullYear();
+  const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const pad = n => String(n).padStart(2,'0');
+  const monthStr = `${year}-${pad(month)}`;
+
+  const all = calendar.all().filter(e => e.status !== 'deleted');
+  const expanded = [];
+
+  for (const ev of all) {
+    const rec = ev.recurrence || '';
+    if (rec === 'daily') {
+      for (let d = 1; d <= daysInMonth; d++)
+        expanded.push({ ...ev, date: `${monthStr}-${pad(d)}` });
+    } else if (rec.startsWith('weekly:')) {
+      const targetDow = parseInt(rec.split(':')[1]); // 0=Sun
+      for (let d = 1; d <= daysInMonth; d++)
+        if (new Date(year, month-1, d).getDay() === targetDow)
+          expanded.push({ ...ev, date: `${monthStr}-${pad(d)}` });
+    } else if (rec.startsWith('monthly:')) {
+      const dom = parseInt(rec.split(':')[1]);
+      if (dom <= daysInMonth)
+        expanded.push({ ...ev, date: `${monthStr}-${pad(dom)}` });
+    } else if (ev.scheduled) {
+      if (ev.scheduled.startsWith(monthStr))
+        expanded.push({ ...ev, date: ev.scheduled.slice(0,10) });
+    }
+  }
+
+  expanded.sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''));
+  res.json(expanded);
 });
 
 app.post('/api/calendar', (req, res) => {
-  const { title, description='', event_type='cron', scheduled, recurrence='', status='active', source='manual' } = req.body;
-  if (!title) return res.status(400).json({ error: 'title required' });
-  const r = db.prepare(`INSERT INTO calendar_events (title,description,event_type,scheduled,recurrence,status,source) VALUES (?,?,?,?,?,?,?)`)
-    .run(title, description, event_type, scheduled, recurrence, status, source);
-  res.json({ id: r.lastInsertRowid, ok: true });
+  try {
+    const ev = calendar.create(req.body);
+    res.json(ev);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.put('/api/calendar/:id', (req, res) => {
-  const fields = ['title','description','event_type','scheduled','recurrence','status'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  vals.push(req.params.id);
-  db.prepare(`UPDATE calendar_events SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
+  try {
+    const ev = calendar.update(parseInt(req.params.id), req.body);
+    res.json(ev);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 app.delete('/api/calendar/:id', (req, res) => {
-  db.prepare('DELETE FROM calendar_events WHERE id=?').run(req.params.id);
+  calendar.delete(parseInt(req.params.id));
   res.json({ ok: true });
 });
 
-// ── Pipeline (promus_deals) ───────────────────────────────────────────────────
-app.get('/api/pipeline', (req, res) => {
-  const { status, owner, stage } = req.query;
-  let q = 'SELECT * FROM promus_deals WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  if (owner)  { q += ' AND owner=?';  p.push(owner); }
-  if (stage)  { q += ' AND stage=?';  p.push(stage); }
-  q += ' ORDER BY updated DESC';
-  res.json(db.prepare(q).all(...p));
-});
+// ── MEMORY API ────────────────────────────────────────────────────────
+const fs   = require('fs');
+const http = require('http');
+const WORKSPACE = '/Users/mini/.openclaw/workspace';
 
-app.post('/api/pipeline', (req, res) => {
-  const { company, stage='', owner='mike', status='sourcing', probability=10,
-          check_size_usd=0, target_close_date='', next_step='', memo_status='not-started',
-          notes='', source='manual', sector='', lead='', city='', valuation='',
-          round_stage='', investors='', amount_raising='' } = req.body;
-  if (!company) return res.status(400).json({ error: 'company required' });
-  const r = db.prepare(`INSERT INTO promus_deals 
-    (company,stage,owner,status,probability,check_size_usd,target_close_date,next_step,
-     memo_status,notes,source,sector,lead,city,valuation,round_stage,investors,amount_raising)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(company,stage,owner,status,probability,check_size_usd,target_close_date,next_step,
-         memo_status,notes,source,sector,lead,city,valuation,round_stage,investors,amount_raising);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
+function readMemoryFiles() {
+  const files = [];
 
-app.put('/api/pipeline/:id', (req, res) => {
-  const fields = ['company','stage','owner','status','probability','check_size_usd',
-                  'target_close_date','next_step','memo_status','notes','sector','lead',
-                  'city','valuation','round_stage','investors','amount_raising','research_summary'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE promus_deals SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
+  // MEMORY.md
+  const mainPath = path.join(WORKSPACE, 'MEMORY.md');
+  if (fs.existsSync(mainPath)) {
+    const stat = fs.statSync(mainPath);
+    const content = fs.readFileSync(mainPath, 'utf8');
+    const words = content.trim().split(/\s+/).filter(Boolean).length;
+    files.push({ id: 'MEMORY', name: 'MEMORY.md', label: 'Long-Term Memory', date: stat.mtime.toISOString(), path: mainPath, type: 'longterm', size: stat.size, words });
+  }
 
-app.delete('/api/pipeline/:id', (req, res) => {
-  db.prepare('DELETE FROM promus_deals WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// Drew research for a deal
-app.post('/api/pipeline/:id/research', async (req, res) => {
-  try {
-    const deal = db.prepare('SELECT * FROM promus_deals WHERE id=?').get(req.params.id);
-    if (!deal) return res.status(404).json({ error: 'deal not found' });
-    const drewAnalyst = require('./drew-analyst');
-    const result = await drewAnalyst(deal.company, deal);
-    if (result) {
-      db.prepare(`UPDATE promus_deals SET research_summary=?, updated=datetime('now') WHERE id=?`)
-        .run(result, req.params.id);
+  // memory/YYYY-MM-DD.md daily files
+  const memDir = path.join(WORKSPACE, 'memory');
+  if (fs.existsSync(memDir)) {
+    const daily = fs.readdirSync(memDir)
+      .filter(f => f.endsWith('.md'))
+      .sort()
+      .reverse();
+    for (const f of daily) {
+      const fp = path.join(memDir, f);
+      const stat = fs.statSync(fp);
+      const content = fs.readFileSync(fp, 'utf8');
+      const words = content.trim().split(/\s+/).filter(Boolean).length;
+      files.push({ id: f.replace('.md',''), name: f, label: f.replace('.md',''), date: stat.mtime.toISOString(), path: fp, type: 'daily', size: stat.size, words });
     }
-    res.json({ ok: true, summary: result });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
   }
-});
 
-// ── Team ──────────────────────────────────────────────────────────────────────
-app.get('/api/team', (req, res) => {
-  res.json(db.prepare('SELECT * FROM promus_team ORDER BY name').all());
-});
+  return files;
+}
 
-app.post('/api/team', (req, res) => {
-  const { name, handle, role='', focus='', status='active', capacity_pct=100 } = req.body;
-  if (!name || !handle) return res.status(400).json({ error: 'name and handle required' });
-  const r = db.prepare(`INSERT INTO promus_team (name,handle,role,focus,status,capacity_pct) VALUES (?,?,?,?,?,?)`)
-    .run(name, handle, role, focus, status, capacity_pct);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/team/:id', (req, res) => {
-  const fields = ['name','handle','role','focus','status','capacity_pct'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE promus_team SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-// ── Incoming Deals ────────────────────────────────────────────────────────────
-app.get('/api/incoming-deals', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM incoming_deals WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += ' ORDER BY intake_date DESC, created DESC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/incoming-deals', (req, res) => {
-  const { deal_name, city='', amount_raising='', valuation='', industry='',
-          originated_by='', inbound_type='Other', source_email='', source_channel='manual',
-          intake_date='', notes='', status='new', round_stage='', investors='',
-          company_name='', email_content='' } = req.body;
-  if (!deal_name) return res.status(400).json({ error: 'deal_name required' });
-  const r = db.prepare(`INSERT INTO incoming_deals 
-    (deal_name,city,amount_raising,valuation,industry,originated_by,inbound_type,
-     source_email,source_channel,intake_date,notes,status,round_stage,investors,company_name,email_content)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(deal_name,city,amount_raising,valuation,industry,originated_by,inbound_type,
-         source_email,source_channel,intake_date||new Date().toISOString().split('T')[0],
-         notes,status,round_stage,investors,company_name,email_content);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/incoming-deals/:id', (req, res) => {
-  const fields = ['deal_name','city','amount_raising','valuation','industry','originated_by',
-                  'inbound_type','notes','status','round_stage','investors','research_summary'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE incoming_deals SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.delete('/api/incoming-deals/:id', (req, res) => {
-  db.prepare('DELETE FROM incoming_deals WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// Promote incoming deal to pipeline
-app.post('/api/incoming-deals/:id/promote', (req, res) => {
-  const deal = db.prepare('SELECT * FROM incoming_deals WHERE id=?').get(req.params.id);
-  if (!deal) return res.status(404).json({ error: 'not found' });
-  const r = db.prepare(`INSERT INTO promus_deals (company,stage,source,notes,sector,city,valuation,round_stage,investors,amount_raising,inbound_type,intake_date,email_content) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(deal.company_name||deal.deal_name,'initial screening','incoming',deal.notes,
-         deal.industry,deal.city,deal.valuation,deal.round_stage,deal.investors,
-         deal.amount_raising,deal.inbound_type,deal.intake_date,deal.email_content);
-  const newId = r.lastInsertRowid;
-  db.prepare(`UPDATE incoming_deals SET status='promoted', promoted_deal_id=?, updated=datetime('now') WHERE id=?`)
-    .run(newId, req.params.id);
-  res.json({ ok: true, deal_id: newId });
-});
-
-// Email sync
-app.post('/api/incoming-deals/sync-email', async (req, res) => {
+app.get('/api/memory/files', (req, res) => {
   try {
-    const syncEmail = require('./sync-email');
-    const count = await syncEmail(db);
-    res.json({ ok: true, synced: count });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ── Research ──────────────────────────────────────────────────────────────────
-app.get('/api/research', (req, res) => {
-  res.json(db.prepare('SELECT * FROM research_history ORDER BY created DESC LIMIT 100').all());
-});
-
-app.post('/api/research', async (req, res) => {
-  const { query } = req.body;
-  if (!query) return res.status(400).json({ error: 'query required' });
-  const ins = db.prepare(`INSERT INTO research_history (query, status) VALUES (?, 'pending')`);
-  const r = ins.run(query);
-  const id = r.lastInsertRowid;
-  res.json({ id, ok: true, status: 'pending' });
-  // Run async
-  try {
-    const drewAnalyst = require('./drew-analyst');
-    const result = await drewAnalyst(query);
-    db.prepare(`UPDATE research_history SET result=?, status='done' WHERE id=?`).run(result||'', id);
-  } catch(e) {
-    db.prepare(`UPDATE research_history SET result=?, status='error' WHERE id=?`).run(e.message, id);
-  }
-});
-
-// ── Legal Reviews ─────────────────────────────────────────────────────────────
-app.get('/api/legal', (req, res) => {
-  res.json(db.prepare('SELECT * FROM legal_reviews ORDER BY created DESC').all());
-});
-
-app.post('/api/legal', upload.single('file'), async (req, res) => {
-  const { doc_name, doc_text='' } = req.body;
-  if (!doc_name) return res.status(400).json({ error: 'doc_name required' });
-  let filePath = '';
-  if (req.file) {
-    filePath = req.file.path;
-  }
-  const r = db.prepare(`INSERT INTO legal_reviews (doc_name, doc_text, status, file_path) VALUES (?, ?, 'pending', ?)`)
-    .run(doc_name, doc_text, filePath);
-  const id = r.lastInsertRowid;
-  res.json({ id, ok: true });
-  // Async Tate review
-  try {
-    const tate = require('./tate-legal');
-    const result = await tate(doc_name, doc_text || (filePath ? fs.readFileSync(filePath,'utf8') : ''));
-    db.prepare(`UPDATE legal_reviews SET result=?, status='done' WHERE id=?`).run(result||'', id);
-  } catch(e) {
-    db.prepare(`UPDATE legal_reviews SET result=?, status='error' WHERE id=?`).run(e.message, id);
-  }
-});
-
-app.delete('/api/legal/:id', (req, res) => {
-  db.prepare('DELETE FROM legal_reviews WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// ── PV5 LPs ───────────────────────────────────────────────────────────────────
-app.get('/api/pv5', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM pv5_lps WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += ' ORDER BY status_rank ASC, name ASC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/pv5', (req, res) => {
-  const { affinity_entity_id, name, status='', investor_type='', aum=0, owner='',
-          previous_funds='', investment_potential='', fund2_commitment=0,
-          close_date='', notes='', location='', domain='' } = req.body;
-  if (!affinity_entity_id || !name) return res.status(400).json({ error: 'affinity_entity_id and name required' });
-  const r = db.prepare(`INSERT OR REPLACE INTO pv5_lps 
-    (affinity_entity_id,name,status,investor_type,aum,owner,previous_funds,
-     investment_potential,fund2_commitment,close_date,notes,location,domain)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(affinity_entity_id,name,status,investor_type,aum,owner,previous_funds,
-         investment_potential,fund2_commitment,close_date,notes,location,domain);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/pv5/:id', (req, res) => {
-  const fields = ['name','status','status_rank','investor_type','aum','owner','previous_funds',
-                  'investment_potential','fund2_commitment','close_date','notes','location','domain'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE pv5_lps SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.post('/api/pv5/sync', async (req, res) => {
-  try {
-    const syncPv5 = require('./sync-pv5');
-    const result = await syncPv5(db);
-    res.json({ ok: true, ...result });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ── Companies ─────────────────────────────────────────────────────────────────
-app.get('/api/companies', (req, res) => {
-  const { relationship, sector, search } = req.query;
-  let q = 'SELECT * FROM companies WHERE 1=1';
-  const p = [];
-  if (relationship) { q += ' AND relationship=?'; p.push(relationship); }
-  if (sector)       { q += ' AND sector=?';       p.push(sector); }
-  if (search)       { q += ' AND (name LIKE ? OR sector LIKE ? OR hq LIKE ?)'; p.push(`%${search}%`,`%${search}%`,`%${search}%`); }
-  q += ' ORDER BY name ASC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/companies', (req, res) => {
-  const { name, domain='', sector='', stage='', hq='', description='',
-          relationship='prospect', source='manual' } = req.body;
-  if (!name) return res.status(400).json({ error: 'name required' });
-  const r = db.prepare(`INSERT INTO companies (name,domain,sector,stage,hq,description,relationship,source) VALUES (?,?,?,?,?,?,?,?)`)
-    .run(name,domain,sector,stage,hq,description,relationship,source);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/companies/:id', (req, res) => {
-  const fields = ['name','domain','sector','stage','hq','description','relationship',
-                  'notes','drew_summary','portfolio_status','pv_funds','fair_value',
-                  'hayley_summary','affinity_notes'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE companies SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.get('/api/companies/:id', (req, res) => {
-  const c = db.prepare('SELECT * FROM companies WHERE id=?').get(req.params.id);
-  if (!c) return res.status(404).json({ error: 'not found' });
-  const interactions = db.prepare('SELECT * FROM interactions WHERE company_id=? ORDER BY date DESC LIMIT 20').all(req.params.id);
-  res.json({ ...c, interactions });
-});
-
-// ── People ────────────────────────────────────────────────────────────────────
-app.get('/api/people', (req, res) => {
-  const { relationship, company_id, search } = req.query;
-  let q = 'SELECT * FROM people WHERE 1=1';
-  const p = [];
-  if (relationship) { q += ' AND relationship=?'; p.push(relationship); }
-  if (company_id)   { q += ' AND company_id=?';   p.push(company_id); }
-  if (search)       { q += ' AND (name LIKE ? OR company LIKE ? OR email LIKE ?)'; p.push(`%${search}%`,`%${search}%`,`%${search}%`); }
-  q += ' ORDER BY name ASC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/people', (req, res) => {
-  const { name, email='', company='', company_id=null, role='', relationship='contact', notes='' } = req.body;
-  if (!name) return res.status(400).json({ error: 'name required' });
-  const r = db.prepare(`INSERT INTO people (name,email,company,company_id,role,relationship,notes) VALUES (?,?,?,?,?,?,?)`)
-    .run(name,email,company,company_id,role,relationship,notes);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/people/:id', (req, res) => {
-  const fields = ['name','email','company','company_id','role','relationship','notes','last_meeting'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE people SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-// ── Interactions ──────────────────────────────────────────────────────────────
-app.get('/api/interactions', (req, res) => {
-  const { company_id, person_id } = req.query;
-  let q = 'SELECT * FROM interactions WHERE 1=1';
-  const p = [];
-  if (company_id) { q += ' AND company_id=?'; p.push(company_id); }
-  if (person_id)  { q += ' AND person_id=?';  p.push(person_id); }
-  q += ' ORDER BY date DESC LIMIT 50';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/interactions', (req, res) => {
-  const { company_id=null, person_id=null, type='meeting', title, date='', notes='' } = req.body;
-  if (!title) return res.status(400).json({ error: 'title required' });
-  const r = db.prepare(`INSERT INTO interactions (company_id,person_id,type,title,date,notes) VALUES (?,?,?,?,?,?)`)
-    .run(company_id, person_id, type, title, date||new Date().toISOString().split('T')[0], notes);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-// ── Affinity ──────────────────────────────────────────────────────────────────
-app.get('/api/affinity/search', async (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.status(400).json({ error: 'q required' });
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const results = await client.searchOrganizations(q);
-    res.json(results);
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/api/affinity/lists', async (req, res) => {
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const lists = await client.getLists();
-    res.json(lists);
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.get('/api/affinity/cache', (req, res) => {
-  res.json(db.prepare('SELECT * FROM affinity_cache ORDER BY cached_at DESC').all());
-});
-
-// ── Travel ────────────────────────────────────────────────────────────────────
-app.get('/api/travel', (req, res) => {
-  res.json(db.prepare('SELECT * FROM travel_trips ORDER BY start_date ASC').all());
-});
-
-app.post('/api/travel', (req, res) => {
-  const { name, start_date, end_date, primary_location, purpose='business',
-          status='planned', attendees='', notes='', budget_usd=0 } = req.body;
-  if (!name || !start_date || !end_date || !primary_location)
-    return res.status(400).json({ error: 'name, start_date, end_date, primary_location required' });
-  const r = db.prepare(`INSERT INTO travel_trips (name,start_date,end_date,primary_location,purpose,status,attendees,notes,budget_usd) VALUES (?,?,?,?,?,?,?,?,?)`)
-    .run(name,start_date,end_date,primary_location,purpose,status,attendees,notes,budget_usd);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/travel/:id', (req, res) => {
-  const fields = ['name','start_date','end_date','primary_location','purpose','status','attendees','notes','budget_usd','research_notes'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE travel_trips SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.delete('/api/travel/:id', (req, res) => {
-  db.prepare('DELETE FROM travel_trips WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// ── Podcasts ──────────────────────────────────────────────────────────────────
-app.get('/api/podcasts', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM podcasts WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += ' ORDER BY created DESC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/podcasts', (req, res) => {
-  const { show_name, episode_title, guest='', host='', date_published='',
-          duration_mins=0, url='', summary='', tags='', status='want-to-watch', mike_notes='' } = req.body;
-  if (!show_name || !episode_title) return res.status(400).json({ error: 'show_name and episode_title required' });
-  const r = db.prepare(`INSERT INTO podcasts (show_name,episode_title,guest,host,date_published,duration_mins,url,summary,tags,status,mike_notes) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(show_name,episode_title,guest,host,date_published,duration_mins,url,summary,tags,status,mike_notes);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/podcasts/:id', (req, res) => {
-  const fields = ['show_name','episode_title','guest','host','date_published','duration_mins',
-                  'url','summary','key_takeaways','tags','status','mike_notes'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE podcasts SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.delete('/api/podcasts/:id', (req, res) => {
-  db.prepare('DELETE FROM podcasts WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// ── Articles ──────────────────────────────────────────────────────────────────
-app.get('/api/articles', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM articles WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += ' ORDER BY created DESC';
-  res.json(db.prepare(q).all(...p));
-});
-
-app.post('/api/articles', (req, res) => {
-  const { title, author='', source='', url='', date_published='',
-          summary='', key_takeaways='', mike_notes='', tags='', status='saved' } = req.body;
-  if (!title) return res.status(400).json({ error: 'title required' });
-  const r = db.prepare(`INSERT INTO articles (title,author,source,url,date_published,summary,key_takeaways,mike_notes,tags,status) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-    .run(title,author,source,url,date_published,summary,key_takeaways,mike_notes,tags,status);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.put('/api/articles/:id', (req, res) => {
-  const fields = ['title','author','source','url','date_published','summary','key_takeaways','mike_notes','tags','status'];
-  const updates = []; const vals = [];
-  for (const f of fields) { if (req.body[f] !== undefined) { updates.push(`${f}=?`); vals.push(req.body[f]); } }
-  if (!updates.length) return res.status(400).json({ error: 'no fields' });
-  updates.push(`updated=datetime('now')`);
-  vals.push(req.params.id);
-  db.prepare(`UPDATE articles SET ${updates.join(',')} WHERE id=?`).run(...vals);
-  res.json({ ok: true });
-});
-
-app.delete('/api/articles/:id', (req, res) => {
-  db.prepare('DELETE FROM articles WHERE id=?').run(req.params.id);
-  res.json({ ok: true });
-});
-
-// ── ROI Log ───────────────────────────────────────────────────────────────────
-app.get('/api/roi', (req, res) => {
-  const rows = db.prepare('SELECT * FROM roi_log ORDER BY created DESC LIMIT 200').all();
-  const totals = db.prepare('SELECT SUM(mins_saved) as mins, SUM(value_usd) as value, SUM(token_cost_usd) as cost FROM roi_log').get();
-  res.json({ rows, totals });
-});
-
-app.post('/api/roi', (req, res) => {
-  const { agent='Alden', category='General', description, mins_saved=0, token_cost_usd=0, value_usd=0 } = req.body;
-  if (!description) return res.status(400).json({ error: 'description required' });
-  const r = db.prepare(`INSERT INTO roi_log (agent,category,description,mins_saved,token_cost_usd,value_usd) VALUES (?,?,?,?,?,?)`)
-    .run(agent,category,description,mins_saved,token_cost_usd,value_usd);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-// ── Riley Notes ───────────────────────────────────────────────────────────────
-app.get('/api/riley', (req, res) => {
-  res.json(db.prepare('SELECT * FROM riley_notes ORDER BY meeting_date DESC LIMIT 50').all());
-});
-
-app.get('/api/riley/:id', (req, res) => {
-  const n = db.prepare('SELECT * FROM riley_notes WHERE id=?').get(req.params.id);
-  if (!n) return res.status(404).json({ error: 'not found' });
-  res.json(n);
-});
-
-// ── VC Knowledge ──────────────────────────────────────────────────────────────
-app.get('/api/knowledge', (req, res) => {
-  const { q } = req.query;
-  let rows;
-  if (q) {
-    rows = db.prepare(`SELECT * FROM vc_knowledge WHERE title LIKE ? OR content LIKE ? OR tags LIKE ? ORDER BY created DESC LIMIT 20`)
-      .all(`%${q}%`,`%${q}%`,`%${q}%`);
-  } else {
-    rows = db.prepare('SELECT * FROM vc_knowledge ORDER BY created DESC LIMIT 50').all();
-  }
-  res.json(rows);
-});
-
-app.post('/api/knowledge', (req, res) => {
-  const { title, content, source='manual', tags='' } = req.body;
-  if (!title || !content) return res.status(400).json({ error: 'title and content required' });
-  const r = db.prepare(`INSERT INTO vc_knowledge (title,content,source,tags) VALUES (?,?,?,?)`)
-    .run(title,content,source,tags);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-// ── Project Decisions & Blockers ──────────────────────────────────────────────
-app.get('/api/decisions', (req, res) => {
-  res.json(db.prepare('SELECT * FROM project_decisions ORDER BY created DESC').all());
-});
-
-app.post('/api/decisions', (req, res) => {
-  const { project='general', decision, rationale='', decided_by='mike', status='active' } = req.body;
-  if (!decision) return res.status(400).json({ error: 'decision required' });
-  const r = db.prepare(`INSERT INTO project_decisions (project,decision,rationale,decided_by,status) VALUES (?,?,?,?,?)`)
-    .run(project,decision,rationale,decided_by,status);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-app.get('/api/blockers', (req, res) => {
-  res.json(db.prepare('SELECT * FROM project_blockers ORDER BY created DESC').all());
-});
-
-app.post('/api/blockers', (req, res) => {
-  const { project='general', blocker, severity='medium', status='open', owner='mike', notes='' } = req.body;
-  if (!blocker) return res.status(400).json({ error: 'blocker required' });
-  const r = db.prepare(`INSERT INTO project_blockers (project,blocker,severity,status,owner,notes) VALUES (?,?,?,?,?,?)`)
-    .run(project,blocker,severity,status,owner,notes);
-  res.json({ id: r.lastInsertRowid, ok: true });
-});
-
-// ── VC Sessions ───────────────────────────────────────────────────────────────
-app.get('/api/vc-sessions', (req, res) => {
-  res.json(db.prepare('SELECT * FROM vc_sessions ORDER BY updated DESC').all());
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Additional API route aliases (path variants)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ── PV5 aliases ───────────────────────────────────────────────────────────────
-app.get('/api/pv5/summary', (req, res) => {
-  try {
-    const total = db.prepare('SELECT COUNT(*) as c FROM pv5_lps').get().c;
-    const stages = db.prepare('SELECT status, COUNT(*) as count, SUM(fund2_commitment) as total_commitment FROM pv5_lps GROUP BY status ORDER BY COUNT(*) DESC').all();
-    const committed = db.prepare("SELECT SUM(fund2_commitment) as total FROM pv5_lps WHERE status='Committed'").get();
-    res.json({ total, stages, total_committed: committed?.total || 0 });
+    res.json(readMemoryFiles().map(f => ({ ...f, path: undefined }))); // strip fs path
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/pv5/lps', (req, res) => {
-  const { status, search } = req.query;
-  let q = 'SELECT * FROM pv5_lps WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  if (search) { q += ' AND (name LIKE ? OR location LIKE ? OR owner LIKE ? OR investor_type LIKE ?)'; p.push(`%${search}%`,`%${search}%`,`%${search}%`,`%${search}%`); }
-  q += ' ORDER BY status_rank ASC, name ASC';
-  res.json(db.prepare(q).all(...p));
+app.get('/api/memory/content', (req, res) => {
+  try {
+    const { id } = req.query;
+    const files = readMemoryFiles();
+    const f = files.find(x => x.id === id);
+    if (!f) return res.status(404).json({ error: 'not found' });
+    const content = fs.readFileSync(f.path, 'utf8');
+    res.json({ id: f.id, name: f.name, label: f.label, date: f.date, content });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── Pipeline aliases ───────────────────────────────────────────────────────────
+app.get('/api/memory/search', (req, res) => {
+  try {
+    const q = (req.query.q || '').toLowerCase().trim();
+    if (!q) return res.json([]);
+    const files = readMemoryFiles();
+    const results = [];
+    for (const f of files) {
+      const content = fs.readFileSync(f.path, 'utf8');
+      const lines = content.split('\n');
+      const hits = [];
+      lines.forEach((line, i) => {
+        if (line.toLowerCase().includes(q)) {
+          hits.push({ line: i + 1, text: line.trim() });
+        }
+      });
+      if (hits.length) results.push({ id: f.id, name: f.name, label: f.label, date: f.date, hits: hits.slice(0, 5), totalHits: hits.length });
+    }
+    res.json(results);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── CRONS API ────────────────────────────────────────────────────────
+const OPENCLAW_DIR = '/Users/mini/.openclaw';
+
+function humanSchedule(schedule) {
+  if (!schedule) return 'Unknown';
+  if (schedule.kind === 'cron') {
+    const map = {
+      '0 6 * * *': 'Daily 6:00 AM CT', '10 6 * * *': 'Daily 6:10 AM CT',
+      '0 7 * * *': 'Daily 7:00 AM CT', '0 9 * * *': 'Daily 9:00 AM CT',
+      '0 2 * * *': 'Daily 2:00 AM CT', '0 16 * * 5': 'Fridays 4:00 PM CT',
+      '30 9 * * 6': 'Saturdays 9:30 AM CT', '0 9 * * 1': 'Mondays 9:00 AM CT',
+    };
+    return map[schedule.expr] || ('Cron: ' + schedule.expr);
+  }
+  if (schedule.kind === 'every') {
+    const ms = schedule.everyMs;
+    if (ms === 3600000) return 'Every 1 hour';
+    if (ms === 1800000) return 'Every 30 min';
+    if (ms === 259200000) return 'Every 3 days';
+    return 'Every ' + Math.round(ms / 60000) + ' min';
+  }
+  return schedule.kind;
+}
+
+app.get('/api/crons', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'cron/jobs.json'), 'utf8'));
+    const now = Date.now();
+    const jobs = (data.jobs || []).map(job => ({
+      id: job.id,
+      name: job.name || job.id.slice(0, 8),
+      enabled: job.enabled,
+      schedule: humanSchedule(job.schedule),
+      model: job.payload?.model || 'default',
+      lastStatus: job.state?.lastStatus || null,
+      lastRunAtMs: job.state?.lastRunAtMs || null,
+      lastRunAgo: job.state?.lastRunAtMs ? Math.floor((now - job.state.lastRunAtMs) / 60000) : null,
+      nextRunAtMs: job.state?.nextRunAtMs || null,
+      nextRunInMin: job.state?.nextRunAtMs ? Math.floor((job.state.nextRunAtMs - now) / 60000) : null,
+      consecutiveErrors: job.state?.consecutiveErrors || 0,
+      lastError: job.state?.lastError || null,
+      lastDurationMs: job.state?.lastDurationMs || null,
+    }));
+    res.json({ jobs, updatedAt: new Date().toISOString() });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── SYSTEM API ────────────────────────────────────────────────────────
+const SERVICES = [
+  { name: 'home',            url: 'http://localhost:3455' },
+  { name: 'mission_control', url: 'http://localhost:3456/api/health' },
+  { name: 'second_brain',    url: 'http://localhost:3457' },
+  { name: 'tad_golf',        url: 'http://localhost:3458' },
+  { name: 'nat_golf',        url: 'http://localhost:3459' },
+  { name: 'whoop_tracker',   url: 'http://localhost:3461' },
+];
+
+function pingService(name, url, timeoutMs = 3000) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    try {
+      const u = new URL(url);
+      const req = http.request({
+        hostname: u.hostname,
+        port: parseInt(u.port) || 80,
+        path: u.pathname + (u.search || ''),
+        method: 'GET',
+        timeout: timeoutMs
+      }, (resp) => {
+        resp.resume();
+        resolve({ name, ok: resp.statusCode < 400, status: resp.statusCode, latencyMs: Date.now() - start });
+      });
+      req.on('error', () => resolve({ name, ok: false, status: 0, latencyMs: Date.now() - start }));
+      req.on('timeout', () => { req.destroy(); resolve({ name, ok: false, status: 0, latencyMs: timeoutMs }); });
+      req.end();
+    } catch(e) {
+      resolve({ name, ok: false, status: 0, latencyMs: 0 });
+    }
+  });
+}
+
+app.get('/api/system', async (req, res) => {
+  try {
+    // Live pings — no stale files
+    const results = await Promise.all(SERVICES.map(s => pingService(s.name, s.url)));
+    const stackHealth = {
+      generatedAt: new Date().toISOString(),
+      pass: results.every(r => r.ok),
+      counts: { passed: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length, total: results.length },
+      results
+    };
+
+    let sessionInfo = { main: null, finn: null };
+    try {
+      const sessions = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'agents/main/sessions/sessions.json'), 'utf8'));
+      const mainSess = sessions['agent:main:main'];
+      sessionInfo.main = mainSess ? { updatedAt: mainSess.updatedAt } : null;
+    } catch(e) {}
+
+    let cronSummary = { total: 0, enabled: 0, errors: 0 };
+    try {
+      const cronData = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'cron/jobs.json'), 'utf8'));
+      cronSummary.total = (cronData.jobs || []).length;
+      cronSummary.enabled = (cronData.jobs || []).filter(j => j.enabled).length;
+      cronSummary.errors = (cronData.jobs || []).filter(j => (j.state?.consecutiveErrors || 0) > 0).length;
+    } catch(e) {}
+
+    res.json({
+      gateway: { status: 'ok', port: 23547 },
+      stackHealth,
+      sessionInfo,
+      cronSummary,
+      serverUptimeSeconds: Math.floor((Date.now() - STARTED_AT.getTime()) / 1000),
+      checkedAt: new Date().toISOString()
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── TODAY API ────────────────────────────────────────────────────────
+// ── KNOWLEDGE BASE (compiled wiki) ────────────────
+const WIKI_DIR = path.join(__dirname, '..', 'second-brain', 'compiled');
+
+app.get('/api/wiki', (req, res) => {
+  const fs = require('fs');
+  if (!fs.existsSync(WIKI_DIR)) return res.json({ pages: [] });
+  const pages = fs.readdirSync(WIKI_DIR)
+    .filter(f => f.endsWith('.md'))
+    .map(f => {
+      const content = fs.readFileSync(path.join(WIKI_DIR, f), 'utf8');
+      const title = content.split('\n').find(l => l.startsWith('#'))?.replace(/^#+\s*/, '') || f.replace('.md','');
+      return { file: f, title, lines: content.split('\n').length };
+    });
+  res.json({ pages, compiledDir: 'second-brain/compiled/' });
+});
+
+app.get('/api/wiki/:file', (req, res) => {
+  const fs = require('fs');
+  const fp = path.join(WIKI_DIR, req.params.file);
+  if (!fs.existsSync(fp)) return res.status(404).json({ error: 'Not found' });
+  const content = fs.readFileSync(fp, 'utf8');
+  const title = content.split('\n').find(l => l.startsWith('#'))?.replace(/^#+\s*/, '') || req.params.file;
+  res.json({ title, content });
+});
+
+app.get('/api/today', async (req, res) => {
+  try {
+    const now = new Date();
+    const tz = 'America/Chicago';
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: tz }); // YYYY-MM-DD
+
+    // Calendar events — show active recurring + any manual events for today
+    const allEvents = db.prepare(`SELECT * FROM calendar_events WHERE status = 'active' AND (recurrence != '' OR source = 'manual') ORDER BY scheduled ASC LIMIT 8`).all();
+
+    // Top open tasks (priority order: high first)
+    const openTasks = db.prepare(`SELECT * FROM tasks WHERE status != 'done' ORDER BY
+      CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, created DESC LIMIT 5`).all();
+
+    // Next cron jobs today
+    const cronsRaw = JSON.parse(require('fs').readFileSync('/Users/mini/.openclaw/cron/jobs.json', 'utf8'));
+    const enabledCrons = (cronsRaw.jobs || []).filter(j => j.enabled !== false).slice(0, 5);
+
+    // Whoop — latest recovery
+    let whoop = null;
+    try {
+      const http = require('http');
+      const whoopData = await new Promise((resolve, reject) => {
+        http.get('http://127.0.0.1:3461/api/data', r => {
+          let body = '';
+          r.on('data', c => body += c);
+          r.on('end', () => resolve(JSON.parse(body)));
+        }).on('error', reject);
+      });
+      const recovery = (whoopData.recovery || []);
+      if (recovery.length) {
+        const latest = recovery[0];
+        whoop = {
+          date: latest.date,
+          recovery: latest.recovery,
+          rhr: latest.rhr,
+          hrv: latest.hrv,
+          isToday: latest.date === todayStr
+        };
+      }
+    } catch(e) { /* whoop unavailable */ }
+
+    // ROI this week
+    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().slice(0,10);
+    const roiWeek = db.prepare(`SELECT COUNT(*) as count, SUM(mins_saved) as mins, SUM(token_cost_usd) as cost, SUM(value_usd) as value FROM roi_log WHERE date >= ?`).get(weekAgoStr);
+
+    res.json({ date: todayStr, events: allEvents, tasks: openTasks, crons: enabledCrons, whoop, roiWeek });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── AGENTS INFO API ──────────────────────────────────────────────────
+app.get('/api/agents-info', (req, res) => {
+  try {
+    // Read each agent's own sessions file
+    let mainSessions = {}, finnSessions = {};
+    try { mainSessions = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'agents/main/sessions/sessions.json'), 'utf8')); } catch(e) {}
+    try { finnSessions = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'agents/finn/sessions/sessions.json'), 'utf8')); } catch(e) {}
+
+    const agentDefs = [
+      { id: 'main', name: 'Alden', emoji: '🦉', workspace: WORKSPACE,                  model: 'claude-sonnet-4-6', channel: 'Telegram', sessions: mainSessions },
+      { id: 'finn', name: 'Finn',  emoji: '⭐', workspace: '/Users/mini/finn/workspace', model: 'claude-sonnet-4-6', channel: 'Slack',    sessions: finnSessions },
+    ];
+
+    const agents = agentDefs.map(def => {
+      let soul = null;
+      const soulPath = path.join(def.workspace, 'SOUL.md');
+      if (fs.existsSync(soulPath)) soul = fs.readFileSync(soulPath, 'utf8');
+      // Use the most recently updated session for this agent
+      const sessionKeys = Object.keys(def.sessions).filter(k => k.startsWith(`agent:${def.id}:`) && !k.includes(':run:'));
+      const lastUpdated = sessionKeys.reduce((best, k) => {
+        const ts = def.sessions[k]?.updatedAt || 0;
+        return ts > best ? ts : best;
+      }, 0);
+      return {
+        id: def.id, name: def.name, emoji: def.emoji,
+        model: def.model, channel: def.channel, workspace: def.workspace,
+        soul, lastActive: lastUpdated || null, status: 'active'
+      };
+    });
+
+    res.json(agents);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── FALLBACK ──────────────────────────────────────────────────────────
+// ── VC COPILOT API (LEVEL 2) ─────────────────────────────────────────
+app.get('/api/vc/knowledge', (req, res) => {
+  res.json(vc.knowledgeAll());
+});
+
+app.post('/api/vc/knowledge', (req, res) => {
+  try {
+    const item = vc.knowledgeCreate(req.body || {});
+    res.json(item);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.post('/api/vc/analyze', (req, res) => {
+  try {
+    const { company = 'Unknown', stage = '', notes = '' } = req.body || {};
+    const session = vc.sessionCreateOrGet({ company, stage });
+
+    const lower = String(notes || '').toLowerCase();
+    const evidence = vc.knowledgeSearch(company, 3);
+
+    const scores = {
+      Team: /(repeat founder|2nd time|ex-|domain expert|operator)/.test(lower) ? 8 : 6,
+      Market: /(tam|category|billion|macro tailwind|expanding market)/.test(lower) ? 8 : 6,
+      Product: /(live product|shipping|pilot|api|technical moat|integration)/.test(lower) ? 8 : 5,
+      Traction: /(revenue|arr|growth|retention|pipeline|customers|paid)/.test(lower) ? 8 : 4,
+      Moat: /(network effect|data moat|patent|distribution|switching cost)/.test(lower) ? 7 : 5,
+    };
+
+    const redFlags = [];
+    if (!/(customer|pilot|design partner|paid)/.test(lower)) redFlags.push('Customer validation is thin.');
+    if (!/(retention|churn|repeat)/.test(lower)) redFlags.push('Retention data is missing.');
+    if (!/(competition|incumbent|alternative)/.test(lower)) redFlags.push('Competitive landscape is underspecified.');
+
+    const signals = [];
+    if (/(shipped|speed|iterate|weekly)/.test(lower)) signals.push('Strong product velocity signal.');
+    if (/(customer pain|workflow|problem-first|obsess)/.test(lower)) signals.push('Founder framing is customer-centric.');
+    if (/(capital efficient|frugal|burn)/.test(lower)) signals.push('Capital discipline signal present.');
+
+    const questions = [
+      'What is the non-obvious technical insight that creates enduring advantage?',
+      'What is the strongest proof of pull from real buyers today?',
+      'What would make this look obviously wrong in 12 months?'
+    ];
+
+    const thesis = `${company} (${stage || 'stage TBD'}) shows ${scores.Team >= 8 ? 'strong' : 'developing'} team quality and ${scores.Product >= 8 ? 'credible' : 'early'} product depth. Move fast on reference-backed traction and moat validation before conviction.`;
+
+    vc.addMessage(session.id, 'user', notes);
+    vc.addMessage(session.id, 'assistant', thesis);
+
+    res.json({
+      sessionId: session.id,
+      thesis,
+      scores,
+      redFlags: redFlags.length ? redFlags : ['No major red flags detected yet.'],
+      signals: signals.length ? signals : ['No strong founder signals detected yet.'],
+      questions,
+      evidence: evidence.map(e => ({ id: e.id, title: e.title, source: e.source, excerpt: String(e.content || '').slice(0, 180) }))
+    });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.get('/api/vc/session/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  res.json(vc.recentMessages(id, 10));
+});
+
+// ── PROMUS PIPELINE API (PHASE 4) ────────────────────────────────────
 app.get('/api/pipeline/deals', (req, res) => {
-  const { status, stage, owner, search } = req.query;
-  let q = 'SELECT * FROM promus_deals WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  if (stage)  { q += ' AND stage=?';  p.push(stage); }
-  if (owner)  { q += ' AND owner=?';  p.push(owner); }
-  if (search) { q += ' AND (company LIKE ? OR sector LIKE ? OR notes LIKE ?)'; p.push(`%${search}%`,`%${search}%`,`%${search}%`); }
-  q += ' ORDER BY updated DESC';
-  res.json(db.prepare(q).all(...p));
+  res.json(pipeline.all());
 });
 
 app.get('/api/pipeline/summary', (req, res) => {
+  res.json(pipeline.summary());
+});
+
+app.post('/api/pipeline/deals', (req, res) => {
   try {
-    const total = db.prepare('SELECT COUNT(*) as c FROM promus_deals').get().c;
-    const by_stage = db.prepare('SELECT stage, COUNT(*) as count FROM promus_deals GROUP BY stage ORDER BY COUNT(*) DESC').all();
-    const by_status = db.prepare('SELECT status, COUNT(*) as count FROM promus_deals GROUP BY status ORDER BY COUNT(*) DESC').all();
-    const totals = db.prepare('SELECT SUM(check_size_usd) as total_check, AVG(probability) as avg_prob FROM promus_deals').get();
-    res.json({ total, by_stage, by_status, total_check_size: totals?.total_check || 0, avg_probability: totals?.avg_prob || 0 });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Travel alias ───────────────────────────────────────────────────────────────
-app.get('/api/travel/trips', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM travel_trips WHERE 1=1';
-  const p = [];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += ' ORDER BY start_date ASC';
-  res.json(db.prepare(q).all(...p));
-});
-
-// ── System alias ───────────────────────────────────────────────────────────────
-app.get('/api/system', (req, res) => {
-  try {
-    const tables = ['tasks','calendar_events','promus_deals','incoming_deals',
-                    'companies','people','pv5_lps','todos','podcasts','articles',
-                    'travel_trips','legal_reviews','research_history','riley_notes'];
-    const counts = {};
-    for (const t of tables) {
-      try { counts[t] = db.prepare(`SELECT COUNT(*) as c FROM ${t}`).get().c; }
-      catch { counts[t] = 0; }
-    }
-    res.json({ ok: true, counts, uptime: process.uptime(), ts: new Date().toISOString() });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Crons ──────────────────────────────────────────────────────────────────────
-app.get('/api/crons', (req, res) => {
-  try {
-    const { execSync } = require('child_process');
-    let output = '';
-    try {
-      output = execSync('openclaw cron list 2>/dev/null', { encoding: 'utf8', timeout: 5000, shell: '/bin/zsh', env: { ...process.env, PATH: process.env.PATH + ':/opt/homebrew/bin:/usr/local/bin' } });
-    } catch(e) { output = e.stdout || e.message || ''; }
-    try { res.json(JSON.parse(output)); }
-    catch { res.json({ raw: output.trim(), crons: [] }); }
-  } catch(e) { res.status(500).json({ error: e.message, crons: [] }); }
-});
-
-// ── Memory files ───────────────────────────────────────────────────────────────
-app.get('/api/memory/files', (req, res) => {
-  try {
-    const home = process.env.HOME || '/Users/mini';
-    const wsDir = path.join(home, '.openclaw', 'workspace');
-    const memDir = path.join(wsDir, 'memory');
-    const files = [];
-    if (fs.existsSync(memDir)) {
-      fs.readdirSync(memDir)
-        .filter(f => f.endsWith('.md') || f.endsWith('.json'))
-        .sort().reverse()
-        .forEach(f => {
-          const full = path.join(memDir, f);
-          const stat = fs.statSync(full);
-          files.push({ name: f, path: `memory/${f}`, size: stat.size, modified: stat.mtime });
-        });
-    }
-    ['MEMORY.md','SOUL.md','USER.md','TOOLS.md','AGENTS.md','IDENTITY.md'].forEach(f => {
-      const full = path.join(wsDir, f);
-      if (fs.existsSync(full)) {
-        const stat = fs.statSync(full);
-        files.push({ name: f, path: f, size: stat.size, modified: stat.mtime });
-      }
-    });
-    res.json(files);
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Todos by list (path param alias) ──────────────────────────────────────────
-app.get('/api/todos/:list', (req, res) => {
-  const { status } = req.query;
-  let q = 'SELECT * FROM todos WHERE list=?';
-  const p = [req.params.list];
-  if (status) { q += ' AND status=?'; p.push(status); }
-  q += " ORDER BY CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, created DESC";
-  res.json(db.prepare(q).all(...p));
-});
-
-// ── Affinity extended routes ───────────────────────────────────────────────────
-app.get('/api/affinity/company/:name', async (req, res) => {
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const orgs = await client.searchOrganizations(req.params.name);
-    if (!orgs || !orgs.length) return res.json({ found: false, name: req.params.name, orgs: [] });
-    const org = orgs[0];
-    let notes = [];
-    try { notes = await client.getNotes(org.id, { limit: 10 }); } catch {}
-    let interactions = [];
-    try { interactions = await client.getInteractions(org.id); } catch {}
-    res.json({ found: true, org, notes, interactions });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/affinity/notes', async (req, res) => {
-  const { opportunity_id, org_id } = req.query;
-  const id = opportunity_id || org_id;
-  if (!id) return res.status(400).json({ error: 'opportunity_id or org_id required' });
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const notes = await client.getNotes(id);
-    res.json(notes);
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/affinity/lp-contacts/:id', async (req, res) => {
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const fields = await client.getFieldValues(req.params.id);
-    res.json(fields);
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/api/affinity/people/:org_id', async (req, res) => {
-  try {
-    const AffinityClient = require('./affinity-client');
-    const client = new AffinityClient();
-    const interactions = await client.getInteractions(req.params.org_id);
-    res.json(interactions);
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Catch-all SPA ─────────────────────────────────────────────────────────────
-app.get('*', (req, res) => {
-  const indexPath = path.join(PUBLIC, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send('Mission Control: public/index.html not found');
+    const deal = pipeline.create(req.body || {});
+    res.json(deal);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
   }
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`Mission Control running on http://localhost:${PORT}`);
+app.put('/api/pipeline/deals/:id', (req, res) => {
+  try {
+    const deal = pipeline.update(parseInt(req.params.id, 10), req.body || {});
+    res.json(deal);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
-module.exports = app;
+app.delete('/api/pipeline/deals/:id', (req, res) => {
+  pipeline.delete(parseInt(req.params.id, 10));
+  res.json({ ok: true });
+});
+
+// Drew research on a pipeline deal
+const affinityClient = require('./affinity-client');
+
+app.post('/api/pipeline/deals/:id/research', async (req, res) => {
+  const deal = pipeline.get(parseInt(req.params.id, 10));
+  if (!deal) return res.status(404).json({ error: 'Not found' });
+
+  res.json({ ok: true, status: 'running', company: deal.company });
+
+  // Run last30days + Affinity context + summarize in background
+  const { spawn } = require('child_process');
+  const scriptPath = '/Users/mini/.openclaw/skills/last30days/scripts/last30days.py';
+  const proc = spawn('python3', [scriptPath, deal.company, '--quick'], {
+    env: { ...process.env, PYTHONUNBUFFERED: '1' }, timeout: 240000,
+  });
+  let output = '';
+  proc.stdout.on('data', d => { output += d.toString(); });
+  proc.stderr.on('data', d => { output += d.toString(); });
+  proc.on('close', async () => {
+    const clean = output.replace(/\x1b\[[0-9;]*m/g, '').replace(/\x1b\[[0-9]*[A-Za-z]/g, '').trim();
+
+    // Pull Affinity context in parallel
+    let affinityContext = null;
+    let affinitySection = '';
+    try {
+      affinityContext = await affinityClient.getCompanyContext(deal.company);
+      if (affinityContext) {
+        const parts = [];
+        if (affinityContext.isPortfolio) parts.push('✅ Already in Promus portfolio');
+        if (affinityContext.isActiveDeal) parts.push('🔄 Already in Active Deals pipeline');
+        if (affinityContext.isPassed) parts.push('❌ Previously passed');
+        if (affinityContext.funds?.length) parts.push(`Funds: ${affinityContext.funds.join(', ')}`);
+        if (affinityContext.listMembership?.length) parts.push(`Lists: ${affinityContext.listMembership.map(l=>l.list).join(', ')}`);
+        if (affinityContext.notes?.length) parts.push(`Prior notes: ${affinityContext.notes[0].content.substring(0,150)}`);
+        if (parts.length) affinitySection = `\n\n**Affinity History:**\n${parts.map(p=>'• '+p).join('\n')}`;
+      }
+    } catch(e) { console.log('Affinity lookup failed:', e.message); }
+
+    // Summarize with Claude
+    let summary = clean.substring(0, 2000);
+    try {
+      const cr = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5', max_tokens: 600,
+          messages: [{ role: 'user', content: `You are Drew, analyst at Promus Ventures. Summarize this research on "${deal.company}" in 4-6 bullet points for a VC analyst. Focus on: funding history, team, market traction, red flags, competitors. Be direct.\n\n${affinitySection ? 'Affinity CRM context: ' + affinitySection + '\n\n' : ''}Research:\n${clean.substring(0, 3000)}` }]
+        })
+      });
+      const cd = await cr.json();
+      summary = (cd.content?.[0]?.text || summary) + affinitySection;
+    } catch(e) {}
+
+    // Save to pipeline deal notes
+    const existingNotes = deal.notes || '';
+    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const newNotes = existingNotes + (existingNotes ? '\n\n' : '') + `--- Drew Research (${timestamp}) ---\n${summary}`;
+    db.prepare('UPDATE promus_deals SET notes = ?, research_summary = ?, updated = datetime(\'now\') WHERE id = ?').run(newNotes, summary, deal.id);
+
+    // Notify Telegram
+    await fetch(`https://api.telegram.org/bot8395890971:AAHwb27dmD9SWCIfyvOToU5TXfMVAt-3aDo/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '8345634392', text: `🔍 Drew finished research on ${deal.company}:\n\n${summary.substring(0, 3000)}` })
+    }).catch(() => {});
+  });
+});
+
+// ── TEAM API (PHASE 4) ───────────────────────────────────────────────
+app.get('/api/team', (req, res) => {
+  res.json(team.all());
+});
+
+// ── INCOMING DEAL FLOW API ───────────────────────────────────────────
+app.get('/api/incoming-deals', (req, res) => {
+  res.json(incomingDeals.all());
+});
+
+app.post('/api/incoming-deals', (req, res) => {
+  try {
+    const deal = incomingDeals.create(req.body || {});
+    res.json(deal);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.put('/api/incoming-deals/:id', (req, res) => {
+  try {
+    const deal = incomingDeals.update(parseInt(req.params.id, 10), req.body || {});
+    res.json(deal);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete('/api/incoming-deals/:id', (req, res) => {
+  incomingDeals.delete(parseInt(req.params.id, 10));
+  res.json({ ok: true });
+});
+
+app.post('/api/incoming-deals/:id/promote', (req, res) => {
+  try {
+    const result = incomingDeals.promoteToPipeline(parseInt(req.params.id, 10));
+    res.json(result);
+    // Auto-trigger Drew research on the promoted pipeline deal
+    if (result?.pipeline?.id) {
+      const pipelineDealId = result.pipeline.id;
+      setImmediate(async () => {
+        try {
+          await fetch(`http://localhost:${PORT}/api/pipeline/deals/${pipelineDealId}/research`, { method: 'POST' });
+          console.log(`[Drew] Auto-research triggered for promoted deal ${pipelineDealId}`);
+        } catch(e) { console.error('[Drew] Auto-research failed:', e.message); }
+      });
+    }
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// ── EMAIL SYNC: newdeals@promusventures.com ────────────────────────
+async function getOutlookToken() {
+  const fs = require('fs');
+  const cfgPath = require('path').join(__dirname, '..', 'deal-intake-outlook-config.json');
+  if (!fs.existsSync(cfgPath)) throw new Error('deal-intake-outlook-config.json not found');
+  const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+  const tokenRes = await fetch(`https://login.microsoftonline.com/${cfg.tenantId}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: cfg.clientId,
+      client_secret: cfg.clientSecret,
+      scope: 'https://graph.microsoft.com/.default',
+      grant_type: 'client_credentials',
+    }),
+  });
+  const tokenData = await tokenRes.json();
+  if (!tokenData.access_token) throw new Error('Token error: ' + JSON.stringify(tokenData));
+  return { token: tokenData.access_token, cfg };
+}
+
+async function extractDealDataWithClaude(subject, bodyText) {
+  const apiKey = process.env.ANTHROPIC_API_KEY || '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';
+  if (!apiKey) return {};
+  try {
+    const prompt = `You are extracting structured data from a VC deal flow email. Extract the following fields if present. Return ONLY valid JSON, nothing else.
+
+Fields to extract:
+- deal_name: Company name (string)
+- city: City/location of company (string)
+- industry: Industry/sector (string, e.g. "Defence Tech", "AI", "Space", "Robotics", "HealthTech")
+- round_stage: Funding round (string, e.g. "Seed", "Series A", "Series B", "Series C", "Pre-Seed")
+- amount_raising: Amount being raised (string, e.g. "$5M", "€15M", "£2M")
+- valuation: Pre-money or post-money valuation if mentioned (string, e.g. "$25M pre", "€45M post")
+- investors: Any existing or participating investors mentioned (string, comma-separated)
+- original_date: If this is a forwarded email, the date the ORIGINAL email was sent (YYYY-MM-DD format). Look for "Sent:" or "Date:" lines inside the forwarded content. Empty string if not forwarded.
+
+Email Subject: ${subject}
+
+Email Body (first 1500 chars):
+${bodyText.substring(0, 1500)}
+
+Return JSON only. Use empty string "" for any field not found.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '{}';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+  } catch (e) {
+    console.error('Claude extraction error:', e.message);
+    return {};
+  }
+}
+
+async function syncOutlookDeals() {
+  const { token, cfg } = await getOutlookToken();
+
+  const startDate = cfg.startDate || '2026-01-01';
+  const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(cfg.mailbox)}/messages` +
+    `?$top=50&$select=id,subject,from,receivedDateTime,body,internetMessageId` +
+    `&$filter=receivedDateTime ge ${startDate}T00:00:00Z&$orderby=receivedDateTime desc`;
+
+  const mailRes = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  const mailData = await mailRes.json();
+  if (!mailRes.ok) throw new Error('Graph error: ' + JSON.stringify(mailData));
+
+  const messages = mailData.value || [];
+  let imported = 0, skipped = 0;
+
+  for (const msg of messages) {
+    const msgId = msg.internetMessageId || msg.id;
+    const existing = db.prepare('SELECT id FROM incoming_deals WHERE source_email = ?').get(msgId);
+    if (existing) { skipped++; continue; }
+
+
+    const subject = (msg.subject || 'Unknown').replace(/^(Fw|Fwd|Re|FW|FWD|RE):\s*/gi, '').trim();
+    const fromAddr = msg.from?.emailAddress?.address || '';
+    const receivedDate = (msg.receivedDateTime || '').substring(0, 10);
+
+    // Get plain text from body
+    const rawBody = msg.body?.content || '';
+    const bodyText = rawBody.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Extract structured fields via Claude
+    const extracted = await extractDealDataWithClaude(subject, bodyText);
+
+    // Skip if same company AND same round stage already exists (dedup)
+    const companyName = extracted.deal_name || '';
+    const roundStage = extracted.round_stage || '';
+    if (companyName) {
+      // Exact match: same company + same round
+      const dupExact = roundStage
+        ? db.prepare('SELECT id FROM incoming_deals WHERE company_name = ? COLLATE NOCASE AND round_stage = ? COLLATE NOCASE').get(companyName, roundStage)
+        : db.prepare("SELECT id FROM incoming_deals WHERE company_name = ? COLLATE NOCASE AND (round_stage IS NULL OR round_stage = '')").get(companyName);
+      if (dupExact) { skipped++; continue; }
+      // Also check deal_name (email subject) for duplicates
+      const dupSubject = db.prepare('SELECT id FROM incoming_deals WHERE deal_name = ? COLLATE NOCASE').get(subject);
+      if (dupSubject) { skipped++; continue; }
+    }
+
+    // Use original email date if forwarded, else use received date
+    let intakeDate = receivedDate;
+    if (extracted.original_date && /^\d{4}-\d{2}-\d{2}$/.test(extracted.original_date)) {
+      intakeDate = extracted.original_date;
+    }
+
+    const newDeal = incomingDeals.create({
+      deal_name: subject.substring(0, 200),
+      company_name: extracted.deal_name || '',
+      city: extracted.city || '',
+      amount_raising: extracted.amount_raising || '',
+      valuation: extracted.valuation || '',
+      industry: extracted.industry || '',
+      round_stage: extracted.round_stage || '',
+      investors: extracted.investors || '',
+      originated_by: fromAddr,
+      inbound_type: fromAddr.includes('promusventures.com') ? 'Intro' : 'Cold',
+      source_email: msgId,
+      source_channel: 'email',
+      intake_date: intakeDate,
+      email_content: bodyText.substring(0, 800),
+      notes: '',
+      status: 'new',
+    });
+
+    // Auto-add to central Companies DB
+    const coName = extracted.deal_name || '';
+    if (coName) {
+      let co = db.prepare('SELECT id FROM companies WHERE name = ? COLLATE NOCASE').get(coName);
+      if (!co) {
+        const r = db.prepare('INSERT INTO companies (name, sector, stage, hq, relationship, source, incoming_deal_id) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+          coName, extracted.industry||'', extracted.round_stage||'', extracted.city||'', 'prospect', 'incoming', newDeal.id
+        );
+        co = { id: r.lastInsertRowid };
+      }
+      db.prepare("INSERT INTO interactions (company_id, type, title, date, source, source_id, notes) VALUES (?, ?, ?, ?, ?, ?, ?)").run(
+        co.id, 'inbound', subject.substring(0,200), intakeDate, 'zach', String(newDeal.id),
+        `Inbound ${fromAddr.includes('promusventures.com') ? 'Intro' : 'Cold'}. Amount: ${extracted.amount_raising||'?'}. Valuation: ${extracted.valuation||'?'}.`
+      );
+    }
+    imported++;
+  }
+  return { ok: true, imported, skipped, total: messages.length };
+}
+
+app.post('/api/incoming-deals/sync-email', async (req, res) => {
+  try { res.json(await syncOutlookDeals()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/incoming-deals/sync-email', async (req, res) => {
+  try { res.json(await syncOutlookDeals()); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/team/workload', (req, res) => {
+  res.json(team.workload());
+});
+
+app.post('/api/team', (req, res) => {
+  try {
+    const member = team.create(req.body || {});
+    res.json(member);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.put('/api/team/:id', (req, res) => {
+  try {
+    const member = team.update(parseInt(req.params.id, 10), req.body || {});
+    res.json(member);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete('/api/team/:id', (req, res) => {
+  team.delete(parseInt(req.params.id, 10));
+  res.json({ ok: true });
+});
+
+// ── SECURITY API ──────────────────────────────────────────────────────────────
+app.get('/api/security', async (req, res) => {
+  const os  = require('os');
+  const { execSync } = require('child_process');
+
+  const checks = [];
+  let score = 0;
+  const MAX = 10; // points per check
+
+  function chk(name, detail, ok) {
+    checks.push({ name, detail, ok });
+    if (ok) score += MAX;
+    return ok;
+  }
+
+  // 1. Gateway loopback
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(OPENCLAW_DIR, 'openclaw.json'), 'utf8'));
+    chk('Gateway — loopback only', `Port ${cfg.gateway?.port || '?'} bound to ${cfg.gateway?.bind || '?'}`, cfg.gateway?.bind === 'loopback');
+  } catch { chk('Gateway bind', 'Could not read config', false); }
+
+  // 2. Tailscale serve
+  try {
+    const tsOut = execSync('/opt/homebrew/bin/tailscale serve status 2>&1', { timeout: 5000 }).toString();
+    const active = tsOut.includes('tail') && tsOut.includes('proxy');
+    chk('Tailscale Serve active', active ? 'https://mcs-mac-mini-1.tail145633.ts.net → loopback' : 'No serve config detected', active);
+  } catch { chk('Tailscale Serve', 'tailscale CLI unavailable', false); }
+
+  // 3. All services on loopback
+  try {
+    const lsof = execSync('lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null', { timeout: 5000 }).toString();
+    const ports = [3455,3456,3457,3458,3459,3461];
+    const allLoop = ports.every(p => lsof.includes(`127.0.0.1:${p}`));
+    const exposed = ports.filter(p => lsof.includes(`*:${p}`));
+    chk('Local services — loopback only',
+      allLoop ? 'All 6 services bound to 127.0.0.1' : `Exposed on *: ports ${exposed.join(', ')}`, allLoop);
+  } catch { chk('Local services bind', 'lsof unavailable', false); }
+
+  // 4. SOUL.md read-only
+  try {
+    const soulPath = path.join(OPENCLAW_DIR, 'workspace/SOUL.md');
+    const st = fs.statSync(soulPath);
+    const writable = !!(st.mode & 0o200);
+    chk('SOUL.md read-only', writable ? 'WARNING: SOUL.md is writable' : 'chmod 444 — agent cannot overwrite identity', !writable);
+  } catch { chk('SOUL.md permissions', 'File not found', false); }
+
+  // 5. Audit logs append-only
+  try {
+    const sessDir = path.join(OPENCLAW_DIR, 'agents/main/sessions');
+    const files = fs.readdirSync(sessDir).filter(f => f.endsWith('.jsonl')).slice(0, 5);
+    const lsOut = execSync(`ls -lO ${sessDir}/*.jsonl 2>/dev/null | head -5`, { timeout: 3000 }).toString();
+    const allAppend = files.length > 0 && lsOut.includes('uappnd');
+    chk('Audit logs — append-only', allAppend ? `chflags uappnd on ${files.length}+ session files` : 'uappnd flag not detected', allAppend);
+  } catch { chk('Audit log flags', 'Could not check flags', false); }
+
+  // 6. Alert watcher running
+  try {
+    const pids = execSync('pgrep -f alert-watcher.js 2>/dev/null || true', { timeout: 3000 }).toString().trim();
+    const running = pids.length > 0;
+    chk('Out-of-band alerter running', running ? `PID ${pids.replace(/\n/g,' ')} — watching .jsonl files every 30s` : 'alert-watcher.js not running', running);
+  } catch { chk('Alert watcher', 'pgrep unavailable', false); }
+
+  // 7. No secrets in source
+  try {
+    const trackerSrc = fs.readFileSync(path.join(OPENCLAW_DIR, 'workspace/whoop-tracker/server.js'), 'utf8');
+    const clean = !trackerSrc.includes('f3ad79ae6f2dead');
+    chk('Secrets out of source code', clean ? 'WHOOP secret in env var (LaunchAgent plist)' : 'WARNING: hardcoded secret found in whoop-tracker/server.js', clean);
+  } catch { chk('Secrets audit', 'Could not read file', false); }
+
+  // 8. OpenClaw up to date (within 30 days)
+  try {
+    const pkgPath = path.join(os.homedir(), '.nvm/versions/node/v22.22.0/lib/node_modules/openclaw/package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const ver = pkg.version || '?';
+    const [y,m] = ver.split('.').map(Number);
+    const verDate = new Date(y, m - 1, 1);
+    const ageMs = Date.now() - verDate.getTime();
+    const ageDays = Math.floor(ageMs / 86400000);
+    const ok = ageDays < 45;
+    chk('OpenClaw up to date', `v${ver} — ${ageDays} days old`, ok);
+  } catch { chk('OpenClaw version', 'Could not read package.json', false); }
+
+  // Alert watcher detail
+  let alertWatcher = { running: false, filesWatched: 0, alertsToday: 0, lastAlert: 'none' };
+  try {
+    const pids = execSync('pgrep -f alert-watcher.js 2>/dev/null || true', { timeout: 3000 }).toString().trim();
+    alertWatcher.running = pids.length > 0;
+    const stateFile = path.join(OPENCLAW_DIR, 'workspace/scripts/.alert-watcher-state.json');
+    if (fs.existsSync(stateFile)) {
+      const st = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+      alertWatcher.filesWatched = Object.keys(st).length;
+    }
+    const logFile = '/tmp/alert-watcher.log';
+    if (fs.existsSync(logFile)) {
+      const logLines = fs.readFileSync(logFile, 'utf8').split('\n').filter(Boolean);
+      const today = new Date().toISOString().substring(0, 10);
+      const todayAlerts = logLines.filter(l => l.includes('ALERT') && l.includes(today));
+      alertWatcher.alertsToday = todayAlerts.length;
+      const lastLine = logLines.filter(l => l.includes('ALERT')).pop();
+      if (lastLine) alertWatcher.lastAlert = lastLine.substring(1, 20).replace('T', ' ');
+    }
+  } catch {}
+
+  const totalChecks = checks.length;
+  const passing = checks.filter(c => c.ok).length;
+  const pct = Math.round((score / (totalChecks * MAX)) * 100);
+
+  res.json({
+    score: pct,
+    scoreDetail: `${passing}/${totalChecks} checks passing`,
+    checkedAt: new Date().toISOString(),
+    checks,
+    alertWatcher,
+    outstanding: [
+      { tier: 'Tier 2', name: 'S3 Log Shipping', notes: 'Forward .jsonl off-machine in real time. Blocked until Mac mini #2 arrives (~Mar 25). Webhook signatures N/A — Finn uses Socket Mode.' },
+    ]
+  });
+});
+
+// ── PODCASTS API ──────────────────────────────────────────────────────
+app.get('/api/podcasts', (req, res) => {
+  try { res.json(podcasts.all()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/api/podcasts/:id', (req, res) => {
+  try {
+    const p = podcasts.get(parseInt(req.params.id));
+    if (!p) return res.status(404).json({ error: 'Not found' });
+    res.json(p);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/podcasts', (req, res) => {
+  try { res.json(podcasts.create(req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.patch('/api/podcasts/:id', (req, res) => {
+  try { res.json(podcasts.update(parseInt(req.params.id), req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.delete('/api/podcasts/:id', (req, res) => {
+  try { podcasts.delete(parseInt(req.params.id)); res.json({ ok: true }); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ARTICLES API ──────────────────────────────────────────────────────
+app.get('/api/articles', (req, res) => {
+  try { res.json(articles.all()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/api/articles/:id', (req, res) => {
+  try {
+    const a = articles.get(parseInt(req.params.id));
+    if (!a) return res.status(404).json({ error: 'Not found' });
+    res.json(a);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/articles', (req, res) => {
+  try { res.json(articles.create(req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.patch('/api/articles/:id', (req, res) => {
+  try { res.json(articles.update(parseInt(req.params.id), req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.delete('/api/articles/:id', (req, res) => {
+  try { articles.delete(parseInt(req.params.id)); res.json({ ok: true }); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ROI ───────────────────────────────────────────────────────────────
+app.get('/api/roi', (req, res) => {
+  try { res.json(roi.all()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/api/roi/stats', (req, res) => {
+  try { res.json(roi.stats()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/roi', (req, res) => {
+  try { res.json(roi.create(req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.patch('/api/roi/:id', (req, res) => {
+  try { res.json(roi.update(parseInt(req.params.id), req.body)); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.delete('/api/roi/:id', (req, res) => {
+  try { roi.delete(parseInt(req.params.id)); res.json({ ok: true }); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Todos API (personal + pv)
+app.get('/api/todos/:list', (req, res) => res.json(todos.all(req.params.list)));
+app.post('/api/todos/:list', (req, res) => {
+  const { text, notes, priority, due_date } = req.body;
+  if (!text) return res.status(400).json({ error: 'text required' });
+  res.json(todos.create(req.params.list, text, notes, priority, due_date));
+});
+app.patch('/api/todos/:id', (req, res) => {
+  const updated = todos.update(req.params.id, req.body);
+  res.json(updated || { ok: true });
+});
+app.delete('/api/todos/:id', (req, res) => {
+  todos.delete(req.params.id);
+  res.json({ ok: true });
+});
+
+// ── TRAVEL API ───────────────────────────────────────────────────────
+app.get('/api/travel/trips', (req, res) => {
+  try { res.json(travel.all()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/api/travel/upcoming', (req, res) => {
+  try { res.json(travel.upcoming()); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/api/travel/trips/:id', (req, res) => {
+  try {
+    const t = travel.get(parseInt(req.params.id));
+    if (!t) return res.status(404).json({ error: 'Not found' });
+    res.json(t);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/api/travel/trips', (req, res) => {
+  try {
+    // Validate date range
+    if (new Date(req.body.end_date) < new Date(req.body.start_date)) {
+      return res.status(400).json({ error: 'end_date must be >= start_date' });
+    }
+    res.json(travel.create(req.body));
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+app.put('/api/travel/trips/:id', (req, res) => {
+  try {
+    // Validate date range if both provided
+    if (req.body.end_date && req.body.start_date && new Date(req.body.end_date) < new Date(req.body.start_date)) {
+      return res.status(400).json({ error: 'end_date must be >= start_date' });
+    }
+    res.json(travel.update(parseInt(req.params.id), req.body));
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+app.delete('/api/travel/trips/:id', (req, res) => {
+  try { travel.delete(parseInt(req.params.id)); res.json({ ok: true }); } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── LEGAL CHECK API (Tate) ───────────────────────────────────────
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+const TATE_SYSTEM = `You are Tate, legal counsel agent at Promus Ventures. You review venture capital legal documents against NVCA standard terms and flag anything non-standard or concerning.
+
+For each document, analyze:
+1. **Board composition & control** — Board seats, observer rights, protective provisions
+2. **Economics** — Liquidation preference (participating vs non-participating), dividend rights, anti-dilution (broad vs narrow weighted average vs ratchet)
+3. **Investor rights** — Pro-rata rights, information rights, ROFR, co-sale
+4. **Founder/company protections** — Drag-along, pay-to-play, conversion rights
+5. **Valuation & structure** — Pre-money valuation, option pool, fully-diluted cap table impact
+6. **Non-standard clauses** — Anything that deviates from NVCA model docs
+
+Format your response as:
+## Tate's Legal Review: [Document Name]
+
+### ✅ Standard Terms
+[What looks normal]
+
+### ⚠️ Flags & Non-Standard Terms
+[Numbered list of concerns, each with: what it is, why it matters, what to negotiate]
+
+### 📊 Summary
+[1-2 sentence bottom line assessment]
+
+Be direct and specific. Flag anything that's investor-unfriendly or unusual.`;
+
+db.exec(`CREATE TABLE IF NOT EXISTS legal_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  doc_name TEXT NOT NULL,
+  doc_text TEXT DEFAULT '',
+  result TEXT DEFAULT '',
+  status TEXT DEFAULT 'pending',
+  created TEXT DEFAULT (datetime('now'))
+)`);
+
+app.get('/api/legal', (req, res) => {
+  res.json(db.prepare('SELECT id, doc_name, status, created, file_path FROM legal_reviews ORDER BY created DESC').all());
+});
+
+app.get('/api/legal/:id', (req, res) => {
+  const row = db.prepare('SELECT * FROM legal_reviews WHERE id = ?').get(parseInt(req.params.id));
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(row);
+});
+
+// Add file_path column if missing
+try { db.exec('ALTER TABLE legal_reviews ADD COLUMN file_path TEXT DEFAULT ""'); } catch(e) {}
+
+app.get('/api/legal/:id/file', (req, res) => {
+  const row = db.prepare('SELECT file_path, doc_name FROM legal_reviews WHERE id = ?').get(parseInt(req.params.id));
+  if (!row?.file_path || !require('fs').existsSync(row.file_path)) return res.status(404).json({ error: 'File not found' });
+  res.download(row.file_path, row.doc_name + '.pdf');
+});
+
+app.post('/api/legal', upload.single('file'), async (req, res) => {
+  const docName = req.body?.doc_name || req.file?.originalname?.replace(/\.pdf$/i,'') || 'Unnamed Document';
+  let docText = req.body?.text || '';
+  let filePath = '';
+
+  // If PDF uploaded — save file + extract text with pdfminer
+  if (req.file) {
+    try {
+      const { execSync } = require('child_process');
+      const safeName = docName.replace(/[^a-zA-Z0-9-_]/g, '_').substring(0, 80);
+      const timestamp = Date.now();
+      filePath = `/Users/mini/.openclaw/workspace/legal-docs/${timestamp}_${safeName}.pdf`;
+      require('fs').writeFileSync(filePath, req.file.buffer);
+      // Extract text with pdfminer
+      docText = execSync(`python3 -c "from pdfminer.high_level import extract_text; print(extract_text('${filePath}'))"`, { timeout: 30000 }).toString();
+    } catch(e) {
+      // Fallback: use strings
+      try {
+        const { execSync } = require('child_process');
+        docText = execSync(`strings "${filePath}"`, { timeout: 10000 }).toString();
+      } catch(e2) { docText = `[PDF uploaded: ${docName}]`; }
+    }
+  }
+
+  if (!docText.trim()) return res.status(400).json({ error: 'No document text provided' });
+
+  const row = db.prepare('INSERT INTO legal_reviews (doc_name, doc_text, file_path, status) VALUES (?, ?, ?, ?)').run(docName, docText.substring(0, 50000), filePath, 'running');
+  const id = row.lastInsertRowid;
+  res.json({ id, status: 'running' });
+
+  // Run Tate analysis in background
+  (async () => {
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6', max_tokens: 2000,
+          system: TATE_SYSTEM,
+          messages: [{ role: 'user', content: `Please review this document:\n\nDocument: ${docName}\n\n${docText.substring(0, 30000)}` }]
+        })
+      });
+      const d = await r.json();
+      const result = d.content?.[0]?.text || 'Analysis failed';
+      db.prepare('UPDATE legal_reviews SET result = ?, status = ? WHERE id = ?').run(result, 'done', id);
+    } catch(e) {
+      db.prepare('UPDATE legal_reviews SET result = ?, status = ? WHERE id = ?').run(e.message, 'error', id);
+    }
+  })();
+});
+
+app.post('/api/legal/:id/send-telegram', async (req, res) => {
+  const row = db.prepare('SELECT * FROM legal_reviews WHERE id = ?').get(parseInt(req.params.id));
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  const text = `⚖️ Tate Legal Review: ${row.doc_name}\n\n${(row.result || '').substring(0, 3800)}`;
+  const r = await fetch('https://api.telegram.org/bot8395890971:AAHwb27dmD9SWCIfyvOToU5TXfMVAt-3aDo/sendMessage', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: '8345634392', text }),
+  });
+  const d = await r.json();
+  res.json({ ok: d.ok });
+});
+
+// ── RESEARCH API ─────────────────────────────────────────────────
+app.get('/api/research', (req, res) => {
+  res.json(research.all());
+});
+
+app.get('/api/research/:id', (req, res) => {
+  const row = research.get(parseInt(req.params.id));
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(row);
+});
+
+app.post('/api/research', (req, res) => {
+  const query = (req.body?.query || '').trim();
+  if (!query) return res.status(400).json({ error: 'query required' });
+
+  const row = research.create(query);
+  res.json({ id: row.id, status: 'running' });
+
+  // Run last30days in background
+  const scriptPath = '/Users/mini/.openclaw/skills/last30days/scripts/last30days.py';
+  const proc = spawn('python3', [scriptPath, query, '--quick'], {
+    env: { ...process.env, PYTHONUNBUFFERED: '1' },
+    timeout: 300000,
+  });
+
+  let output = '';
+  proc.stdout.on('data', d => { output += d.toString(); });
+  proc.stderr.on('data', d => { output += d.toString(); });
+  proc.on('close', code => {
+    const clean = output.replace(/\x1b\[[0-9;]*m/g, '').replace(/\x1b\[[0-9]*[A-Za-z]/g, '');
+    research.update(row.id, { result: clean, status: code === 0 ? 'done' : 'error' });
+  });
+  proc.on('error', err => {
+    research.update(row.id, { result: err.message, status: 'error' });
+  });
+});
+
+app.post('/api/research/:id/send-telegram', async (req, res) => {
+  try {
+    const row = research.get(parseInt(req.params.id));
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    const text = `🔬 Research: ${row.query}\n\n${(row.result || 'No results').substring(0, 3900)}`;
+    const r = await fetch('https://api.telegram.org/bot8395890971:AAHwb27dmD9SWCIfyvOToU5TXfMVAt-3aDo/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '8345634392', text }),
+    });
+    const d = await r.json();
+    res.json({ ok: d.ok });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/research/:id', (req, res) => {
+  research.delete(parseInt(req.params.id));
+  res.json({ ok: true });
+});
+
+// ── COMPANIES + PEOPLE API ────────────────────────────────────────────────
+app.get('/api/companies', (req, res) => {
+  const { search, relationship } = req.query;
+  let sql = 'SELECT * FROM companies WHERE 1=1';
+  const params = [];
+  if (search) { sql += ' AND (name LIKE ? OR sector LIKE ? OR hq LIKE ? OR pv_funds LIKE ?)'; params.push(...[`%${search}%`,`%${search}%`,`%${search}%`,`%${search}%`]); }
+  if (relationship === 'active') {
+    sql += " AND relationship = 'portfolio' AND (portfolio_status = 'Portfolio' OR portfolio_status LIKE '%Raising%' OR portfolio_status = '')";
+  } else if (relationship === 'exited') {
+    sql += " AND relationship = 'portfolio' AND (portfolio_status LIKE '%Realized%' OR portfolio_status LIKE '%Exit%')";
+  } else if (relationship) {
+    sql += ' AND relationship = ?'; params.push(relationship);
+  }
+  sql += ' ORDER BY last_touched DESC, name ASC';
+  res.json(db.prepare(sql).all(...params));
+});
+
+app.get('/api/companies/:id', (req, res) => {
+  const co = db.prepare('SELECT * FROM companies WHERE id = ?').get(parseInt(req.params.id));
+  if (!co) return res.status(404).json({ error: 'Not found' });
+  const interactions = db.prepare('SELECT * FROM interactions WHERE company_id = ? ORDER BY date DESC').all(co.id);
+  const people = db.prepare('SELECT * FROM people WHERE company_id = ? OR company = ? COLLATE NOCASE ORDER BY name').all(co.id, co.name);
+  res.json({ ...co, interactions, people });
+});
+
+app.post('/api/companies', (req, res) => {
+  const { name, domain, sector, stage, hq, description, relationship, notes } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const r = db.prepare('INSERT INTO companies (name, domain, sector, stage, hq, description, relationship, notes, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(name, domain||'', sector||'', stage||'', hq||'', description||'', relationship||'prospect', notes||'', 'manual');
+  res.json(db.prepare('SELECT * FROM companies WHERE id = ?').get(r.lastInsertRowid));
+});
+
+app.put('/api/companies/:id', (req, res) => {
+  const allowed = ['name','domain','sector','stage','hq','description','relationship','notes','drew_summary','last_touched'];
+  const data = req.body || {};
+  const fields = Object.keys(data).filter(k => allowed.includes(k));
+  if (!fields.length) return res.json(db.prepare('SELECT * FROM companies WHERE id = ?').get(parseInt(req.params.id)));
+  const set = fields.map(f => `${f} = ?`).join(', ');
+  db.prepare(`UPDATE companies SET ${set}, updated = datetime('now') WHERE id = ?`).run(...fields.map(f => data[f]), parseInt(req.params.id));
+  res.json(db.prepare('SELECT * FROM companies WHERE id = ?').get(parseInt(req.params.id)));
+});
+
+app.get('/api/people', (req, res) => {
+  const { search, company } = req.query;
+  let sql = 'SELECT * FROM people WHERE 1=1';
+  const params = [];
+  if (search) { sql += ' AND (name LIKE ? OR email LIKE ? OR company LIKE ?)'; params.push(...[`%${search}%`,`%${search}%`,`%${search}%`]); }
+  if (company) { sql += ' AND company = ?'; params.push(company); }
+  sql += ' ORDER BY last_meeting DESC NULLS LAST, name ASC';
+  res.json(db.prepare(sql).all(...params));
+});
+
+app.post('/api/people', (req, res) => {
+  const { name, email, company, role, relationship, notes } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const r = db.prepare('INSERT INTO people (name, email, company, role, relationship, notes, source) VALUES (?, ?, ?, ?, ?, ?, ?)').run(name, email||'', company||'', role||'', relationship||'contact', notes||'', 'manual');
+  res.json(db.prepare('SELECT * FROM people WHERE id = ?').get(r.lastInsertRowid));
+});
+
+// ── AFFINITY API ─────────────────────────────────────────────────────────────
+const _affinityClient = require('./affinity-client');
+
+app.get('/api/affinity/search', async (req, res) => {
+  const { q, type } = req.query;
+  if (!q) return res.status(400).json({ error: 'q required' });
+  try {
+    const [org, person] = await Promise.all([
+      _affinityClient.findOrganization(q),
+      type !== 'org' ? _affinityClient.findPerson(q) : null,
+    ]);
+    res.json({ org, person });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/affinity/company/:name', async (req, res) => {
+  const name = decodeURIComponent(req.params.name);
+  try {
+    // Check cache first (24h TTL)
+    const cached = db.prepare("SELECT data, cached_at FROM affinity_cache WHERE company_name = ? COLLATE NOCASE").get(name);
+    if (cached) {
+      const ageHours = (Date.now() - new Date(cached.cached_at).getTime()) / 3600000;
+      if (ageHours < 24) return res.json(JSON.parse(cached.data));
+    }
+    // Fetch fresh from Affinity
+    const ctx = await _affinityClient.getCompanyContext(name);
+    const result = ctx || { inAffinity: false };
+    // Save to cache
+    db.prepare("INSERT OR REPLACE INTO affinity_cache (company_name, data, cached_at) VALUES (?, ?, datetime('now'))").run(name, JSON.stringify(result));
+    res.json(result);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// PV5 FUNDRAISE API
+app.get('/api/pv5/lps', (req, res) => {
+  const { status, search } = req.query;
+  let sql = 'SELECT * FROM pv5_lps WHERE 1=1';
+  const params = [];
+  if (status) { sql += ' AND status = ?'; params.push(status); }
+  if (search) { sql += ' AND (name LIKE ? OR investor_type LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+  sql += ' ORDER BY status_rank ASC, name ASC';
+  res.json(db.prepare(sql).all(...params));
+});
+
+app.get('/api/pv5/summary', (req, res) => {
+  const stages = db.prepare('SELECT status, status_rank, COUNT(*) as count FROM pv5_lps GROUP BY status ORDER BY MIN(status_rank)').all();
+  const total = db.prepare('SELECT COUNT(*) as n FROM pv5_lps').get().n;
+  res.json({ stages, total });
+});
+
+app.get('/api/pv5/lps/:id', (req, res) => {
+  const lp = db.prepare('SELECT * FROM pv5_lps WHERE id = ?').get(parseInt(req.params.id));
+  if (!lp) return res.status(404).json({ error: 'Not found' });
+  res.json(lp);
+});
+
+app.post('/api/pv5/sync', (req, res) => {
+  res.json({ ok: true, status: 'syncing' });
+  const { execFile } = require('child_process');
+  execFile('node', ['/Users/mini/.openclaw/workspace/mission-control/sync-pv5.js'], { timeout: 300000 }, (err) => {
+    if (err) console.error('PV5 sync error:', err.message);
+    else console.log('PV5 sync complete');
+  });
+});
+
+// Affinity LP contacts
+app.get('/api/affinity/lp-contacts/:opportunity_id', async (req, res) => {
+  try {
+    const AUTH = 'Basic ' + Buffer.from(':ylGvSZSuMURrSnQ0CXMlpb3YqeQtkRuBJPqiZa1xtrI').toString('base64');
+    const oppRes = await fetch(`https://api.affinity.co/opportunities/${req.params.opportunity_id}`, { headers: { Authorization: AUTH } });
+    const opp = await oppRes.json();
+    const personIds = opp.person_ids || [];
+    const fvRes = await fetch(`https://api.affinity.co/field-values?opportunity_id=${req.params.opportunity_id}`, { headers: { Authorization: AUTH } });
+    const fvData = await fvRes.json();
+    const fvs = Array.isArray(fvData) ? fvData.filter(x => typeof x === 'object') : [];
+    const ownerFvs = fvs.filter(fv => fv.field_id === 3590815 && fv.value);
+    const pvOwners = [];
+    await Promise.all(ownerFvs.map(async fv => {
+      try {
+        const pr = await fetch(`https://api.affinity.co/persons/${fv.value}`, { headers: { Authorization: AUTH } });
+        const pd = await pr.json();
+        if (pd.first_name || pd.last_name) pvOwners.push({ name: [pd.first_name, pd.last_name].filter(Boolean).join(' '), email: pd.primary_email || '' });
+      } catch(e) {}
+    }));
+    const persons = [];
+    await Promise.all(personIds.slice(0, 10).map(async pid => {
+      try {
+        const pr = await fetch(`https://api.affinity.co/persons/${pid}`, { headers: { Authorization: AUTH } });
+        const pd = await pr.json();
+        if (pd.first_name || pd.last_name || pd.primary_email) persons.push({ id: pd.id, name: [pd.first_name, pd.last_name].filter(Boolean).join(' '), email: pd.primary_email || '', title: pd.title || '' });
+      } catch(e) {}
+    }));
+    res.json({ persons: persons.filter(p => p.name || p.email), pvOwners });
+  } catch(e) { res.json({ persons: [], pvOwners: [] }); }
+});
+
+app.get('/api/affinity/notes', async (req, res) => {
+  const { opportunity_id, person_id, org_id } = req.query;
+  try {
+    const AUTH = 'Basic ' + Buffer.from(':ylGvSZSuMURrSnQ0CXMlpb3YqeQtkRuBJPqiZa1xtrI').toString('base64');
+    let param = opportunity_id ? `opportunity_id=${opportunity_id}` : person_id ? `person_id=${person_id}` : `organization_id=${org_id}`;
+    const r = await fetch(`https://api.affinity.co/notes?${param}&page_size=20`, { headers: { Authorization: AUTH } });
+    const d = await r.json();
+    const notes = Array.isArray(d) ? d.filter(n => typeof n === 'object' && n.content) : (d.notes || []);
+    res.json(notes.slice(0, 15).map(n => ({ content: n.content, created_at: n.created_at })));
+  } catch(e) { res.json([]); }
+});
+
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`\n🦉  Mission Control`);
+  console.log(`🌐  http://localhost:${PORT}\n`);
+});
+

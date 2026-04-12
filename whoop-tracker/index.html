@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHR 60 → 55 Experiment</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0c0e13;
+  color: #c9d1e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid #1c2030;
+}
+.header h1 { font-size: 1.25rem; font-weight: 700; color: #e4eaf4; letter-spacing: -0.01em; }
+.header .sub { margin-top: 4px; font-size: 0.78rem; color: #5a6480; }
+.header .sub a { color: #5b8ef0; text-decoration: none; }
+
+/* ── Stats ── */
+.stats-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #1c2030;
+  border-top: 1px solid #1c2030;
+  background: #0f1118;
+}
+.stat {
+  flex: 1;
+  padding: 14px 20px;
+  border-right: 1px solid #1c2030;
+}
+.stat:last-child { border-right: none; }
+.stat .label { font-size: 0.68rem; color: #4a5370; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.stat .val { font-size: 1.5rem; font-weight: 700; color: #e4eaf4; letter-spacing: -0.02em; line-height: 1; }
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 18px;
+  padding: 12px 24px;
+  align-items: center;
+  border-bottom: 1px solid #1c2030;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #8090a8; }
+.legend-dot { width: 11px; height: 11px; border-radius: 2px; }
+.l-z2plus   { background: #2a7a4a; }
+.l-hiit { background: #a84a1a; }
+.l-today { background: transparent; border: 1.5px solid #4a6fc0; }
+
+/* ── Main ── */
+.main { padding: 10px 16px 32px; }
+
+/* ── Week row ── */
+.week-row {
+  display: flex;
+  align-items: stretch;
+  padding: 12px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+.week-row.active { border-color: #2a4080; background: rgba(40,60,130,0.08); }
+
+.week-label {
+  width: 120px;
+  flex-shrink: 0;
+  padding-right: 12px;
+}
+.week-label .wname { font-weight: 600; font-size: 0.88rem; color: #c8d4e8; }
+.week-label .wdates { font-size: 0.72rem; color: #4a5878; margin-top: 2px; }
+.week-label .wtag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+}
+
+.days {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  align-items: center;
+}
+
+.day-cell {
+  flex: 1;
+  height: 44px;
+  border-radius: 5px;
+  background: #12151e;
+  border: 1px solid #1c2535;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+.day-cell .day-label {
+  font-size: 0.65rem;
+  color: #374060;
+  position: absolute;
+  top: 4px;
+  left: 0; right: 0;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+.day-cell.today { border-color: #3a5aaa; background: rgba(50,80,180,0.06); }
+.day-cell.today .day-label { color: #6080c8; }
+.day-cell.has-z2plus { background: rgba(30,90,50,0.35); border-color: #2a5a3a; }
+.day-cell.has-hiit { background: rgba(120,50,20,0.35); border-color: #7a3a18; }
+.day-cell.has-both { background: rgba(80,70,20,0.4); border-color: #6a5a18; }
+
+.workout-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-top: 6px;
+}
+.badge-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  line-height: 1.3;
+}
+.badge-z2plus   { background: rgba(34,160,70,0.25); color: #4fd87a; }
+.badge-hiit { background: rgba(230,100,30,0.25); color: #f4804a; }
+
+.week-summary {
+  width: 180px;
+  flex-shrink: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+.week-summary .totals { font-size: 0.85rem; color: #8a9ab8; }
+.week-summary .totals strong { color: #d0daf0; font-size: 1.0rem; }
+.week-summary .status { font-size: 0.72rem; color: #4a5878; margin-top: 4px; }
+.week-summary .status.need { color: #f59e0b; }
+.week-summary .status.done-status { color: #34d077; }
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #1c2535;
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3a7af8, #5adea8);
+  transition: width 0.4s ease;
+}
+
+/* Day-column headers */
+.days-header {
+  display: flex;
+  gap: 5px;
+  flex: 1;
+  padding: 0 10px;
+  margin-bottom: 4px;
+}
+.day-header-cell {
+  flex: 1;
+  text-align: center;
+  font-size: 0.68rem;
+  color: #3a4860;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 0;
+}
+.header-row {
+  display: flex;
+  padding: 4px 10px;
+  margin-bottom: 4px;
+}
+.header-row .week-label { color: transparent; }
+.header-row .week-summary { color: transparent; }
+
+.spinner { text-align: center; padding: 60px; color: #3a4860; }
+.updated { text-align: right; font-size: 0.7rem; color: #2a3450; padding: 8px 16px 0; }
+
+/* ── Daily Log ── */
+.log-section {
+  margin: 24px 16px 0;
+  border: 1px solid #1c2030;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.log-section h2 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #4a5878;
+  padding: 11px 16px;
+  border-bottom: 1px solid #1c2030;
+  background: #0f1118;
+}
+.log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.log-table th {
+  text-align: left;
+  padding: 8px 14px;
+  color: #3a4860;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  background: #0f1118;
+  border-bottom: 1px solid #1c2030;
+}
+.log-table td { padding: 7px 14px; border-bottom: 1px solid #131720; }
+.log-table tr:last-child td { border-bottom: none; }
+.log-table tr:hover td { background: rgba(255,255,255,0.015); }
+.log-table tr.log-today td { background: rgba(50,80,180,0.07); }
+.log-table tr.log-today td:first-child { border-left: 2px solid #3a5aaa; }
+.log-week-header td {
+  background: #111420;
+  color: #3a4860;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 5px 14px;
+  border-bottom: 1px solid #1c2030;
+}
+.z2plus-val  { color: #4fd87a; font-weight: 600; }
+.hi-val  { color: #f4804a; font-weight: 600; }
+.dim     { color: #3a4860; }
+.rhr-val { color: #818cf8; font-weight: 600; }
+.strain-bar-wrap { display: flex; align-items: center; gap: 7px; }
+.strain-bar { height: 5px; border-radius: 3px; min-width: 2px; }
+.rec-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>RHR 60 → 55 Experiment</h1>
+  <div class="sub">8-week zone 2 + HIIT plan &nbsp;·&nbsp; Feb 20 — Apr 16, 2026 &nbsp;·&nbsp; <a href="#">Dashboard</a></div>
+</div>
+
+<div class="stats-row" id="stats-row">
+  <div class="stat"><div class="label">Total Z2+</div><div class="val" id="s-z2">—</div></div>
+  <div class="stat"><div class="label">Target</div><div class="val">1630m</div></div>
+  <div class="stat"><div class="label">Weeks Done</div><div class="val" id="s-wdone">0 / 8</div></div>
+  <div class="stat"><div class="label">HIIT Weeks</div><div class="val" id="s-hiit">—</div></div>
+  <div class="stat"><div class="label">Week</div><div class="val" id="s-week">— of 8</div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot l-z2plus"></span> Zone 2+</div>
+  <div class="legend-item"><span class="legend-dot l-hiit"></span> HIIT</div>
+  <div class="legend-item"><span class="legend-dot l-today"></span> Today</div>
+</div>
+
+<div class="main" id="main">
+  <div class="spinner">Loading Whoop data…</div>
+</div>
+
+<div class="log-section" id="log-section">
+  <h2>Daily Log — Feb 20 → Apr 16, 2026</h2>
+  <table class="log-table" id="log-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Zone 2+</th>
+        <th>HIIT</th>
+        <th>Daily Strain</th>
+        <th>Recovery</th>
+        <th>RHR</th>
+      </tr>
+    </thead>
+    <tbody id="log-body"><tr><td colspan="6" class="spinner">…</td></tr></tbody>
+  </table>
+</div>
+<div class="updated" id="updated"></div>
+
+<script>
+// ── Plan ──────────────────────────────────────────────
+const PLAN = [
+  { week: 1, start: '2026-02-20', end: '2026-02-26', minZ2: 180, maxZ2: 210, tag: null },
+  { week: 2, start: '2026-02-27', end: '2026-03-05', minZ2: 200, maxZ2: 230, tag: null },
+  { week: 3, start: '2026-03-06', end: '2026-03-12', minZ2: 220, maxZ2: 260, tag: null },
+  { week: 4, start: '2026-03-13', end: '2026-03-19', minZ2: 160, maxZ2: 200, tag: 'deload' },
+  { week: 5, start: '2026-03-20', end: '2026-03-26', minZ2: 230, maxZ2: 270, tag: null },
+  { week: 6, start: '2026-03-27', end: '2026-04-02', minZ2: 250, maxZ2: 300, tag: null },
+  { week: 7, start: '2026-04-03', end: '2026-04-09', minZ2: 240, maxZ2: 290, tag: null },
+  { week: 8, start: '2026-04-10', end: '2026-04-16', minZ2: 150, maxZ2: 190, tag: 'taper' },
+];
+
+const DAY_NAMES = ['Fri','Sat','Sun','Mon','Tue','Wed','Thu'];
+
+function dateRange(startStr, endStr) {
+  const dates = [];
+  const d = new Date(startStr + 'T12:00:00');
+  const end = new Date(endStr + 'T12:00:00');
+  while (d <= end) {
+    dates.push(d.toISOString().split('T')[0]);
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+function fmtShort(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function currentWeekNum(today) {
+  for (const w of PLAN) {
+    if (today >= w.start && today <= w.end) return w.week;
+  }
+  if (today < PLAN[0].start) return 1;
+  return 8;
+}
+
+function render(data) {
+  const { workouts } = data;
+  const today = new Date().toISOString().split('T')[0];
+  const weekNum = currentWeekNum(today);
+
+  // Stats
+  let totalZ2 = 0, totalHiitWeeks = 0, weeksFullyDone = 0;
+  PLAN.forEach(w => {
+    const days = dateRange(w.start, w.end);
+    let wZ2 = 0, hasHiit = false;
+    days.forEach(d => {
+      const wd = workouts[d] || {};
+      wZ2 += wd.z2plusMin || 0;
+      if (wd.hiit) hasHiit = true;
+    });
+    totalZ2 += wZ2;
+    if (hasHiit) totalHiitWeeks++;
+    if (today > w.end && wZ2 >= w.minZ2) weeksFullyDone++;
+  });
+
+  document.getElementById('s-z2').textContent = totalZ2 + 'm';
+  document.getElementById('s-wdone').textContent = weeksFullyDone + ' / 8';
+  document.getElementById('s-hiit').textContent = totalHiitWeeks + ' / 8';
+  document.getElementById('s-week').textContent = weekNum + ' of 8';
+
+  // Build weeks
+  let html = `
+    <div class="header-row">
+      <div class="week-label"></div>
+      <div class="days-header">
+        ${DAY_NAMES.map(d => `<div class="day-header-cell">${d}</div>`).join('')}
+      </div>
+      <div class="week-summary"></div>
+    </div>
+  `;
+
+  PLAN.forEach(w => {
+    const days = dateRange(w.start, w.end);
+    const isActive = w.week === weekNum;
+
+    let wZ2 = 0, wHiit = 0, hasHiitWeek = false;
+    const dayCells = days.map((d, i) => {
+      const wd = workouts[d] || {};
+      const isToday = d === today;
+      const z2min = wd.z2plusMin || 0;
+      const hiitmin = wd.hiitMin || 0;
+      wZ2 += z2min;
+      wHiit += hiitmin;
+      if (wd.hiit) hasHiitWeek = true;
+
+      let cellClass = 'day-cell';
+      if (isToday) cellClass += ' today';
+      if (z2min && wd.hiit) cellClass += ' has-both';
+      else if (z2min) cellClass += ' has-z2plus';
+      else if (wd.hiit) cellClass += ' has-hiit';
+
+      let badges = '';
+      if (z2min) badges += `<div class="badge-pill badge-z2plus">${z2min}m</div>`;
+      if (wd.hiit && hiitmin) badges += `<div class="badge-pill badge-hiit">${hiitmin}m</div>`;
+
+      return `<div class="${cellClass}">
+        <div class="day-label">${DAY_NAMES[i]}</div>
+        ${badges ? `<div class="workout-badge">${badges}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    // Summary
+    const pct = Math.min(100, Math.round((wZ2 / w.maxZ2) * 100));
+    let statusText = '', statusClass = 'status';
+    if (today > w.end) {
+      statusText = wZ2 >= w.minZ2 ? '✓ complete' : `⚠ ${w.minZ2 - wZ2}m short`;
+      statusClass += wZ2 >= w.minZ2 ? ' done-status' : ' need';
+    } else if (isActive) {
+      const left = w.minZ2 - wZ2;
+      statusText = left > 0
+        ? `${left}m Z2 left${!hasHiitWeek ? ' · need HIIT' : ''}`
+        : `on track${!hasHiitWeek ? ' · need HIIT' : ''}`;
+      statusClass += left > 0 ? ' need' : ' done-status';
+    } else {
+      statusText = 'upcoming';
+    }
+
+    const tagHtml = w.tag ? `<div class="wtag">${w.tag}</div>` : '';
+
+    html += `
+      <div class="week-row${isActive ? ' active' : ''}">
+        <div class="week-label">
+          <div class="wname">Week ${w.week}</div>
+          <div class="wdates">${fmtShort(w.start)}–${fmtShort(w.end)}</div>
+          ${tagHtml}
+        </div>
+        <div class="days">${dayCells}</div>
+        <div class="week-summary">
+          <div class="totals"><strong>${wZ2}m</strong> / ${w.minZ2}–${w.maxZ2}m</div>
+          <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+          <div class="${statusClass}">${statusText}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('main').innerHTML = html;
+}
+
+function strainColor(s) {
+  if (!s) return '#2a3450';
+  if (s >= 18) return '#ef4444';
+  if (s >= 14) return '#f97316';
+  if (s >= 10) return '#eab308';
+  return '#34d399';
+}
+function recColor(r) {
+  if (r === null || r === undefined) return '#2a3450';
+  if (r >= 67) return '#22c55e';
+  if (r >= 34) return '#eab308';
+  return '#ef4444';
+}
+
+function renderLog(data) {
+  const { workouts, recovery } = data;
+  const today = new Date().toISOString().split('T')[0];
+
+  // Build recovery map by date
+  const recMap = {};
+  (recovery || []).forEach(r => recMap[r.date] = r);
+
+  // Generate all days in 8-week window
+  const allDays = dateRange('2026-02-20', '2026-04-16');
+
+  let rows = '';
+  let lastWeek = null;
+
+  allDays.forEach(d => {
+    // Find which week this day belongs to
+    const w = PLAN.find(p => d >= p.start && d <= p.end);
+    if (!w) return;
+
+    if (w.week !== lastWeek) {
+      const tag = w.tag ? ` · ${w.tag.toUpperCase()}` : '';
+      rows += `<tr class="log-week-header"><td colspan="6">Week ${w.week} — ${fmtShort(w.start)} to ${fmtShort(w.end)}${tag}</td></tr>`;
+      lastWeek = w.week;
+    }
+
+    const isFuture = d > today;
+    const isToday = d === today;
+    const wd = workouts[d] || {};
+    const z2min = wd.z2plusMin || 0;
+    const hiitmin = wd.hiitMin || 0;
+    const rec = recMap[d];
+    const strain = rec?.strain;
+    const recovery_score = rec?.recovery;
+    const rhr = rec?.rhr;
+
+    const dayOfWeek = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+    const dateLabel = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const strainBarWidth = strain ? Math.min(80, Math.round(strain / 21 * 80)) : 0;
+
+    rows += `<tr class="${isToday ? 'log-today' : ''}">
+      <td style="color:${isFuture && !isToday ? '#2a3450' : '#8090a8'}">
+        <span style="color:${isFuture && !isToday ? '#2a3450' : '#4a5878'};margin-right:6px">${dayOfWeek}</span>${dateLabel}${isToday ? ' <span style="color:#6080c8;font-size:0.68rem">today</span>' : ''}
+      </td>
+      <td>${z2min ? `<span class="z2plus-val">${z2min}m</span>` : `<span class="dim">—</span>`}</td>
+      <td>${hiitmin ? `<span class="hi-val">${hiitmin}m</span>` : `<span class="dim">—</span>`}</td>
+      <td>
+        ${strain ? `<div class="strain-bar-wrap">
+          <div class="strain-bar" style="width:${strainBarWidth}px;background:${strainColor(strain)}"></div>
+          <span style="color:${strainColor(strain)};font-weight:600">${strain}</span>
+        </div>` : `<span class="dim">—</span>`}
+      </td>
+      <td>${recovery_score !== null && recovery_score !== undefined
+        ? `<span class="rec-dot" style="background:${recColor(recovery_score)}"></span><span style="color:${recColor(recovery_score)};font-weight:600">${recovery_score}%</span>`
+        : `<span class="dim">—</span>`}</td>
+      <td>${rhr ? `<span class="rhr-val">${rhr}</span>` : `<span class="dim">—</span>`}</td>
+    </tr>`;
+  });
+
+  document.getElementById('log-body').innerHTML = rows;
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    render(data);
+    renderLog(data);
+    document.getElementById('updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="spinner" style="color:#ef4444">Error: ${e.message}</div>`;
+  }
+}
+
+load();
+setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PV Expenses">
+<meta name="theme-color" content="#7c6ff7">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<title>PV Expenses</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d14;--surface:#16161f;--surface2:#1e1e2a;--surface3:#252535;
+  --border:rgba(255,255,255,.08);--accent:#7c6ff7;--accent-glow:rgba(124,111,247,.15);
+  --text:#e8e8f0;--text-dim:#9090a8;--text-mute:#5a5a72;
+  --green:#4ade80;--red:#f87171;--orange:#fb923c;--blue:#60a5fa;--gold:#fbbf24;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:16px;font-weight:700}
+.sidebar-logo p{font-size:11px;color:var(--text-mute);margin-top:3px}
+.user-pill{margin:0 14px 0;padding:8px 12px;background:var(--surface2);border-radius:10px;font-size:12.5px;color:var(--text-dim);border-top:1px solid var(--border)}
+.user-pill strong{color:var(--text);display:block;font-size:13px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-section{padding:8px 16px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-mute)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--text-dim);font-size:13.5px;font-weight:500;border-left:3px solid transparent;transition:all .14s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--text);border-left-color:var(--accent)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border)}
+.main{margin-left:220px;flex:1;padding:28px 32px;min-height:100vh}
+.page{display:none}.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px}
+.page-title{font-size:22px;font-weight:700}
+.page-subtitle{font-size:13px;color:var(--text-dim);margin-top:3px}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13.5px;font-weight:600;transition:all .14s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#6a5de6}
+.btn-secondary{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border)}.btn-secondary:hover{color:var(--text)}
+.btn-success{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.btn-danger{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.btn-warn{background:rgba(251,146,60,.12);color:var(--orange);border:1px solid rgba(251,146,60,.25)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-mute);margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:800}
+.stat-sub{font-size:12px;color:var(--text-dim);margin-top:3px}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.filter-select{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{padding:12px 16px;text-align:left;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);border-bottom:1px solid var(--border);background:var(--surface2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:12px 16px;font-size:13.5px;color:var(--text)}
+td.muted{color:var(--text-dim)}
+td.amount{font-weight:700;font-variant-numeric:tabular-nums}
+.empty-state{text-align:center;padding:48px;color:var(--text-dim);font-size:14px}
+.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:11.5px;font-weight:700}
+.badge-gp{background:rgba(124,111,247,.15);color:#a89ff7}
+.badge-lp{background:rgba(96,165,250,.15);color:#60a5fa}
+.badge-org{background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-fund{background:var(--surface3);color:var(--text-dim);border:1px solid var(--border)}
+.badge-draft{background:var(--surface3);color:var(--text-dim)}
+.badge-submitted{background:rgba(251,146,60,.15);color:var(--orange)}
+.badge-approved{background:rgba(74,222,128,.15);color:var(--green)}
+.badge-rejected{background:rgba(248,113,113,.15);color:var(--red)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:28px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.span2{grid-column:span 2}
+label{font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
+input,select,textarea{padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13.5px;transition:border .14s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px;font-family:inherit}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.scan-zone{border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .16s;background:var(--surface2)}
+.scan-zone:hover,.scan-zone.dragging{border-color:var(--accent);background:var(--accent-glow)}
+.scan-result{background:var(--surface2);border:1px solid rgba(74,222,128,.3);border-radius:10px;padding:14px;margin-top:10px;font-size:13px;color:var(--text-dim)}
+.scan-result strong{color:var(--green);display:block;margin-bottom:4px}
+.amount-warn{display:none;margin-top:10px;padding:10px 14px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);border-radius:8px;font-size:13px;color:var(--orange)}
+.receipt-link{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--surface3);border-radius:6px;font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--border)}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:14px}
+.report-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.report-card-title{font-size:16px;font-weight:700}
+.report-card-meta{font-size:13px;color:var(--text-dim);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.admin-only{display:none}
+.chart-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.chart-label{width:130px;font-size:12.5px;color:var(--text-dim);text-align:right;flex-shrink:0}
+.chart-bar-wrap{flex:1;background:var(--surface3);border-radius:4px;height:20px;overflow:hidden}
+.chart-bar{height:100%;background:var(--accent);border-radius:4px;transition:width .4s;display:flex;align-items:center;padding-left:6px}
+.chart-bar span{font-size:11px;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap}
+.chart-amount{width:80px;font-size:12.5px;color:var(--text);font-variant-numeric:tabular-nums;text-align:right;flex-shrink:0}
+/* Feature 3: Aging badges */
+.badge-aging-gray{background:rgba(144,144,168,.15);color:var(--text-dim)}
+.badge-aging-yellow{background:rgba(251,191,36,.15);color:var(--gold)}
+.badge-aging-orange{background:rgba(251,146,60,.2);color:var(--orange)}
+.badge-aging-red{background:rgba(248,113,113,.2);color:var(--red)}
+/* Mobile */
+#mobile-topbar{display:none}
+@media (max-width: 768px) {
+  #mobile-topbar{display:flex!important;align-items:center;pointer-events:auto}
+  .sidebar{transform:translateX(-100%);transition:transform .25s ease;position:fixed;z-index:50;top:0;bottom:0;width:260px!important;min-width:260px!important}
+  .sidebar.mobile-open{transform:translateX(0);z-index:500}
+  .main{margin-left:0!important;padding:calc(68px + env(safe-area-inset-top)) 16px 16px}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .filter-bar{flex-direction:column;align-items:stretch}
+  .filter-select{width:100%}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-width:100%!important;border-radius:18px 18px 0 0;max-height:90vh!important}
+  .btn{min-height:44px}
+  .btn-sm{min-height:36px}
+  .page-header{flex-direction:column;align-items:flex-start}
+  .btn-group{flex-wrap:wrap;width:100%}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.span2{grid-column:span 1}
+  .report-card-header{flex-direction:column;gap:8px;align-items:flex-start}
+  table{font-size:12px}
+  td,th{padding:8px 10px}
+  div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;display:block!important}
+  #ytd-comparison div[style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:1fr 1fr!important}
+  .chart-label{width:90px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- Feature 7: Mobile top bar -->
+<div id="mobile-topbar" style="position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--surface);border-bottom:1px solid var(--border);z-index:490;align-items:center;padding-left:4px;padding-right:4px;gap:8px">
+  <button onclick="toggleMobileSidebar()" style="background:none;border:none;color:var(--text);font-size:26px;cursor:pointer;padding:8px 14px;min-width:52px;min-height:52px;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation">☰</button>
+  <span style="font-size:16px;font-weight:700;flex:1">💼 PV Expenses</span>
+  <div id="mobile-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff"></div>
+</div>
+<!-- Mobile sidebar backdrop -->
+<div id="mobile-backdrop" onclick="toggleMobileSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:480"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>💼 PV Expenses</h1>
+    <p>Promus Ventures</p>
+  </div>
+  <div class="user-pill" id="user-pill">
+    <strong id="user-name">Loading…</strong>
+    <span id="user-role"></span>
+  </div>
+  <!-- Feature 1: Global Search -->
+  <div style="padding:8px 14px;position:relative" id="search-container">
+    <div style="position:relative">
+      <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text-mute)">🔍</span>
+      <input type="text" id="global-search" placeholder="Search expenses…" autocomplete="off"
+        style="width:100%;padding:7px 10px 7px 30px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12.5px"
+        oninput="debounceSearch()" onkeydown="searchKeyDown(event)">
+    </div>
+    <div id="search-dropdown" style="display:none;position:absolute;left:14px;right:14px;top:calc(100% - 4px);background:#1a1a28;border:1px solid var(--border);border-radius:10px;z-index:500;max-height:380px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)"></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">My Work</div>
+    <div class="nav-item active" data-page="overview" onclick="goTo('overview',this)">📊 Overview</div>
+    <div class="nav-item" data-page="expenses" onclick="goTo('expenses',this)">🧾 Expenses</div>
+    <div class="nav-item" data-page="reports" onclick="goTo('reports',this)">📋 Reports <span class="nav-badge" id="pending-badge" style="display:none">!</span></div>
+    <div class="nav-item" onclick="openImport()">⬆️ Import CSV</div>
+    <div class="nav-section admin-only">Admin</div>
+    <div class="nav-item admin-only" data-page="all-expenses" onclick="goTo('all-expenses',this)">👥 All Expenses</div>
+    <div class="nav-item admin-only" data-page="approvals" onclick="goTo('approvals',this)">✅ Approvals <span class="nav-badge" id="approval-badge" style="display:none"></span></div>
+    <div class="nav-item admin-only" data-page="team" onclick="goTo('team',this)">⚙️ Team</div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn btn-success btn-sm" onclick="exportExcel()" style="width:100%;margin-bottom:8px">⬇️ Export Excel</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportAccountant()" style="width:100%;margin-bottom:8px">📋 Accountant Export</button>
+    <button class="btn btn-warn btn-sm" id="violations-btn" onclick="goTo('violations')" style="width:100%;margin-bottom:8px;display:none">🧾 Receipts Needed <span id="violations-count" style="background:var(--red);color:#fff;border-radius:999px;padding:1px 7px;font-size:11px;margin-left:4px">0</span></button>
+    <button class="btn btn-secondary btn-sm" onclick="goTo('settings',null)" style="width:100%;margin-bottom:8px">⚙️ Settings</button>
+    <button class="btn btn-secondary btn-sm" onclick="logout()" style="width:100%">Sign Out</button>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div id="page-overview" class="page active">
+    <div class="page-header">
+      <div><div class="page-title">Overview</div><div class="page-subtitle" id="overview-subtitle">Your expense summary</div></div>
+      <div class="btn-group">
+        <select id="overview-year" class="filter-select" onchange="loadOverview()"><option value="">All Years</option></select>
+        <button class="btn btn-primary" onclick="openAddExpense()">+ Add Expense</button>
+        <button class="btn btn-secondary admin-only" id="digest-btn" onclick="sendDigest()" style="display:none">📊 Send Digest</button>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value" id="stat-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">GP Expenses</div><div class="stat-value" id="stat-gp">—</div></div>
+      <div class="stat-card"><div class="stat-label">LP Expenses</div><div class="stat-value" id="stat-lp">—</div></div>
+      <div class="stat-card"><div class="stat-label">Fund Org</div><div class="stat-value" id="stat-org">—</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="table-wrap" style="padding:20px"><div style="font-size:14px;font-weight:700;margin-bottom:14px">By Fund</div><div id="chart-fund"></div></div>
+      <div class="table-wrap" style="padding:20px"><div style="font-size:14px;font-weight:700;margin-bottom:14px">By Category</div><div id="chart-cat"></div></div>
+    </div>
+    <!-- Per-person spend (admin only) -->
+    <div id="chart-person-wrap" class="admin-only" style="margin-top:18px;display:none">
+      <div class="table-wrap" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:14px">By Person</div>
+        <div id="chart-person"></div>
+      </div>
+    </div>
+    <!-- Feature 6: YTD comparison -->
+    <div id="ytd-comparison" style="display:none;margin-top:18px"></div>
+    <!-- Feature 7: Fund budgets -->
+    <div id="fund-budgets-section" style="margin-top:18px;display:none">
+      <div class="table-wrap" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:14px">Fund Budgets</div>
+        <div id="fund-budgets-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div id="page-expenses" class="page">
+    <div class="page-header">
+      <div><div class="page-title">My Expenses</div><div class="page-subtitle" id="expenses-subtitle">—</div></div>
+      <button class="btn btn-primary" onclick="openAddExpense()">+ Add Expense</button>
+    </div>
+    <div id="bulk-assign-bar" class="filter-bar" style="background:rgba(124,111,247,.1);border:1px solid rgba(124,111,247,.25);border-radius:10px;padding:10px 14px;margin-bottom:8px;align-items:center;gap:10px;display:none">
+      <span style="font-size:13px;font-weight:600;color:var(--accent)">📋 <span id="bulk-unassigned-count">0</span> expenses not in any report</span>
+      <select id="bulk-assign-select" class="filter-select" style="flex:1;max-width:260px">
+        <option value="">Assign all to report…</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="bulkAssignAll()">Assign All</button>
+    </div>
+    <div class="filter-bar">
+      <select id="filter-fund" class="filter-select" onchange="loadExpenses()"><option value="">All Funds</option></select>
+      <select id="filter-type" class="filter-select" onchange="loadExpenses()"><option value="">All Types</option><option>GP Expense</option><option>LP Expense</option><option>Fund Organizational</option></select>
+      <select id="filter-cat" class="filter-select" onchange="loadExpenses()"><option value="">All Categories</option></select>
+      <select id="filter-year" class="filter-select" onchange="loadExpenses()"><option value="">All Years</option></select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Date</th><th>Vendor</th><th>Fund</th><th>Type</th><th>Category</th><th>Amount</th><th>Report</th><th>Receipt</th><th></th></tr></thead>
+      <tbody id="expenses-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div id="page-reports" class="page">
+    <div class="page-header">
+      <div><div class="page-title">Expense Reports</div><div class="page-subtitle">Submit reports for approval</div></div>
+      <button class="btn btn-primary" onclick="openNewReport()">+ New Report</button>
+    </div>
+    <div id="reports-list"></div>
+  </div>
+
+  <!-- ALL EXPENSES (admin) -->
+  <div id="page-all-expenses" class="page admin-only">
+    <div class="page-header">
+      <div><div class="page-title">All Expenses</div><div class="page-subtitle" id="all-expenses-subtitle">—</div></div>
+      <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇️ Export Excel</button>
+    </div>
+    <div class="filter-bar">
+      <select id="af-user" class="filter-select" onchange="loadAllExpenses()"><option value="">All Employees</option></select>
+      <select id="af-fund" class="filter-select" onchange="loadAllExpenses()"><option value="">All Funds</option></select>
+      <select id="af-type" class="filter-select" onchange="loadAllExpenses()"><option value="">All Types</option><option>GP Expense</option><option>LP Expense</option><option>Fund Organizational</option></select>
+      <select id="af-year" class="filter-select" onchange="loadAllExpenses()"><option value="">All Years</option></select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Date</th><th>Employee</th><th>Vendor</th><th>Fund</th><th>Type</th><th>Category</th><th>Amount</th><th>Receipt</th><th>Card</th></tr></thead>
+      <tbody id="all-expenses-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- APPROVALS (admin) -->
+  <div id="page-approvals" class="page admin-only">
+    <div class="page-header">
+      <div><div class="page-title">Approvals</div><div class="page-subtitle">Review submitted expense reports</div></div>
+    </div>
+    <div id="approvals-list"></div>
+  </div>
+
+  <!-- TEAM (admin) -->
+  <div id="page-team" class="page admin-only">
+    <div class="page-header"><div class="page-title">Team Management</div></div>
+    <div id="team-list"></div>
+    <div style="margin-top:24px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:14px">💰 Fund Budgets</div>
+      <div id="team-budgets-list"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end;max-width:560px;margin-top:14px">
+        <div><label style="font-size:11px;color:var(--text-dim);text-transform:uppercase;font-weight:700">Fund</label>
+          <select id="budget-fund" class="filter-select" style="width:100%;margin-top:4px"><option value="">Select…</option></select></div>
+        <div><label style="font-size:11px;color:var(--text-dim);text-transform:uppercase;font-weight:700">Annual Budget ($)</label>
+          <input type="number" id="budget-amount" placeholder="50000" class="filter-select" style="width:100%;margin-top:4px"></div>
+        <div><label style="font-size:11px;color:var(--text-dim);text-transform:uppercase;font-weight:700">Year</label>
+          <input type="number" id="budget-year" value="2026" class="filter-select" style="width:90px;margin-top:4px"></div>
+        <button class="btn btn-primary" onclick="saveBudget()" style="align-self:end">Set Budget</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page" style="max-width:580px">
+    <div class="page-title">⚙️ Settings</div>
+
+    <!-- Change Password -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px">🔑 Change Password</div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px">
+        <label>Current Password</label>
+        <input type="password" id="pw-current" placeholder="Current password" style="padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px">
+        <label>New Password</label>
+        <input type="password" id="pw-new" placeholder="New password (min 8 characters)" style="padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px">
+        <label>Confirm New Password</label>
+        <input type="password" id="pw-confirm" placeholder="Confirm new password" style="padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
+      </div>
+      <div id="pw-msg" style="margin-bottom:12px;font-size:13px"></div>
+      <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+    </div>
+
+    <!-- Feature 8: Recurring Templates -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">📋 Recurring Templates</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:14px">Reuse common expenses with one click.</div>
+      <div id="templates-list"></div>
+    </div>
+
+    <!-- Telegram Notifications -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">📱 Telegram Notifications</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Add your Telegram Chat ID to receive notifications when reports are approved or rejected.</div>
+      <div style="font-size:12px;color:var(--text-mute);margin-bottom:14px;background:var(--surface2);border-radius:8px;padding:10px 12px">
+        To find your Chat ID: message <strong>@userinfobot</strong> on Telegram — it will reply with your numeric Chat ID.
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px">
+        <label>Telegram Chat ID</label>
+        <input type="text" id="tg-chat-id" placeholder="e.g. 123456789" style="padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
+      </div>
+      <div id="tg-msg" style="margin-bottom:12px;font-size:13px"></div>
+      <button class="btn btn-primary" onclick="saveTelegramId()">Save</button>
+    </div>
+  </div>
+
+  <!-- VIOLATIONS PAGE (admin) -->
+  <div id="page-violations" class="page admin-only">
+    <div class="page-title">🧾 Receipts Needed</div>
+    <div id="violations-content">
+      <div style="color:var(--text-mute);text-align:center;padding:40px">Loading…</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- CSV IMPORT MODAL -->
+<div class="modal-overlay hidden" id="import-modal">
+  <div class="modal" style="max-width:1200px;width:95vw">
+    <div class="modal-title">⬆️ Import Credit Card CSV</div>
+
+    <!-- Step 1: upload -->
+    <div id="import-step1">
+      <div style="margin-bottom:16px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+        <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px">💳 Which card is this statement from?</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="import-card" class="filter-select" style="font-size:13px;padding:7px 12px;min-width:220px" onchange="updateCardLabel()">
+            <option value="">Select card…</option>
+            <option value="Chase Sapphire">Chase Sapphire</option>
+            <option value="Chase Ink">Chase Ink</option>
+            <option value="Amex Platinum">Amex Platinum</option>
+            <option value="Amex Blue Business">Amex Blue Business</option>
+            <option value="Capital One Venture">Capital One Venture</option>
+            <option value="Citi">Citi</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="import-card-last4" placeholder="Last 4 digits (required)" maxlength="4" pattern="[0-9]{4}"
+            style="font-size:13px;padding:7px 10px;width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text)"
+            oninput="this.value=this.value.replace(/\D/g,'').slice(0,4); updateCardLabel()">
+          <span id="card-label-preview" style="font-size:12px;color:var(--text-mute)">Stored internally for audit — not shown on reports</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+        <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">Chase</div>
+          <div style="font-size:12px;color:var(--text-dim)">Account → Download → CSV</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">Amex</div>
+          <div style="font-size:12px;color:var(--text-dim)">Statements → Download → CSV</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px">Capital One / Citi / Other</div>
+          <div style="font-size:12px;color:var(--text-dim)">Download transactions as CSV</div>
+        </div>
+      </div>
+      <div class="scan-zone" onclick="document.getElementById('csv-input').click()"
+           ondragover="event.preventDefault();this.classList.add('dragging')"
+           ondragleave="this.classList.remove('dragging')"
+           ondrop="handleCSVDrop(event)" style="margin-bottom:0">
+        <div style="font-size:28px">📄</div>
+        <div style="font-size:14px;color:var(--text-dim);margin-top:6px">Drop your CSV file here or click to browse</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-top:3px">Chase · Amex · Capital One · Citi · Generic</div>
+      </div>
+      <input type="file" id="csv-input" accept=".csv,text/csv" style="display:none" onchange="handleCSVSelect(event)">
+      <div id="csv-parse-status" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Step 2: review & assign -->
+    <div id="import-step2" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <span id="import-count-label" style="font-size:14px;font-weight:700"></span>
+          <span style="font-size:13px;color:var(--text-dim);margin-left:8px">Review, assign fund/type, then confirm import</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--text-dim)">Bulk assign:</span>
+          <select id="bulk-fund" class="filter-select" style="font-size:12px;padding:5px 9px"><option value="">Fund…</option></select>
+          <select id="bulk-type" class="filter-select" style="font-size:12px;padding:5px 9px"><option value="">Type…</option></select>
+          <select id="bulk-cat" class="filter-select" style="font-size:12px;padding:5px 9px"><option value="">Category…</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="applyBulk()">Apply All</button>
+          <button class="btn btn-secondary btn-sm" onclick="undoBulk()" id="undo-btn" style="opacity:.4;cursor:not-allowed" disabled>↩ Undo</button>
+        </div>
+      </div>
+      <div style="max-height:520px;overflow-y:auto;border-radius:10px;border:1px solid var(--border)">
+        <table style="width:100%;border-collapse:collapse">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border)">
+                <input type="checkbox" id="check-all" onchange="toggleAllRows(this.checked)" title="Select all">
+              </th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none" onclick="sortImport('date')" id="sort-date">Date <span id="sort-date-icon">↕</span></th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none" onclick="sortImport('vendor')" id="sort-vendor">Vendor <span id="sort-vendor-icon">↕</span></th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border)">Amount</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border)">Fund</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border)">Type</th>
+              <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);background:var(--surface2);border-bottom:1px solid var(--border)">Category</th>
+            </tr>
+          </thead>
+          <tbody id="import-tbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-secondary" onclick="importBack()">← Back</button>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span id="import-total-label" style="font-size:13px;color:var(--text-dim)"></span>
+          <button class="btn btn-primary" onclick="confirmImport()">✓ Import Selected</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions" id="import-close-row">
+      <button class="btn btn-secondary" onclick="closeImport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EXPENSE MODAL -->
+<div class="modal-overlay hidden" id="expense-modal">
+  <div class="modal">
+    <div class="modal-title" id="expense-modal-title">Add Expense</div>
+    <!-- Feature 8: Template dropdown -->
+    <div id="template-bar" style="display:none;margin-bottom:12px">
+      <label style="font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px">📋 Use Template</label>
+      <select id="template-select" class="filter-select" style="width:100%;margin-top:5px" onchange="applyTemplate(this.value)">
+        <option value="">Select a template to pre-fill…</option>
+      </select>
+    </div>
+    <!-- Feature 4: Camera + file buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button type="button" class="btn btn-secondary" style="flex:1" onclick="document.getElementById('receipt-camera').click()">📷 Take Photo</button>
+      <button type="button" class="btn btn-secondary" style="flex:1" onclick="document.getElementById('receipt-file').click()">📎 Choose File</button>
+    </div>
+    <input type="file" id="receipt-camera" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event)">
+    <input type="file" id="receipt-file" accept="image/*,.pdf" style="display:none" onchange="handleFileSelect(event)">
+    <div class="scan-zone"
+         ondragover="event.preventDefault();this.classList.add('dragging')"
+         ondragleave="this.classList.remove('dragging')"
+         ondrop="handleDrop(event)"
+         onclick="document.getElementById('receipt-file').click()">
+      <div style="font-size:24px">📎</div>
+      <div style="font-size:13.5px;color:var(--text-dim);margin-top:4px">Drop receipt/PDF or click to browse</div>
+      <div style="font-size:11px;color:var(--text-mute);margin-top:2px">AI auto-scans receipts · Required for expenses ≥ $75 · Images or PDF</div>
+    </div>
+    <input type="file" id="receipt-input" accept="image/*,.pdf" style="display:none" onchange="handleFileSelect(event)">
+    <div id="scan-status"></div>
+    <form id="expense-form" onsubmit="saveExpense(event)" style="margin-top:16px">
+      <input type="hidden" id="edit-id">
+      <input type="hidden" id="form-receipt-path">
+      <input type="hidden" id="form-receipt-filename">
+      <input type="hidden" id="form-ai-extracted">
+      <div class="form-grid">
+        <div class="form-group"><label>Date *</label><input type="date" id="f-date" required></div>
+        <div class="form-group"><label>Vendor *</label><input type="text" id="f-vendor" placeholder="e.g. Delta Air Lines" required></div>
+        <div class="form-group"><label>Amount *</label><input type="number" id="f-amount" step="0.01" min="0" placeholder="0.00" required oninput="checkAmountWarn();updateCurrencyNote()"></div>
+        <!-- Mileage calculator — shown only when category = Mileage -->
+        <div class="form-group" id="mileage-calc-group" style="display:none">
+          <label>Miles Driven</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="f-miles" step="0.1" min="0" placeholder="0" style="flex:1" oninput="calcMileage()">
+            <span style="font-size:12px;color:var(--text-mute);white-space:nowrap">× $0.70/mi (IRS 2025)</span>
+          </div>
+          <div id="mileage-note" style="font-size:12px;color:var(--accent);margin-top:4px"></div>
+        </div>
+        <div class="form-group"><label>Currency</label><select id="f-currency" onchange="updateCurrencyNote()"><option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option><option>AUD</option><option>CHF</option><option>JPY</option><option>Other</option></select>
+          <div id="currency-note" style="display:none;font-size:11.5px;color:var(--text-dim);margin-top:4px"></div>
+        </div>
+        <div class="form-group" id="f-fund-group"><label>Fund *</label><select id="f-fund"><option value="">Select fund…</option></select></div>
+        <div class="form-group" id="f-type-group"><label>Expense Type *</label><select id="f-type"><option value="">Select type…</option></select></div>
+        <div class="form-group"><label>Category *</label><select id="f-category" required onchange="onCategoryChange()" ><option value="">Select category…</option></select></div>
+
+        <!-- Feature 5: Split toggle -->
+        <div class="form-group span2">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="f-split-toggle" onchange="toggleSplit(this)" style="width:15px;height:15px">
+            <span>✂️ Split across funds</span>
+          </label>
+          <div id="f-split-section" style="display:none;margin-top:10px">
+            <div id="f-split-rows"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSplitRow()">+ Add Split</button>
+              <span id="f-split-total" style="font-size:13px;color:var(--text-dim)">Total: $0.00</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="f-cash" onchange="toggleCash(this)" style="width:15px;height:15px">
+          <span>💵 Cash payment</span>
+        </label></div>
+        <input type="hidden" id="f-payment-method">
+        <div class="form-group span2"><label>Notes</label><textarea id="f-notes" placeholder="Description, purpose, or any additional notes…" style="min-height:60px"></textarea></div>
+      </div>
+      <div class="amount-warn" id="amount-warn">⚠️ Expenses ≥ $75 require a receipt. Please scan one above.</div>
+      <div id="line-items-display" style="display:none;margin-top:12px"></div>
+      <div id="save-as-template-bar" style="display:none;margin-top:10px;font-size:13px;color:var(--accent)">
+        💾 <a href="#" onclick="saveAsTemplate(event)" style="color:var(--accent)">Save as recurring template?</a>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeExpenseModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- NEW REPORT MODAL -->
+<div class="modal-overlay hidden" id="report-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">New Expense Report</div>
+    <form onsubmit="saveReport(event)">
+      <div class="form-grid full" style="grid-template-columns:1fr">
+        <div class="form-group"><label>Report Title *</label><input type="text" id="r-title" placeholder="e.g. March 2026 — John Lusk" required></div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text-dim)">
+        Create the report first, then assign individual expenses to it from the Expenses tab.
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- REVIEW MODAL (admin) -->
+<div class="modal-overlay hidden" id="review-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">Review Report</div>
+    <div id="review-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeReviewModal()">Close</button>
+      <button class="btn btn-danger" onclick="reviewReport('reject')">✕ Reject</button>
+      <button class="btn btn-success" onclick="reviewReport('approve')">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FUNDS=['GP','PVI','PVII','PVIII','PVE','OV I','PV Halter','PV Whoop','PV Chef','PV5'];
+const EXPENSE_TYPES=['GP Expense','LP Expense','Fund Organizational'];
+const CATEGORIES=['Travel','Mileage','Per Diem','Legal','Meals','Accounting','Back Office','Office','Subscription Services','Health Care','AI','Other'];
+const RECEIPT_EXEMPT=['Mileage','Per Diem'];
+
+let currentUser = null;
+let reviewingReportId = null;
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt$(n){ return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(s){ if(!s) return ''; try{ const d=new Date(s); if(isNaN(d)) return s; return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}); }catch(e){ return s; } }
+
+function typeBadge(t){
+  if(t==='GP Expense') return `<span class="badge badge-gp">GP</span>`;
+  if(t==='LP Expense') return `<span class="badge badge-lp">LP</span>`;
+  return `<span class="badge badge-org">Org</span>`;
+}
+function statusBadge(s){
+  const map={draft:'badge-draft',submitted:'badge-submitted',approved:'badge-approved',rejected:'badge-rejected'};
+  return `<span class="badge ${map[s]||'badge-draft'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function goTo(page, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  if(window.innerWidth<=768) closeMobileSidebar();
+  if(page==='overview')     loadOverview();
+  if(page==='expenses')     loadExpenses();
+  if(page==='reports')      loadReports();
+  if(page==='all-expenses') loadAllExpenses();
+  if(page==='approvals')    loadApprovals();
+  if(page==='team')         loadTeam();
+  if(page==='violations')   loadViolations();
+  if(page==='settings') {
+    // Pre-populate Telegram field with current user's saved value
+    if(currentUser?.telegram_chat_id) document.getElementById('tg-chat-id').value=currentUser.telegram_chat_id;
+    loadSettingsTemplates(); // Feature 8
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  currentUser = await fetch('/api/me').then(r=>r.json()).catch(()=>null);
+  if(!currentUser){ window.location='/login'; return; }
+
+  document.getElementById('user-name').textContent = currentUser.name;
+  document.getElementById('user-role').textContent = currentUser.role.replace('_',' ');
+
+  // Mobile avatar initial
+  const avatar = document.getElementById('mobile-avatar');
+  if (avatar) avatar.textContent = (currentUser.name||'?').charAt(0).toUpperCase();
+
+  if(currentUser.role==='admin'){
+    document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
+    const digestBtn = document.getElementById('digest-btn');
+    if (digestBtn) digestBtn.style.display = '';
+  }
+
+  populateFormSelects();
+  await populateYears();
+  await loadAllReports();
+  loadOverview();
+  loadApprovalBadge();
+  if(currentUser.role==='admin') loadViolationsBadge();
+  setInterval(loadApprovalBadge, 60000);
+  if(currentUser.role==='admin') setInterval(loadViolationsBadge, 120000);
+}
+
+function populateFormSelects(){
+  ['f-fund'].forEach(id=>{ const s=document.getElementById(id); s.innerHTML='<option value="">Select fund…</option>'+FUNDS.map(f=>`<option>${f}</option>`).join(''); });
+  ['f-type'].forEach(id=>{ const s=document.getElementById(id); s.innerHTML='<option value="">Select type…</option>'+EXPENSE_TYPES.map(t=>`<option>${t}</option>`).join(''); });
+  ['f-category'].forEach(id=>{ const s=document.getElementById(id); s.innerHTML='<option value="">Select category…</option>'+CATEGORIES.map(c=>`<option>${c}</option>`).join(''); });
+  ['filter-fund','af-fund'].forEach(id=>{ const s=document.getElementById(id); if(s) s.innerHTML='<option value="">All Funds</option>'+FUNDS.map(f=>`<option>${f}</option>`).join(''); });
+  ['filter-cat'].forEach(id=>{ const s=document.getElementById(id); if(s) s.innerHTML='<option value="">All Categories</option>'+CATEGORIES.map(c=>`<option>${c}</option>`).join(''); });
+}
+
+async function populateYears(){
+  const stats = await fetch('/api/stats').then(r=>r.json()).catch(()=>({years:[]}));
+  ['overview-year','filter-year','af-year'].forEach(id=>{
+    const s=document.getElementById(id); if(!s) return;
+    const cur=s.value;
+    s.innerHTML=`<option value="">All Years</option>`+(stats.years||[]).map(y=>`<option${cur===y?' selected':''}>${y}</option>`).join('');
+  });
+}
+
+async function loadApprovalBadge(){
+  if(!currentUser||currentUser.role!=='admin') return;
+  const reports = await fetch('/api/reports').then(r=>r.json()).catch(()=>[]);
+  const pending = reports.filter(r=>r.status==='submitted').length;
+  const badge = document.getElementById('approval-badge');
+  if(pending>0){ badge.textContent=pending; badge.style.display=''; }
+  else badge.style.display='none';
+}
+
+// ── VIOLATIONS ────────────────────────────────────────────────────────────────
+async function loadViolationsBadge() {
+  const data = await fetch('/api/violations').then(r=>r.json()).catch(()=>({missingReceipts:[],staleExpenses:[]}));
+  const total = (data.missingReceipts||[]).length + (data.staleExpenses||[]).length;
+  const btn = document.getElementById('violations-btn');
+  const cnt = document.getElementById('violations-count');
+  if (btn) {
+    if (total > 0) {
+      btn.style.display = '';
+      if (cnt) cnt.textContent = total;
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+}
+
+async function loadViolations() {
+  const el = document.getElementById('violations-content');
+  el.innerHTML = '<div style="color:var(--text-mute);text-align:center;padding:40px">Loading…</div>';
+  const data = await fetch('/api/violations').then(r=>r.json()).catch(()=>({missingReceipts:[],staleExpenses:[]}));
+  const mr = data.missingReceipts || [];
+  const se = data.staleExpenses || [];
+
+  let html = '';
+  if (mr.length === 0 && se.length === 0) {
+    html = '<div style="text-align:center;padding:60px;color:var(--green);font-size:18px">✅ No policy violations — you\'re clean!</div>';
+  } else {
+    if (mr.length > 0) {
+      html += `<div style="background:var(--surface);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:12px">📎 Missing Receipts (${mr.length})</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-bottom:12px">Expenses ≥ $75 with no receipt attached</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:11px;color:var(--text-mute);text-transform:uppercase">
+            <th style="text-align:left;padding:6px 10px">Date</th>
+            <th style="text-align:left;padding:6px 10px">Vendor</th>
+            <th style="text-align:left;padding:6px 10px">Fund</th>
+            <th style="text-align:right;padding:6px 10px">Amount</th>
+            <th style="text-align:left;padding:6px 10px">Submitted By</th>
+          </tr></thead>
+          <tbody>${mr.map(e=>`<tr onclick="openEditExpense(${e.id})" style="cursor:pointer;border-top:1px solid var(--border)" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+            <td style="padding:8px 10px;font-size:13px">${e.date}</td>
+            <td style="padding:8px 10px;font-size:13px">${esc(e.vendor)}</td>
+            <td style="padding:8px 10px;font-size:13px">${esc(e.fund||'—')}</td>
+            <td style="padding:8px 10px;font-size:13px;text-align:right;color:var(--red);font-weight:600">${fmt$(e.amount)}</td>
+            <td style="padding:8px 10px;font-size:13px;color:var(--text-mute)">${esc(e.user_name)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+    }
+    if (se.length > 0) {
+      html += `<div style="background:var(--surface);border:1px solid rgba(251,146,60,.3);border-radius:12px;padding:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--orange);margin-bottom:12px">⏳ Stale Expenses (${se.length})</div>
+        <div style="font-size:12px;color:var(--text-mute);margin-bottom:12px">Expenses older than 90 days not assigned to a report</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:11px;color:var(--text-mute);text-transform:uppercase">
+            <th style="text-align:left;padding:6px 10px">Date</th>
+            <th style="text-align:left;padding:6px 10px">Vendor</th>
+            <th style="text-align:left;padding:6px 10px">Fund</th>
+            <th style="text-align:right;padding:6px 10px">Amount</th>
+            <th style="text-align:left;padding:6px 10px">Submitted By</th>
+          </tr></thead>
+          <tbody>${se.map(e=>`<tr onclick="openEditExpense(${e.id})" style="cursor:pointer;border-top:1px solid var(--border)" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+            <td style="padding:8px 10px;font-size:13px">${e.date}</td>
+            <td style="padding:8px 10px;font-size:13px">${esc(e.vendor)}</td>
+            <td style="padding:8px 10px;font-size:13px">${esc(e.fund||'—')}</td>
+            <td style="padding:8px 10px;font-size:13px;text-align:right;color:var(--orange);font-weight:600">${fmt$(e.amount)}</td>
+            <td style="padding:8px 10px;font-size:13px;color:var(--text-mute)">${esc(e.user_name)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function exportAccountant() {
+  const year = new Date().getFullYear();
+  const y = prompt(`Export accountant summary for which year?`, year);
+  if (!y) return;
+  window.location = `/api/export/accountant?year=${encodeURIComponent(y)}`;
+}
+
+// ── OVERVIEW (replaced by extended version at bottom) ─────────────────────────
+// loadOverview defined below with Feature 6/7 support
+
+// ── EXPENSES ──────────────────────────────────────────────────────────────────
+async function loadExpenses(){
+  const fund=document.getElementById('filter-fund').value;
+  const type=document.getElementById('filter-type').value;
+  const cat=document.getElementById('filter-cat').value;
+  const year=document.getElementById('filter-year').value;
+  const p=new URLSearchParams();
+  if(fund) p.set('fund',fund); if(type) p.set('type',type); if(cat) p.set('category',cat); if(year) p.set('year',year);
+  const rows=await fetch('/api/expenses?'+p).then(r=>r.json()).catch(()=>[]);
+  const total=rows.reduce((s,r)=>s+r.amount,0);
+  document.getElementById('expenses-subtitle').textContent=`${rows.length} expense${rows.length!==1?'s':''} · ${fmt$(total)}`;
+  const tbody=document.getElementById('expenses-tbody');
+  // Bulk assign bar
+  const unassigned = rows.filter(e => !e.report_id);
+  const bulkBar = document.getElementById('bulk-assign-bar');
+  const draftReports = allReports.filter(r => r.status === 'draft');
+  if (unassigned.length && draftReports.length) {
+    bulkBar.style.display = 'flex';
+    document.getElementById('bulk-unassigned-count').textContent = unassigned.length;
+    const sel = document.getElementById('bulk-assign-select');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Assign all to report…</option>' + draftReports.map(r=>`<option value="${r.id}"${cur==r.id?' selected':''}>${r.title}</option>`).join('');
+  } else {
+    bulkBar.style.display = 'none';
+  }
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" class="empty-state">No expenses found</td></tr>'; return; }
+  tbody.innerHTML=rows.map(e=>`<tr onclick="openEditExpense(${e.id})">
+    <td class="muted">${fmtDate(e.date)}</td>
+    <td><strong>${esc(e.vendor)}</strong>${e.description?`<div style="font-size:11.5px;color:var(--text-mute)">${esc(e.description)}</div>`:''}</td>
+    <td><span class="badge badge-fund">${e.split_count>0?`✂️ Split (${e.split_count})`:esc(e.fund)}</span></td>
+    <td>${typeBadge(e.expense_type)}</td>
+    <td class="muted">${esc(e.category)}</td>
+    <td class="amount" style="color:${e.amount>=75?'var(--orange)':'var(--text)'}">
+      ${e.currency&&e.currency!=='USD'?`<div>${fmt$(e.amount_usd||e.amount)}</div><div style="font-size:10.5px;color:var(--text-mute)">${e.amount.toFixed(2)} ${esc(e.currency||'')}</div>`:fmt$(e.amount)}
+    </td>
+    <td onclick="event.stopPropagation()">${reportCell(e)}</td>
+    <td>${e.receipt_filename?`<a class="receipt-link" href="/uploads/${esc(e.receipt_filename)}" target="_blank" onclick="event.stopPropagation()">📎</a>`:''}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteExpense(event,${e.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+let allReports = [];
+function reportCell(e) {
+  const draftReports = allReports.filter(r => r.status === 'draft');
+  if (e.report_id && e.report_title) {
+    // Check if the report is locked (submitted/approved)
+    const report = allReports.find(r => r.id === e.report_id);
+    const locked = report && report.status !== 'draft';
+    const label = e.report_title.length > 22 ? e.report_title.slice(0,22)+'…' : e.report_title;
+    if (locked) {
+      // Locked — show badge with lock icon, no remove button
+      return `<span style="font-size:11px;background:rgba(251,146,60,.15);color:var(--orange);padding:2px 7px;border-radius:6px;white-space:nowrap" title="${esc(e.report_title)} (submitted — locked)">🔒 ${esc(label)}</span>`;
+    }
+    return `<span style="font-size:11px;background:rgba(124,111,247,.15);color:var(--accent);padding:2px 7px;border-radius:6px;white-space:nowrap" title="${esc(e.report_title)}">${esc(label)}</span>
+    <button class="btn btn-secondary btn-sm" style="font-size:10px;padding:1px 5px;margin-left:4px" onclick="assignReport(event,${e.id},null)">✕</button>`;
+  }
+  if (!draftReports.length) return '<span style="font-size:11px;color:var(--text-mute)">—</span>';
+  return `<select class="filter-select" style="font-size:11px;padding:3px 6px;max-width:140px" onchange="assignReport(event,${e.id},this.value)" onclick="event.stopPropagation()">
+    <option value="">Add to report…</option>
+    ${draftReports.map(r=>`<option value="${r.id}">${esc(r.title)}</option>`).join('')}
+  </select>`;
+}
+
+async function assignReport(event, expenseId, reportId) {
+  event.stopPropagation();
+  await fetch(`/api/expenses/${expenseId}/report`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({report_id: reportId ? parseInt(reportId) : null})});
+  await loadAllReports();
+  loadExpenses();
+  if(document.getElementById('page-reports').classList.contains('active')) loadReports();
+}
+
+async function loadAllReports() {
+  allReports = await fetch('/api/reports').then(r=>r.json()).catch(()=>[]);
+}
+
+async function bulkAssignAll() {
+  const reportId = document.getElementById('bulk-assign-select').value;
+  if (!reportId) { alert('Pick a report first.'); return; }
+  const rows = await fetch('/api/expenses?' + new URLSearchParams({
+    fund: document.getElementById('filter-fund').value,
+    type: document.getElementById('filter-type').value,
+    category: document.getElementById('filter-cat').value,
+    year: document.getElementById('filter-year').value
+  })).then(r=>r.json()).catch(()=>[]);
+  const unassigned = rows.filter(e => !e.report_id);
+  if (!unassigned.length) return;
+  await Promise.all(unassigned.map(e =>
+    fetch(`/api/expenses/${e.id}/report`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({report_id: parseInt(reportId)})})
+  ));
+  await loadAllReports();
+  loadExpenses();
+  if(document.getElementById('page-reports').classList.contains('active')) loadReports();
+}
+
+// ── ALL EXPENSES (admin) ──────────────────────────────────────────────────────
+async function loadAllExpenses(){
+  const uid=document.getElementById('af-user')?.value;
+  const fund=document.getElementById('af-fund')?.value;
+  const type=document.getElementById('af-type')?.value;
+  const year=document.getElementById('af-year')?.value;
+  const p=new URLSearchParams();
+  if(uid) p.set('user_id',uid); if(fund) p.set('fund',fund); if(type) p.set('type',type); if(year) p.set('year',year);
+  const rows=await fetch('/api/expenses?'+p).then(r=>r.json()).catch(()=>[]);
+  const total=rows.reduce((s,r)=>s+r.amount,0);
+  document.getElementById('all-expenses-subtitle').textContent=`${rows.length} expense${rows.length!==1?'s':''} · ${fmt$(total)}`;
+
+  // Populate user filter
+  const users=await fetch('/api/users').then(r=>r.json()).catch(()=>[]);
+  const af=document.getElementById('af-user');
+  if(af){ const cur=af.value; af.innerHTML='<option value="">All Employees</option>'+users.map(u=>`<option value="${u.id}"${cur==u.id?' selected':''}>${esc(u.name)}</option>`).join(''); }
+
+  const tbody=document.getElementById('all-expenses-tbody');
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" class="empty-state">No expenses found</td></tr>'; return; }
+  tbody.innerHTML=rows.map(e=>`<tr onclick="openEditExpense(${e.id})" style="cursor:pointer">
+    <td class="muted">${fmtDate(e.date)}</td>
+    <td><strong>${esc(e.user_name||'')}</strong></td>
+    <td>${esc(e.vendor)}</td>
+    <td><span class="badge badge-fund">${esc(e.fund)}</span></td>
+    <td>${typeBadge(e.expense_type)}</td>
+    <td class="muted">${esc(e.category)}</td>
+    <td class="amount" style="color:${e.amount>=75?'var(--orange)':'var(--text)'}">${fmt$(e.amount)}</td>
+    <td>${e.receipt_filename?`<a class="receipt-link" href="/uploads/${esc(e.receipt_filename)}" target="_blank" onclick="event.stopPropagation()">📎</a>`:''}</td>
+    <td class="muted" style="font-size:11px">${esc(e.payment_method||'')}</td>
+  </tr>`).join('');
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+async function loadReports(){
+  allReports = await fetch('/api/reports').then(r=>r.json()).catch(()=>[]);
+  const reports = allReports;
+  const el=document.getElementById('reports-list');
+  if(!reports.length){ el.innerHTML='<div class="empty-state" style="padding:40px;background:var(--surface);border-radius:14px;border:1px solid var(--border)">No reports yet. Create one, then assign expenses to it from the Expenses tab.</div>'; return; }
+  el.innerHTML=reports.map(r=>`
+
+    <div class="report-card">
+      <div class="report-card-header" style="cursor:pointer;user-select:none" onclick="toggleReport(${r.id},event)">
+        <div class="report-card-title" style="display:flex;align-items:center;gap:8px">
+          <span id="report-chevron-${r.id}" style="font-size:12px;transition:transform .2s;display:inline-block">▶</span>
+          <span id="report-title-${r.id}">${esc(r.title)}</span>
+          ${r.status==='draft'?`<button class="btn btn-secondary btn-sm" style="font-size:11px;padding:2px 8px" onclick="editReportTitle(event,${r.id})">✏️</button>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--text-dim)">💰 ${fmt$(r.total)} · ${r.expenses.length} expense${r.expenses.length!==1?'s':''}</span>
+          ${statusBadge(r.status)}
+        </div>
+      </div>
+      <div id="report-body-${r.id}" style="display:none">
+        <div class="report-card-meta" style="margin-top:10px">
+          ${r.submitted_at?`<span>Submitted ${fmtDate(r.submitted_at.slice(0,10))}</span>`:''}
+          ${r.rejection_reason?`<span style="color:var(--red);font-weight:600">❌ Rejected: ${esc(r.rejection_reason)}</span>`:''}
+          ${r.reviewer_notes?`<span style="color:var(--text-dim)">Note: ${esc(r.reviewer_notes)}</span>`:''}
+          ${r.status==='approved'?`<span style="color:var(--green);font-weight:600">✅ Approved — payment processing</span>`:''}
+        </div>
+        ${r.expenses.length ? `
+        <div style="margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead id="report-thead-${r.id}"></thead>
+            <tbody id="report-tbody-${r.id}"></tbody>
+          </table>
+        </div>` : `<div style="font-size:12.5px;color:var(--text-mute);padding:8px 0">No expenses added yet — go to Expenses tab to assign them here.</div>`}
+        <div class="btn-group" style="margin-top:10px">
+          ${r.status==='draft'?`<button class="btn btn-primary btn-sm" onclick="submitReport(${r.id})" ${r.expenses.filter(e=>e.amount>=75&&!e.receipt_filename&&!RECEIPT_EXEMPT.includes(e.category)).length?`style="opacity:.5" title="${r.expenses.filter(e=>e.amount>=75&&!e.receipt_filename&&!RECEIPT_EXEMPT.includes(e.category)).length} expense(s) over $75 missing receipts"`:''}>📤 Submit for Approval${r.expenses.filter(e=>e.amount>=75&&!e.receipt_filename&&!RECEIPT_EXEMPT.includes(e.category)).length?` ⚠️`:''}</button>`:''}
+          ${r.status==='draft'?`<button class="btn btn-danger btn-sm" onclick="deleteReport(${r.id})">Delete</button>`:''}
+          <button class="btn btn-secondary btn-sm" onclick="exportReport(${r.id})">⬇️ Export Excel</button>
+          <a class="btn btn-secondary btn-sm" href="/api/reports/${r.id}/pdf" target="_blank">📄 Export PDF</a>
+        </div>
+        <!-- Feature 5: Comments -->
+        <div id="comments-section-${r.id}" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💬 Comments</div>
+          <div id="comments-list-${r.id}" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="comment-input-${r.id}" placeholder="Add a comment…" style="flex:1;padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px" onkeydown="if(event.key==='Enter')sendComment(${r.id})">
+            <button class="btn btn-secondary btn-sm" onclick="sendComment(${r.id})">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+  reports.forEach(r => { if (r.expenses.length) renderReportTable(r.id); });
+}
+
+const reportSort = {}; // { [reportId]: { col, dir } }
+
+function sortReport(reportId, col) {
+  const cur = reportSort[reportId] || { col: 'date', dir: 'asc' };
+  const dir = cur.col === col && cur.dir === 'asc' ? 'desc' : 'asc';
+  reportSort[reportId] = { col, dir };
+  renderReportTable(reportId);
+}
+
+function renderReportTable(reportId) {
+  const r = allReports.find(x => x.id === reportId);
+  if (!r) return;
+  const { col, dir } = reportSort[reportId] || { col: 'date', dir: 'asc' };
+  const sorted = [...r.expenses].sort((a, b) => {
+    let av = a[col === 'vendor' ? 'vendor' : col === 'amount' ? 'amount' : 'date'];
+    let bv = b[col === 'vendor' ? 'vendor' : col === 'amount' ? 'amount' : 'date'];
+    if (col === 'amount') { av = parseFloat(av); bv = parseFloat(bv); }
+    else { av = (av||'').toString().toLowerCase(); bv = (bv||'').toString().toLowerCase(); }
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  const icon = c => col === c ? (dir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
+  const thStyle = 'padding:6px 10px;text-align:left;color:var(--text-mute);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap';
+  const tbody = document.getElementById('report-tbody-'+reportId);
+  const thead = document.getElementById('report-thead-'+reportId);
+  if (thead) {
+    thead.innerHTML = `<tr style="background:var(--surface2)">
+      <th style="${thStyle}" onclick="sortReport(${reportId},'date')">Date${icon('date')}</th>
+      <th style="${thStyle}" onclick="sortReport(${reportId},'vendor')">Vendor${icon('vendor')}</th>
+      <th style="padding:6px 10px;text-align:left;color:var(--text-mute);font-weight:600">Fund</th>
+      <th style="padding:6px 10px;text-align:left;color:var(--text-mute);font-weight:600">Type</th>
+      <th style="padding:6px 10px;text-align:left;color:var(--text-mute);font-weight:600">Category</th>
+      <th style="${thStyle};text-align:right" onclick="sortReport(${reportId},'amount')">Amount${icon('amount')}</th>
+      <th style="padding:6px 10px"></th>
+    </tr>`;
+  }
+  if (tbody) {
+    tbody.innerHTML = sorted.map(e=>`<tr style="border-top:1px solid var(--border);cursor:pointer" onclick="openEditExpense(${e.id})">
+      <td style="padding:6px 10px;color:var(--text-dim)">${fmtDate(e.date)}</td>
+      <td style="padding:6px 10px">${esc(e.vendor)}${e.receipt_filename?` <a class="receipt-link" href="/uploads/${esc(e.receipt_filename)}" target="_blank" onclick="event.stopPropagation()">📎</a>`:''}</td>
+      <td style="padding:6px 10px"><span class="badge badge-fund" style="font-size:10px">${esc(e.fund)}</span></td>
+      <td style="padding:6px 10px">${typeBadge(e.expense_type)}</td>
+      <td style="padding:6px 10px;color:var(--text-dim)">${esc(e.category)}</td>
+      <td style="padding:6px 10px;text-align:right;font-weight:600;color:${e.amount>=75?'var(--orange)':'var(--text)'}">${fmt$(e.amount)}</td>
+      <td style="padding:6px 10px;white-space:nowrap" onclick="event.stopPropagation()">
+        ${r.status==='draft'?`<button class="btn btn-secondary btn-sm" style="font-size:10px;padding:1px 6px" onclick="removeFromReport(${e.id})">Remove</button>`:''}
+      </td>
+    </tr>`).join('');
+  }
+}
+
+function toggleReport(id, event) {
+  // Don't toggle when clicking buttons inside the header
+  if (event.target.closest('button')) return;
+  const body = document.getElementById('report-body-'+id);
+  const chevron = document.getElementById('report-chevron-'+id);
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  chevron.style.transform = open ? 'rotate(90deg)' : '';
+  if (open) {
+    renderReportTable(id);
+    loadReportComments(id); // Feature 5
+  }
+}
+
+async function removeFromReport(expenseId) {
+  await fetch(`/api/expenses/${expenseId}/report`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({report_id: null})});
+  await loadAllReports();
+  loadReports();
+  loadExpenses();
+}
+
+async function loadApprovals(){
+  const reports=await fetch('/api/reports').then(r=>r.json()).catch(()=>[]);
+  const submitted=reports.filter(r=>r.status==='submitted');
+  const reviewed=reports.filter(r=>r.status==='approved'||r.status==='rejected');
+  const el=document.getElementById('approvals-list');
+
+  let html='';
+  if(submitted.length){
+    html+=`<div style="font-size:14px;font-weight:700;margin-bottom:8px;color:var(--orange)">⏳ Pending Approval (${submitted.length})</div>`;
+    html+=`<div id="bulk-approve-bar" style="display:none;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-success btn-sm" id="bulk-approve-btn" onclick="bulkApproveSelected()">✓ Approve All Selected (<span id="bulk-approve-count">0</span>)</button>
+    </div>`;
+    html+=submitted.map(r=>`
+      <div class="report-card" style="border-color:rgba(251,146,60,.3)">
+        <div class="report-card-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" class="approval-check" data-id="${r.id}" onchange="updateBulkApproveBar()" style="width:15px;height:15px;cursor:pointer">
+            <div class="report-card-title">${esc(r.user_name)} — ${esc(r.title)}</div>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="report-card-meta">
+          <span>📅 ${fmtDate(r.date_from)} → ${fmtDate(r.date_to)}</span>
+          <span>💰 <strong>${fmt$(r.total)}</strong></span>
+          ${r.submitted_at?`<span>Submitted ${fmtDate(r.submitted_at.slice(0,10))}</span>`:''}
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success btn-sm" onclick="openReview(${r.id})">Review & Approve →</button>
+        </div>
+      </div>`).join('');
+  }
+
+  if(reviewed.length){
+    html+=`<div style="font-size:14px;font-weight:700;margin:20px 0 12px;color:var(--text-dim)">History</div>`;
+    html+=reviewed.map(r=>`
+      <div class="report-card">
+        <div class="report-card-header"><div class="report-card-title">${esc(r.user_name)} — ${esc(r.title)}</div>${statusBadge(r.status)}</div>
+        <div class="report-card-meta"><span>${fmt$(r.total)}</span>${r.reviewed_at?`<span>Reviewed ${fmtDate(r.reviewed_at.slice(0,10))}</span>`:''}</div>
+      </div>`).join('');
+  }
+
+  if(!html) el.innerHTML='<div class="empty-state" style="padding:40px;background:var(--surface);border-radius:14px;border:1px solid var(--border)">No reports submitted yet.</div>';
+  else el.innerHTML=html;
+  loadApprovalBadge();
+}
+
+async function openReview(id){
+  reviewingReportId=id;
+  const data=await fetch('/api/reports/'+id).then(r=>r.json());
+  const el=document.getElementById('review-content');
+  el.innerHTML=`
+    <div style="margin-bottom:16px">
+      <strong>${esc(data.user_name)}</strong> — ${esc(data.title)}<br>
+      <span style="color:var(--text-dim);font-size:13px">${fmtDate(data.date_from)} → ${fmtDate(data.date_to)} · <strong>${fmt$(data.total)}</strong></span>
+    </div>
+    <div class="table-wrap" style="margin-bottom:16px;max-height:280px;overflow-y:auto">
+      <table><thead><tr><th>Date</th><th>Vendor</th><th>Fund</th><th>Category</th><th>Amount</th><th>Receipt</th></tr></thead>
+      <tbody>${(data.expenses||[]).map(e=>`<tr>
+        <td class="muted">${fmtDate(e.date)}</td>
+        <td>${esc(e.vendor)}</td>
+        <td><span class="badge badge-fund">${esc(e.fund)}</span></td>
+        <td class="muted">${esc(e.category)}</td>
+        <td class="amount">${fmt$(e.amount)}</td>
+        <td>${e.receipt_filename?`<a class="receipt-link" href="/uploads/${esc(e.receipt_filename)}" target="_blank">📎</a>`:''}</td>
+      </tr>`).join('')}</tbody></table>
+    </div>
+    <div class="form-group"><label style="color:var(--red);font-weight:700">Rejection Reason <span style="font-weight:400;color:var(--text-mute)">(required if rejecting)</span></label><textarea id="review-rejection" placeholder="Explain why this report is being rejected…" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>Additional Notes <span style="font-weight:400;color:var(--text-mute)">(optional)</span></label><textarea id="review-notes" placeholder="Any other notes for the employee…" style="min-height:50px"></textarea></div>`;
+  document.getElementById('review-modal').classList.remove('hidden');
+}
+
+async function reviewReport(action){
+  const notes = document.getElementById('review-notes').value;
+  const rejection_reason = document.getElementById('review-rejection').value.trim();
+  if (action === 'reject' && !rejection_reason) {
+    alert('Please enter a rejection reason before rejecting.');
+    document.getElementById('review-rejection').focus();
+    return;
+  }
+  const res = await fetch(`/api/reports/${reviewingReportId}/review`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,notes,rejection_reason})}).then(r=>r.json());
+  if (!res.ok && res.error) { alert(res.error); return; }
+  document.getElementById('review-modal').classList.add('hidden');
+  loadApprovals();
+}
+function closeReviewModal(){ document.getElementById('review-modal').classList.add('hidden'); }
+
+function editReportTitle(event, id) {
+  event.stopPropagation();
+  const span = document.getElementById(`report-title-${id}`);
+  const current = span.textContent;
+  span.innerHTML = `<input type="text" value="${esc(current)}" id="report-title-input-${id}"
+    style="font-size:15px;font-weight:700;background:var(--surface2);border:1px solid var(--accent);border-radius:6px;padding:2px 8px;color:var(--text);width:260px"
+    onblur="saveReportTitle(${id})" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){loadReports();}">`;
+  document.getElementById(`report-title-input-${id}`).focus();
+}
+
+async function saveReportTitle(id) {
+  const input = document.getElementById(`report-title-input-${id}`);
+  if (!input) return;
+  const newTitle = input.value.trim();
+  if (!newTitle) { loadReports(); return; }
+  await fetch(`/api/reports/${id}`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title: newTitle})});
+  await loadAllReports();
+  loadReports();
+  loadExpenses();
+}
+
+async function submitReport(id){
+  // Check: all expenses >$75 must have a receipt
+  const report = allReports.find(r => r.id === id);
+  if (report) {
+    const missing = report.expenses.filter(e => e.amount >= 75 && !e.receipt_filename && !RECEIPT_EXEMPT.includes(e.category));
+    if (missing.length) {
+      const names = missing.map(e => `• ${esc(e.vendor)} (${fmt$(e.amount)})`).join('\n');
+      alert(`⚠️ Can't submit — ${missing.length} expense${missing.length!==1?'s':''} over $75 need a receipt:\n\n${names}\n\nAdd receipts before submitting.\n\n(Mileage and Per Diem are exempt.)`);
+      return;
+    }
+  }
+  if(!confirm('Submit this report to Mike for approval?')) return;
+  const res=await fetch(`/api/reports/${id}/submit`,{method:'POST'}).then(r=>r.json());
+  if(res.ok) alert(`✅ Submitted! ${res.count} expense${res.count!==1?'s':''} totaling ${fmt$(res.total)} sent to Mike for approval.`);
+  else alert(res.error||'Failed to submit');
+  loadReports();
+}
+
+async function deleteReport(id){
+  if(!confirm('Delete this draft report?')) return;
+  await fetch('/api/reports/'+id,{method:'DELETE'});
+  loadReports();
+}
+
+function exportReport(id){ window.location=`/api/export?report_id=${id}`; }
+
+// ── REPORT MODAL ──────────────────────────────────────────────────────────────
+function openNewReport(){
+  const now=new Date();
+  document.getElementById('r-title').value=`${now.toLocaleString('en-US',{month:'long'})} ${now.getFullYear()} Expenses`;
+  document.getElementById('report-modal').classList.remove('hidden');
+}
+function closeReportModal(){ document.getElementById('report-modal').classList.add('hidden'); }
+
+async function saveReport(e){
+  e.preventDefault();
+  const payload={title:document.getElementById('r-title').value};
+  const res=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  closeReportModal();
+  goTo('reports',document.querySelector('[data-page=reports]'));
+}
+
+// ── EXPENSE MODAL ─────────────────────────────────────────────────────────────
+function openAddExpense(){
+  document.getElementById('edit-id').value='';
+  document.getElementById('expense-form').reset();
+  document.getElementById('form-receipt-path').value='';
+  document.getElementById('form-receipt-filename').value='';
+  document.getElementById('form-ai-extracted').value='0';
+  document.getElementById('scan-status').innerHTML='';
+  document.getElementById('line-items-display').style.display='none';
+  document.getElementById('amount-warn').style.display='none';
+  document.getElementById('f-cash').checked=false;
+  document.getElementById('f-payment-method').value='';
+  document.getElementById('expense-modal-title').textContent='Add Expense';
+  document.getElementById('save-btn').textContent='Save Expense';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('save-as-template-bar').style.display='none';
+  // Reset mileage calculator
+  document.getElementById('mileage-calc-group').style.display='none';
+  document.getElementById('f-miles').value='';
+  document.getElementById('mileage-note').textContent='';
+  document.getElementById('expense-modal').classList.remove('hidden');
+  loadTemplates(); // Feature 8: load templates
+}
+
+async function openEditExpense(id){
+  const res=await fetch('/api/expenses/'+id);
+  if(!res.ok){ alert('Could not load expense (id='+id+', status='+res.status+')'); return; }
+  const e=await res.json();
+  openAddExpense();
+  document.getElementById('edit-id').value=e.id;
+  document.getElementById('f-date').value=e.date;
+  document.getElementById('f-vendor').value=e.vendor;
+  document.getElementById('f-amount').value=e.amount;
+  document.getElementById('f-currency').value=e.currency||'USD';
+  document.getElementById('f-fund').value=e.fund;
+  document.getElementById('f-type').value=e.expense_type;
+  document.getElementById('f-category').value=e.category;
+  document.getElementById('f-notes').value=e.notes||(e.description||'');
+  document.getElementById('form-receipt-path').value=e.receipt_path||'';
+  document.getElementById('form-receipt-filename').value=e.receipt_filename||'';
+  if(e.receipt_filename) document.getElementById('scan-status').innerHTML=`<div class="scan-result"><strong>📎 Attached:</strong> ${esc(e.receipt_filename)}</div>`;
+  const isCash = e.payment_method === 'Cash';
+  document.getElementById('f-cash').checked = isCash;
+  document.getElementById('f-payment-method').value = e.payment_method || '';
+  document.getElementById('expense-modal-title').textContent='Edit Expense';
+  document.getElementById('save-btn').textContent='Update';
+}
+
+function toggleCash(cb) {
+  document.getElementById('f-payment-method').value = cb.checked ? 'Cash' : '';
+}
+
+function updateCardLabel() {
+  const card = document.getElementById('import-card').value;
+  const last4 = document.getElementById('import-card-last4').value;
+  const preview = document.getElementById('card-label-preview');
+  if (card && last4.length === 4) {
+    preview.textContent = `Will tag as: ${card} ···${last4}`;
+    preview.style.color = 'var(--accent)';
+  } else if (card) {
+    preview.textContent = `Enter last 4 digits to proceed`;
+    preview.style.color = 'var(--red)';
+  } else {
+    preview.textContent = 'Stored internally for audit — not shown on reports';
+    preview.style.color = 'var(--text-mute)';
+  }
+}
+
+function closeExpenseModal(){ document.getElementById('expense-modal').classList.add('hidden'); }
+
+// ── Mileage calculator ────────────────────────────────────────────────────────
+const IRS_RATE = 0.70; // 2025 IRS mileage rate
+
+function onCategoryChange() {
+  const cat = document.getElementById('f-category').value;
+  const isMileage = cat === 'Mileage';
+  document.getElementById('mileage-calc-group').style.display = isMileage ? '' : 'none';
+  if (!isMileage) {
+    document.getElementById('f-miles').value = '';
+    document.getElementById('mileage-note').textContent = '';
+  } else {
+    // pre-fill amount if miles already entered
+    calcMileage();
+  }
+  checkAmountWarn();
+}
+
+function calcMileage() {
+  const miles = parseFloat(document.getElementById('f-miles').value) || 0;
+  if (miles > 0) {
+    const total = (miles * IRS_RATE).toFixed(2);
+    document.getElementById('f-amount').value = total;
+    document.getElementById('mileage-note').textContent = `${miles} mi × $${IRS_RATE}/mi = $${total}`;
+    checkAmountWarn();
+    updateCurrencyNote();
+  } else {
+    document.getElementById('mileage-note').textContent = '';
+  }
+}
+
+function checkAmountWarn(){
+  const amt=parseFloat(document.getElementById('f-amount').value)||0;
+  const hasR=!!document.getElementById('form-receipt-filename').value;
+  const cat=document.getElementById('f-category').value;
+  const exempt=RECEIPT_EXEMPT.includes(cat);
+  document.getElementById('amount-warn').style.display=(amt>=75&&!hasR&&!exempt)?'block':'none';
+}
+
+async function saveExpense(e){
+  e.preventDefault();
+  const id=document.getElementById('edit-id').value;
+  const amt=parseFloat(document.getElementById('f-amount').value)||0;
+  const hasR=!!document.getElementById('form-receipt-filename').value;
+  if(amt>=75&&!hasR&&!confirm('Expense is ≥ $75 but has no receipt. Save anyway?')) return;
+  const payload={
+    date:document.getElementById('f-date').value,
+    vendor:document.getElementById('f-vendor').value,
+    amount:amt,
+    currency:document.getElementById('f-currency').value,
+    fund:document.getElementById('f-fund').value,
+    expense_type:document.getElementById('f-type').value,
+    category:document.getElementById('f-category').value,
+    description:'',
+    reimbursable:1,
+    notes:document.getElementById('f-notes').value,
+    receipt_path:document.getElementById('form-receipt-path').value||null,
+    receipt_filename:document.getElementById('form-receipt-filename').value||null,
+    ai_extracted:document.getElementById('form-ai-extracted').value==='1'?1:0,
+    payment_method:document.getElementById('f-payment-method').value||null
+  };
+  const url=id?'/api/expenses/'+id:'/api/expenses';
+  const method=id?'PUT':'POST';
+  await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  closeExpenseModal();
+  // Feature 8: show "save as template" bar briefly for new expenses
+  if (!id) {
+    const bar = document.getElementById('save-as-template-bar');
+    if (bar) { bar.style.display = 'block'; setTimeout(()=>{ bar.style.display='none'; }, 8000); }
+  }
+  await loadAllReports();
+  loadExpenses();
+  loadOverview();
+  if(document.getElementById('page-reports').classList.contains('active')) loadReports();
+}
+
+async function deleteExpense(ev,id){
+  ev.stopPropagation();
+  if(!confirm('Delete this expense?')) return;
+  await fetch('/api/expenses/'+id,{method:'DELETE'});
+  loadExpenses();
+}
+
+// ── SCAN ──────────────────────────────────────────────────────────────────────
+function handleDrop(ev){ ev.preventDefault(); document.querySelector('.scan-zone').classList.remove('dragging'); const f=ev.dataTransfer.files[0]; if(f) scanFile(f); }
+function handleFileSelect(ev){ const f=ev.target.files[0]; if(f) scanFile(f); }
+
+async function scanFile(file){
+  const status=document.getElementById('scan-status');
+  status.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-dim);font-size:13.5px">🔍 Scanning with AI…</div>';
+  const fd=new FormData(); fd.append('receipt',file);
+  try{
+    const data=await fetch('/api/scan',{method:'POST',body:fd}).then(r=>r.json());
+    document.getElementById('form-receipt-path').value=data.file_path||'';
+    document.getElementById('form-receipt-filename').value=data.file_name||'';
+    document.getElementById('amount-warn').style.display='none';
+    if(data.extracted&&!data.error){
+      const x=data.extracted;
+      document.getElementById('form-ai-extracted').value='1';
+      if(x.vendor) document.getElementById('f-vendor').value=x.vendor;
+      if(x.date)   document.getElementById('f-date').value=x.date.slice(0,10);
+      if(x.amount) document.getElementById('f-amount').value=x.amount;
+      if(x.category_hint){ const c=CATEGORIES.find(c=>c.toLowerCase()===x.category_hint.toLowerCase()); if(c) document.getElementById('f-category').value=c; }
+      if(x.line_items&&x.line_items.length){
+        const el=document.getElementById('line-items-display');
+        el.style.display='block';
+        el.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase">Line Items</div>${x.line_items.map(i=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${esc(i.description)}</span><span>${fmt$(i.amount)}</span></div>`).join('')}`;
+      }
+      status.innerHTML=`<div class="scan-result"><strong>✅ AI scan complete — form pre-filled</strong>Vendor: <strong>${esc(x.vendor||'—')}</strong> · Amount: <strong>${fmt$(x.amount)}</strong> · Please verify.</div>`;
+    } else {
+      status.innerHTML=`<div class="scan-result" style="border-color:rgba(251,146,60,.3)"><strong style="color:var(--orange)">📎 File attached — fill in manually</strong>${esc(data.error||'')}</div>`;
+    }
+  }catch(err){
+    status.innerHTML=`<div class="scan-result" style="border-color:rgba(248,113,113,.3)"><strong style="color:var(--red)">Upload failed</strong></div>`;
+  }
+}
+
+// ── TEAM (admin) ──────────────────────────────────────────────────────────────
+async function loadTeam(){
+  const users=await fetch('/api/users').then(r=>r.json()).catch(()=>[]);
+  document.getElementById('team-list').innerHTML=`
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Telegram Chat ID</th><th>Reset Password</th><th></th></tr></thead>
+      <tbody>${users.map(u=>`<tr>
+        <td><strong>${esc(u.name)}</strong></td>
+        <td class="muted">${u.role.replace('_',' ')}</td>
+        <td>${u.active?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-draft">Inactive</span>'}</td>
+        <td><input type="text" placeholder="Chat ID" id="tgid-${u.id}" value="${esc(u.telegram_chat_id||'')}" style="width:130px;padding:5px 9px;font-size:12.5px">
+            <button class="btn btn-sm btn-secondary" onclick="adminSaveTg(${u.id})">Save</button></td>
+        <td><input type="password" placeholder="New password" id="pwd-${u.id}" style="width:140px;padding:5px 9px;font-size:12.5px">
+            <button class="btn btn-sm btn-secondary" onclick="adminSetPassword(${u.id})">Set</button></td>
+        <td><button class="btn btn-sm ${u.active?'btn-warn':'btn-success'}" onclick="toggleUser(${u.id},${u.active?0:1})">${u.active?'Deactivate':'Activate'}</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>`;
+  loadTeamBudgets(); // Feature 7: load fund budgets
+}
+
+async function toggleUser(id,active){
+  await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active})});
+  loadTeam();
+}
+async function adminSetPassword(id){
+  const pwd=document.getElementById('pwd-'+id)?.value;
+  if(!pwd) return alert('Enter a new password first');
+  await fetch('/api/users/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pwd})});
+  alert('Password updated');
+  loadTeam();
+}
+async function adminSaveTg(id){
+  const tgid=document.getElementById('tgid-'+id)?.value.trim();
+  await fetch('/api/users/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({telegram_chat_id:tgid||null})});
+  alert('Telegram ID saved');
+}
+
+// ── EXPORT ─────────────────────────────────────────────────────────────────────
+function exportExcel(){
+  const year=document.getElementById('overview-year')?.value||document.getElementById('filter-year')?.value||'';
+  window.location='/api/export'+(year?`?year=${year}`:'');
+}
+
+async function changePassword(){
+  const current=document.getElementById('pw-current').value;
+  const newPw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  const msg=document.getElementById('pw-msg');
+  if (!current||!newPw||!confirm){ msg.innerHTML='<span style="color:var(--red)">All fields are required.</span>'; return; }
+  if (newPw!==confirm){ msg.innerHTML='<span style="color:var(--red)">New passwords do not match.</span>'; return; }
+  if (newPw.length<8){ msg.innerHTML='<span style="color:var(--red)">Password must be at least 8 characters.</span>'; return; }
+  const res=await fetch('/api/auth/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current_password:current,new_password:newPw})}).then(r=>r.json());
+  if(res.ok){ msg.innerHTML='<span style="color:var(--green)">✅ Password updated.</span>'; document.getElementById('pw-current').value=''; document.getElementById('pw-new').value=''; document.getElementById('pw-confirm').value=''; }
+  else msg.innerHTML=`<span style="color:var(--red)">${esc(res.error)}</span>`;
+}
+
+async function saveTelegramId(){
+  const tgid=document.getElementById('tg-chat-id').value.trim();
+  const msg=document.getElementById('tg-msg');
+  const res=await fetch('/api/auth/profile',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({telegram_chat_id:tgid||null})}).then(r=>r.json());
+  if(res.ok) msg.innerHTML='<span style="color:var(--green)">✅ Saved. You\'ll now get Telegram notifications for report updates.</span>';
+  else msg.innerHTML=`<span style="color:var(--red)">${esc(res.error)}</span>`;
+}
+
+async function logout(){
+  await fetch('/api/logout',{method:'POST'});
+  window.location='/login';
+}
+
+// ── CSV IMPORT ────────────────────────────────────────────────────────────────
+let csvRows = [];
+
+function openImport() {
+  // populate bulk selects
+  document.getElementById('bulk-fund').innerHTML = '<option value="">Fund…</option>' + FUNDS.map(f=>`<option>${f}</option>`).join('');
+  document.getElementById('bulk-type').innerHTML = '<option value="">Type…</option>' + EXPENSE_TYPES.map(t=>`<option>${t}</option>`).join('');
+  document.getElementById('bulk-cat').innerHTML = '<option value="">Category…</option>' + CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+
+  const draft = loadImportDraft();
+  if (draft && draft.length) {
+    csvRows = draft;
+    document.getElementById('import-step1').style.display = 'none';
+    document.getElementById('import-close-row').style.display = 'none';
+    document.getElementById('csv-parse-status').innerHTML = '';
+    document.getElementById('import-modal').classList.remove('hidden');
+    renderImportTable();
+    // Show banner
+    const banner = document.createElement('div');
+    banner.style = 'background:var(--accent);color:#fff;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;align-items:center';
+    banner.innerHTML = `<span>📋 Restored ${draft.length} rows from your last session</span><button onclick="clearDraftAndReset()" style="background:rgba(0,0,0,.25);border:none;color:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px">Start fresh</button>`;
+    document.getElementById('import-step2').prepend(banner);
+  } else {
+    csvRows = [];
+    document.getElementById('import-step1').style.display = '';
+    document.getElementById('import-step2').style.display = 'none';
+    document.getElementById('import-close-row').style.display = '';
+    document.getElementById('csv-parse-status').innerHTML = '';
+    document.getElementById('csv-input').value = '';
+    document.getElementById('import-modal').classList.remove('hidden');
+  }
+}
+
+function clearDraftAndReset() {
+  localStorage.removeItem('pv-import-draft');
+  csvRows = [];
+  document.getElementById('import-step2').style.display = 'none';
+  document.getElementById('import-step1').style.display = '';
+  document.getElementById('import-close-row').style.display = '';
+  document.getElementById('csv-parse-status').innerHTML = '';
+  document.getElementById('csv-input').value = '';
+}
+function closeImport() { document.getElementById('import-modal').classList.add('hidden'); }
+function importBack() {
+  document.getElementById('import-step2').style.display = 'none';
+  document.getElementById('import-step1').style.display = '';
+  document.getElementById('import-close-row').style.display = '';
+}
+
+function handleCSVDrop(ev) {
+  ev.preventDefault();
+  document.querySelector('#import-modal .scan-zone').classList.remove('dragging');
+  const f = ev.dataTransfer.files[0]; if(f) uploadCSV(f);
+}
+function handleCSVSelect(ev) { const f = ev.target.files[0]; if(f) uploadCSV(f); }
+
+async function uploadCSV(file) {
+  const status = document.getElementById('csv-parse-status');
+  status.innerHTML = '<div style="padding:10px;color:var(--text-dim);font-size:13.5px">⏳ Parsing…</div>';
+  const fd = new FormData(); fd.append('csv', file);
+  const data = await fetch('/api/import-csv', { method:'POST', body:fd }).then(r=>r.json());
+  if (data.error || !data.rows?.length) {
+    status.innerHTML = `<div style="padding:10px;color:var(--red);font-size:13.5px">⚠️ ${esc(data.error || 'No transactions found — check file format')}</div>`;
+    return;
+  }
+  csvRows = data.rows;
+  csvRows.forEach(r => { if (!r.category && r.category_hint) r.category = r.category_hint; });
+  saveImportDraft();
+  status.innerHTML = '';
+  renderImportTable();
+}
+
+function saveImportDraft() {
+  try { localStorage.setItem('pv-import-draft', JSON.stringify(csvRows)); } catch(e) {}
+}
+
+function loadImportDraft() {
+  try {
+    const saved = localStorage.getItem('pv-import-draft');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return null;
+}
+
+function renderImportTable() {
+  document.getElementById('import-step1').style.display = 'none';
+  document.getElementById('import-close-row').style.display = 'none';
+  document.getElementById('import-step2').style.display = '';
+  document.getElementById('import-count-label').textContent = `${csvRows.length} transactions parsed`;
+  // Pre-initialize category from hint so confirm check doesn't see it as missing
+  csvRows.forEach(r => { if (!r.category && r.category_hint) r.category = r.category_hint; });
+
+  importSortCol = null; importSortAsc = true;
+  undoStack = [];
+  const btn = document.getElementById('undo-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.4'; btn.style.cursor = 'not-allowed'; }
+  renderImporttbody();
+}
+
+function updateRow(i, field, val) { csvRows[i][field] = val; saveImportDraft(); updateImportTotal(); }
+
+let importSortCol = null, importSortAsc = true;
+let undoStack = [];
+function pushUndo() {
+  undoStack.push(JSON.parse(JSON.stringify(csvRows)));
+  if (undoStack.length > 20) undoStack.shift();
+  const btn = document.getElementById('undo-btn');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+}
+function undoBulk() {
+  if (!undoStack.length) return;
+  csvRows = undoStack.pop();
+  if (!undoStack.length) {
+    const btn = document.getElementById('undo-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.4'; btn.style.cursor = 'not-allowed'; }
+  }
+  renderImporttbody();
+  saveImportDraft();
+}
+function sortImport(col) {
+  if (importSortCol === col) importSortAsc = !importSortAsc;
+  else { importSortCol = col; importSortAsc = true; }
+  csvRows.sort((a,b) => {
+    let va = col==='date' ? (a.date||a.raw_date||'') : (a.vendor||'');
+    let vb = col==='date' ? (b.date||b.raw_date||'') : (b.vendor||'');
+    return importSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  // Update icons
+  ['date','vendor'].forEach(c => {
+    const el = document.getElementById(`sort-${c}-icon`);
+    if (el) el.textContent = c===importSortCol ? (importSortAsc?'↑':'↓') : '↕';
+  });
+  renderImporttbody();
+}
+
+function renderImporttbody() {
+  const fundOpts = '<option value="">Select…</option>' + FUNDS.map(f=>`<option>${f}</option>`).join('');
+  const typeOpts = '<option value="">Select…</option>' + EXPENSE_TYPES.map(t=>`<option>${t}</option>`).join('');
+  const catOpts  = CATEGORIES.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('import-tbody').innerHTML = csvRows.map((r,i) => `
+    <tr id="irow-${i}" style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px"><input type="checkbox" class="row-check" data-idx="${i}" checked onchange="updateImportTotal()"></td>
+      <td style="padding:8px 12px;font-size:13px;color:var(--text-dim)">${esc(r.date||r.raw_date||'')}</td>
+      <td style="padding:8px 12px;font-size:13px;min-width:220px;max-width:340px;word-break:break-word">${esc(r.vendor)}</td>
+      <td style="padding:8px 12px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">${fmt$(r.amount)}</td>
+      <td style="padding:8px 12px"><select class="filter-select" style="font-size:12px;padding:4px 8px;width:90px" data-idx="${i}" data-field="fund" onchange="updateRow(${i},'fund',this.value)"><option value="">Select…</option>${FUNDS.map(f=>`<option${r.fund===f?' selected':''}>${f}</option>`).join('')}</select></td>
+      <td style="padding:8px 12px"><select class="filter-select" style="font-size:12px;padding:4px 8px;width:120px" data-idx="${i}" data-field="expense_type" onchange="updateRow(${i},'expense_type',this.value)"><option value="">Select…</option>${EXPENSE_TYPES.map(t=>`<option${r.expense_type===t?' selected':''}>${t}</option>`).join('')}</select></td>
+      <td style="padding:8px 12px"><select class="filter-select" style="font-size:12px;padding:4px 8px;width:130px" data-idx="${i}" data-field="category" onchange="updateRow(${i},'category',this.value)"><option value="">Select…</option>${CATEGORIES.map(c=>`<option${r.category===c?' selected':''}>${c}</option>`).join('')}</select></td>
+    </tr>`).join('');
+  updateImportTotal();
+}
+
+function toggleAllRows(checked) {
+  document.querySelectorAll('.row-check').forEach(cb => cb.checked = checked);
+  updateImportTotal();
+}
+
+function applyBulk() {
+  const fund = document.getElementById('bulk-fund').value;
+  const type = document.getElementById('bulk-type').value;
+  const cat  = document.getElementById('bulk-cat').value;
+  if (!fund && !type && !cat) { alert('Pick at least one value to bulk-assign.'); return; }
+  pushUndo();
+  csvRows.forEach((r, i) => {
+    if (fund) {
+      r.fund = fund;
+      const el = document.querySelector(`select[data-idx="${i}"][data-field="fund"]`);
+      if (el) el.value = fund;
+    }
+    if (type) {
+      r.expense_type = type;
+      const el = document.querySelector(`select[data-idx="${i}"][data-field="expense_type"]`);
+      if (el) el.value = type;
+    }
+    if (cat) {
+      r.category = cat;
+      const el = document.querySelector(`select[data-idx="${i}"][data-field="category"]`);
+      if (el) el.value = cat;
+    }
+  });
+  saveImportDraft();
+  updateImportTotal();
+}
+
+function updateImportTotal() {
+  const checked = [...document.querySelectorAll('.row-check')].filter(cb=>cb.checked);
+  const total = checked.reduce((s,cb) => s + (csvRows[parseInt(cb.dataset.idx)].amount||0), 0);
+  document.getElementById('import-total-label').textContent = `${checked.length} selected · ${fmt$(total)}`;
+}
+
+async function confirmImport() {
+  // Sync any dropdown values that were visually set but not captured via onchange
+  document.querySelectorAll('#import-tbody tr').forEach(tr => {
+    const i = tr.id?.replace('irow-','');
+    if (i === undefined || !csvRows[i]) return;
+    tr.querySelectorAll('select[data-field]').forEach(sel => {
+      const field = sel.dataset.field;
+      if (sel.value) csvRows[i][field] = sel.value;
+    });
+  });
+  const checked = [...document.querySelectorAll('.row-check')].filter(cb=>cb.checked);
+  const rows = checked.map(cb => csvRows[parseInt(cb.dataset.idx)]);
+  const incomplete = rows.filter(r => !r.fund || !r.expense_type || !r.category);
+  if (incomplete.length) { alert(`${incomplete.length} row(s) are missing Fund, Type, or Category. Please assign them before importing.`); return; }
+  const cardBase = document.getElementById('import-card').value || null;
+  if (!cardBase) { alert('Please select which card this statement is from before importing.'); return; }
+  const last4 = document.getElementById('import-card-last4').value;
+  if (last4.length !== 4) { alert('Please enter the last 4 digits of the card before importing.'); return; }
+  const payment_method = `${cardBase} ···${last4}`;
+
+  // Dedup check
+  const dupeCheck = await fetch('/api/expenses/check-dupes', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ rows: rows.map((r,i)=>({...r,_idx:i})) })
+  }).then(r=>r.json()).catch(()=>({dupes:[]}));
+  if (dupeCheck.dupes?.length) {
+    const names = dupeCheck.dupes.map(d=>`• ${d.date} — ${d.vendor} (${fmt$(d.amount)})`).join('\n');
+    if (!confirm(`⚠️ ${dupeCheck.dupes.length} possible duplicate${dupeCheck.dupes.length!==1?'s':''} detected (same date, vendor, and amount already in your expenses):\n\n${names}\n\nImport anyway?`)) return;
+  }
+
+  const res = await fetch('/api/import-csv/confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ rows, payment_method }) }).then(r=>r.json());
+  if (res.ok) {
+    localStorage.removeItem('pv-import-draft');
+    closeImport();
+    alert(`✅ Imported ${res.saved} expense${res.saved!==1?'s':''}!`);
+    loadExpenses(); loadOverview();
+  } else {
+    alert('Import failed: ' + (res.error||'unknown error'));
+  }
+}
+
+// ── FEATURE 3: Bulk approve ───────────────────────────────────────────────────
+function updateBulkApproveBar() {
+  const checked = document.querySelectorAll('.approval-check:checked');
+  const bar = document.getElementById('bulk-approve-bar');
+  const countEl = document.getElementById('bulk-approve-count');
+  if (bar) {
+    bar.style.display = checked.length > 0 ? 'flex' : 'none';
+    if (countEl) countEl.textContent = checked.length;
+  }
+}
+
+async function bulkApproveSelected() {
+  const checked = [...document.querySelectorAll('.approval-check:checked')];
+  if (!checked.length) return;
+  const ids = checked.map(cb => parseInt(cb.dataset.id));
+  if (!confirm(`Approve ${ids.length} report${ids.length!==1?'s':''}?`)) return;
+  const res = await fetch('/api/reports/bulk-review', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ ids, action: 'approve' })
+  }).then(r=>r.json());
+  if (res.ok) {
+    alert(`✅ ${ids.length} report${ids.length!==1?'s':''} approved!`);
+    loadApprovals();
+    loadApprovalBadge();
+  }
+}
+
+// ── FEATURE 5: Comments ───────────────────────────────────────────────────────
+function relTime(dateStr) {
+  const d = new Date(dateStr + 'Z');
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+async function loadReportComments(reportId) {
+  const comments = await fetch(`/api/reports/${reportId}/comments`).then(r=>r.json()).catch(()=>[]);
+  const el = document.getElementById('comments-list-'+reportId);
+  if (!el) return;
+  if (!comments.length) {
+    el.innerHTML = '<div style="font-size:12.5px;color:var(--text-mute)">No comments yet.</div>';
+    return;
+  }
+  el.innerHTML = comments.map(c => `
+    <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start">
+      <div style="flex:1">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${esc(c.user_name)}</span>
+        <span style="font-size:11px;color:var(--text-mute);margin-left:6px">${relTime(c.created_at)}</span>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:3px">${esc(c.message)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function sendComment(reportId) {
+  const input = document.getElementById('comment-input-'+reportId);
+  const message = input?.value?.trim();
+  if (!message) return;
+  await fetch(`/api/reports/${reportId}/comments`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ message })
+  });
+  input.value = '';
+  loadReportComments(reportId);
+}
+
+// ── FEATURE 6: YTD comparison ──────────────────────────────────────────────────
+function renderYTDComparison(stats, year) {
+  const el = document.getElementById('ytd-comparison');
+  if (!el) return;
+  if (!year || stats.priorYearTotal === null || stats.priorYearTotal === undefined) {
+    el.style.display = 'none'; return;
+  }
+  const pct = stats.priorYearTotal > 0 ? ((stats.total - stats.priorYearTotal) / stats.priorYearTotal * 100).toFixed(1) : null;
+  const color = (curr, prior) => curr <= prior ? 'var(--green)' : 'var(--red)';
+  const arrow = (curr, prior) => curr <= prior ? '▼' : '▲';
+  const priorByType = stats.priorYearByType || [];
+  const getType = (arr, t) => (arr.find(x => x.expense_type === t)?.total || 0);
+  const gp = getType(stats.byType||[], 'GP Expense');
+  const lp = getType(stats.byType||[], 'LP Expense');
+  const org = getType(stats.byType||[], 'Fund Organizational');
+  const pgp = getType(priorByType, 'GP Expense');
+  const plp = getType(priorByType, 'LP Expense');
+  const porg = getType(priorByType, 'Fund Organizational');
+
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="table-wrap" style="padding:20px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">📊 ${year} vs ${parseInt(year)-1} Comparison</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        ${[
+          ['Total', stats.total, stats.priorYearTotal],
+          ['GP Expenses', gp, pgp],
+          ['LP Expenses', lp, plp],
+          ['Fund Org', org, porg]
+        ].map(([label, curr, prior]) => {
+          const chg = prior > 0 ? ((curr - prior) / prior * 100).toFixed(1) : null;
+          return `<div style="background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--text-mute);font-weight:700;text-transform:uppercase;margin-bottom:6px">${label}</div>
+            <div style="font-size:18px;font-weight:800">${fmt$(curr)}</div>
+            <div style="font-size:12px;color:var(--text-mute)">${fmt$(prior)} prior year</div>
+            ${chg !== null ? `<div style="font-size:12px;font-weight:700;color:${color(curr,prior)};margin-top:4px">${arrow(curr,prior)} ${Math.abs(chg)}%</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ── FEATURE 7: Fund budgets ────────────────────────────────────────────────────
+async function loadFundBudgets(byFund, year) {
+  const budgets = await fetch('/api/budgets').then(r=>r.json()).catch(()=>[]);
+  const section = document.getElementById('fund-budgets-section');
+  const content = document.getElementById('fund-budgets-content');
+  if (!section || !content) return;
+
+  // Filter to current year budgets
+  const yearBudgets = budgets.filter(b => !year || b.year === parseInt(year));
+  if (!yearBudgets.length) { section.style.display = 'none'; return; }
+
+  section.style.display = 'block';
+  content.innerHTML = yearBudgets.map(b => {
+    const spent = (byFund || []).find(f => f.fund === b.fund)?.total || 0;
+    const pct = Math.min(100, (spent / b.annual_budget) * 100);
+    const barColor = pct < 70 ? 'var(--green)' : pct < 90 ? 'var(--orange)' : 'var(--red)';
+    const isAdmin = currentUser?.role === 'admin';
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:13px;font-weight:600">${esc(b.fund)}</span>
+        <span style="font-size:12px;color:var(--text-dim)">${fmt$(spent)} / ${fmt$(b.annual_budget)} (${pct.toFixed(0)}%)
+          ${isAdmin ? `<a href="#" onclick="event.preventDefault();prefillBudget('${esc(b.fund)}',${b.annual_budget},${b.year})" style="color:var(--accent);font-size:11px;margin-left:8px">Set Budget</a>` : ''}
+        </span>
+      </div>
+      <div style="background:var(--surface3);border-radius:6px;height:12px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${barColor};border-radius:6px;transition:width .4s"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function prefillBudget(fund, amount, year) {
+  goTo('team', document.querySelector('[data-page=team]'));
+  setTimeout(() => {
+    const bf = document.getElementById('budget-fund');
+    if (bf) bf.value = fund;
+    const ba = document.getElementById('budget-amount');
+    if (ba) ba.value = amount;
+    const by = document.getElementById('budget-year');
+    if (by) by.value = year;
+  }, 300);
+}
+
+async function loadTeamBudgets() {
+  const budgets = await fetch('/api/budgets').then(r=>r.json()).catch(()=>[]);
+  const el = document.getElementById('team-budgets-list');
+  if (!el) return;
+  if (!budgets.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text-mute)">No budgets set yet.</div>'; return; }
+  el.innerHTML = `<div class="table-wrap" style="margin-bottom:12px"><table>
+    <thead><tr><th>Fund</th><th>Year</th><th>Annual Budget</th></tr></thead>
+    <tbody>${budgets.map(b=>`<tr><td>${esc(b.fund)}</td><td>${b.year}</td><td class="amount">${fmt$(b.annual_budget)}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+  // Populate fund select
+  const sel = document.getElementById('budget-fund');
+  if (sel) sel.innerHTML = '<option value="">Select…</option>' + FUNDS.map(f=>`<option>${f}</option>`).join('');
+}
+
+async function saveBudget() {
+  const fund = document.getElementById('budget-fund').value;
+  const amount = document.getElementById('budget-amount').value;
+  const year = document.getElementById('budget-year').value;
+  if (!fund || !amount || !year) { alert('Fill in all fields'); return; }
+  await fetch('/api/budgets', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ fund, annual_budget: parseFloat(amount), year: parseInt(year) })
+  });
+  loadTeamBudgets();
+}
+
+// ── FEATURE 8: Templates ──────────────────────────────────────────────────────
+let expenseTemplates = [];
+
+async function loadTemplates() {
+  expenseTemplates = await fetch('/api/templates').then(r=>r.json()).catch(()=>[]);
+  const bar = document.getElementById('template-bar');
+  const sel = document.getElementById('template-select');
+  if (!bar || !sel) return;
+  if (expenseTemplates.length) {
+    bar.style.display = 'block';
+    sel.innerHTML = '<option value="">Select a template to pre-fill…</option>' +
+      expenseTemplates.map(t=>`<option value="${t.id}">${esc(t.name)} ${t.vendor?'— '+esc(t.vendor):''} ${t.amount?'$'+t.amount:''}</option>`).join('');
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function applyTemplate(id) {
+  if (!id) return;
+  const tmpl = expenseTemplates.find(t => t.id == id);
+  if (!tmpl) return;
+  if (tmpl.vendor) document.getElementById('f-vendor').value = tmpl.vendor;
+  if (tmpl.amount) document.getElementById('f-amount').value = tmpl.amount;
+  if (tmpl.currency) document.getElementById('f-currency').value = tmpl.currency;
+  if (tmpl.fund) document.getElementById('f-fund').value = tmpl.fund;
+  if (tmpl.expense_type) document.getElementById('f-type').value = tmpl.expense_type;
+  if (tmpl.category) document.getElementById('f-category').value = tmpl.category;
+  if (tmpl.notes) document.getElementById('f-notes').value = tmpl.notes;
+  document.getElementById('template-select').value = '';
+}
+
+async function saveAsTemplate(event) {
+  event.preventDefault();
+  const name = prompt('Template name:', document.getElementById('f-vendor').value || 'My Template');
+  if (!name) return;
+  const payload = {
+    name,
+    vendor: document.getElementById('f-vendor').value,
+    amount: document.getElementById('f-amount').value,
+    currency: document.getElementById('f-currency').value,
+    fund: document.getElementById('f-fund').value,
+    expense_type: document.getElementById('f-type').value,
+    category: document.getElementById('f-category').value,
+    notes: document.getElementById('f-notes').value
+  };
+  await fetch('/api/templates', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  document.getElementById('save-as-template-bar').style.display = 'none';
+  alert('✅ Template saved!');
+  loadTemplates();
+}
+
+async function loadSettingsTemplates() {
+  const templates = await fetch('/api/templates').then(r=>r.json()).catch(()=>[]);
+  const el = document.getElementById('templates-list');
+  if (!el) return;
+  if (!templates.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text-mute)">No templates saved yet. Save an expense as a template from the expense form.</div>'; return; }
+  el.innerHTML = templates.map(t => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13.5px;font-weight:600">${esc(t.name)}</div>
+        <div style="font-size:12px;color:var(--text-mute)">${[t.vendor, t.amount?'$'+t.amount:null, t.fund, t.category].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteTemplate(${t.id})">Delete</button>
+    </div>`).join('');
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  await fetch('/api/templates/'+id, { method: 'DELETE' });
+  loadSettingsTemplates();
+}
+
+// openAddExpense template loading is handled inline in the original
+
+// saveExpense template bar is handled inline in the original saveExpense below
+
+// Override goTo + loadTeam merged below
+// loadOverview (Feature 6/7 version):
+async function loadOverview() {
+  const year = document.getElementById('overview-year').value;
+  const stats = await fetch('/api/stats'+(year?`?year=${year}`:'')).then(r=>r.json()).catch(()=>({total:0,byFund:[],byType:[],byCategory:[]}));
+  document.getElementById('stat-total').textContent = fmt$(stats.total);
+  const gp  = (stats.byType||[]).find(t=>t.expense_type==='GP Expense');
+  const lp  = (stats.byType||[]).find(t=>t.expense_type==='LP Expense');
+  const org = (stats.byType||[]).find(t=>t.expense_type==='Fund Organizational');
+  document.getElementById('stat-gp').textContent  = fmt$(gp?.total||0);
+  document.getElementById('stat-lp').textContent  = fmt$(lp?.total||0);
+  document.getElementById('stat-org').textContent = fmt$(org?.total||0);
+  const usdNote = stats.hasNonUSD ? ' · * converted to USD' : '';
+  document.getElementById('overview-subtitle').textContent = (currentUser?.role==='admin' ? 'All employees' : 'Your expense summary') + usdNote;
+
+  const maxF = Math.max(...(stats.byFund||[]).map(r=>r.total),1);
+  document.getElementById('chart-fund').innerHTML = (stats.byFund||[]).map(r=>`
+    <div class="chart-row"><div class="chart-label">${esc(r.fund)}</div>
+    <div class="chart-bar-wrap"><div class="chart-bar" style="width:${Math.max(4,r.total/maxF*100)}%"><span>${r.count}</span></div></div>
+    <div class="chart-amount">${fmt$(r.total)}</div></div>`).join('') || '<div style="color:var(--text-mute);font-size:13px">No data yet</div>';
+
+  const maxC = Math.max(...(stats.byCategory||[]).map(r=>r.total),1);
+  document.getElementById('chart-cat').innerHTML = (stats.byCategory||[]).map(r=>`
+    <div class="chart-row"><div class="chart-label">${esc(r.category)}</div>
+    <div class="chart-bar-wrap"><div class="chart-bar" style="width:${Math.max(4,r.total/maxC*100)}%;background:var(--blue)"><span>${r.count}</span></div></div>
+    <div class="chart-amount">${fmt$(r.total)}</div></div>`).join('') || '<div style="color:var(--text-mute);font-size:13px">No data yet</div>';
+
+  // Feature 6: YTD comparison
+  renderYTDComparison(stats, year);
+  // Feature 7: Fund budgets
+  loadFundBudgets(stats.byFund, year);
+  // Per-person spend (admin only)
+  if (currentUser?.role === 'admin') {
+    const wrap = document.getElementById('chart-person-wrap');
+    wrap.style.display = '';
+    const byPerson = stats.byPerson || [];
+    const maxP = Math.max(...byPerson.map(r=>r.total), 1);
+    document.getElementById('chart-person').innerHTML = byPerson.length
+      ? byPerson.map(r=>`
+          <div class="chart-row"><div class="chart-label">${esc(r.user_name)}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar" style="width:${Math.max(4,r.total/maxP*100)}%;background:var(--green)"><span>${r.count}</span></div></div>
+          <div class="chart-amount">${fmt$(r.total)}</div></div>`).join('')
+      : '<div style="color:var(--text-mute);font-size:13px">No data yet</div>';
+  }
+}
+
+// goTo extended with settings template loading (inline in original goTo)
+
+init();
+
+// ── FEATURE 1: Global Search ──────────────────────────────────────────────────
+const FX_RATES_CLIENT = { USD: 1, EUR: 1.08, GBP: 1.27, CAD: 0.73, AUD: 0.64, CHF: 1.13, JPY: 0.0067, Other: 1 };
+let searchTimer = null;
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  const q = document.getElementById('global-search').value.trim();
+  if (q.length < 2) { closeSearchDropdown(); return; }
+  searchTimer = setTimeout(() => runSearch(q), 300);
+}
+function searchKeyDown(e) {
+  if (e.key === 'Escape') closeSearchDropdown();
+}
+function closeSearchDropdown() {
+  document.getElementById('search-dropdown').style.display = 'none';
+}
+async function runSearch(q) {
+  const data = await fetch('/api/search?q='+encodeURIComponent(q)).then(r=>r.json()).catch(()=>({expenses:[],reports:[]}));
+  const dd = document.getElementById('search-dropdown');
+  if (!data.expenses.length && !data.reports.length) {
+    dd.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text-mute)">No results found</div>';
+    dd.style.display = 'block'; return;
+  }
+  let html = '';
+  if (data.expenses.length) {
+    html += `<div style="padding:8px 14px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-mute)">Expenses (${data.expenses.length})</div>`;
+    html += data.expenses.map(e => `
+      <div onclick="closeSearchDropdown();openEditExpense(${e.id})" style="padding:8px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(e.vendor)}</div>
+          <div style="font-size:11px;color:var(--text-mute)">${e.date} · ${esc(e.fund)} · ${esc(e.category)}</div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:var(--text);margin-left:12px;white-space:nowrap">${fmt$(e.amount)}</span>
+      </div>`).join('');
+  }
+  if (data.reports.length) {
+    html += `<div style="padding:8px 14px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-mute)">Reports (${data.reports.length})</div>`;
+    html += data.reports.map(r => `
+      <div onclick="closeSearchDropdown();goToReport(${r.id})" style="padding:8px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(r.title)}</div>
+          <div style="font-size:11px;color:var(--text-mute)">${esc(r.user_name)} · ${r.status}</div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:var(--text);margin-left:12px;white-space:nowrap">${fmt$(r.total||0)}</span>
+      </div>`).join('');
+  }
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+}
+function goToReport(id) {
+  goTo('reports', document.querySelector('[data-page=reports]'));
+  setTimeout(() => {
+    const body = document.getElementById('report-body-'+id);
+    const chevron = document.getElementById('report-chevron-'+id);
+    if (body && body.style.display === 'none') {
+      body.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(90deg)';
+      renderReportTable(id);
+      loadReportComments(id);
+    }
+    const el = document.getElementById('report-chevron-'+id);
+    if (el) el.closest('.report-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 400);
+}
+// Close on outside click
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('search-container')?.contains(e.target)) closeSearchDropdown();
+});
+
+// ── FEATURE 3: Expense Aging ───────────────────────────────────────────────────
+function agingBadge(submittedAt) {
+  if (!submittedAt) return '';
+  const days = Math.floor((Date.now() - new Date(submittedAt + (submittedAt.includes('Z')?'':'Z')).getTime()) / 86400000);
+  if (days < 1) return '<span class="badge badge-aging-gray" style="margin-left:6px;font-size:10.5px">⏱ Today</span>';
+  if (days <= 2) return `<span class="badge badge-aging-yellow" style="margin-left:6px;font-size:10.5px">⏱ ${days}d</span>`;
+  if (days <= 6) return `<span class="badge badge-aging-orange" style="margin-left:6px;font-size:10.5px">⏱ ${days}d</span>`;
+  return `<span class="badge badge-aging-red" style="margin-left:6px;font-size:10.5px">⏱ ${days}d+ ⚠️</span>`;
+}
+function agingTooltip(submittedAt) {
+  if (!submittedAt) return '';
+  const days = Math.floor((Date.now() - new Date(submittedAt + (submittedAt.includes('Z')?'':'Z')).getTime()) / 86400000);
+  return days < 1 ? 'Submitted today' : `Submitted ${days} day${days!==1?'s':''} ago`;
+}
+
+// Patch loadApprovals to add aging badges
+const _origLoadApprovals = loadApprovals;
+async function loadApprovals() {
+  const reports = await fetch('/api/reports').then(r=>r.json()).catch(()=>[]);
+  const submitted = reports.filter(r=>r.status==='submitted');
+  const reviewed = reports.filter(r=>r.status==='approved'||r.status==='rejected');
+  const el = document.getElementById('approvals-list');
+
+  let html = '';
+  if (submitted.length) {
+    html += `<div style="font-size:14px;font-weight:700;margin-bottom:8px;color:var(--orange)">⏳ Pending Approval (${submitted.length})</div>`;
+    html += `<div id="bulk-approve-bar" style="display:none;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-success btn-sm" id="bulk-approve-btn" onclick="bulkApproveSelected()">✓ Approve All Selected (<span id="bulk-approve-count">0</span>)</button>
+    </div>`;
+    html += submitted.map(r => `
+      <div class="report-card" style="border-color:rgba(251,146,60,.3)">
+        <div class="report-card-header">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="checkbox" class="approval-check" data-id="${r.id}" onchange="updateBulkApproveBar()" style="width:15px;height:15px;cursor:pointer">
+            <div class="report-card-title">${esc(r.user_name)} — ${esc(r.title)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${statusBadge(r.status)}
+            ${agingBadge(r.submitted_at)}
+          </div>
+        </div>
+        <div class="report-card-meta">
+          <span>💰 <strong>${fmt$(r.total)}</strong></span>
+          ${r.submitted_at?`<span title="${agingTooltip(r.submitted_at)}">Submitted ${fmtDate(r.submitted_at.slice(0,10))}</span>`:''}
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success btn-sm" onclick="openReview(${r.id})">Review & Approve →</button>
+        </div>
+      </div>`).join('');
+  }
+  if (reviewed.length) {
+    html += `<div style="font-size:14px;font-weight:700;margin:20px 0 12px;color:var(--text-dim)">History</div>`;
+    html += reviewed.map(r => `
+      <div class="report-card">
+        <div class="report-card-header"><div class="report-card-title">${esc(r.user_name)} — ${esc(r.title)}</div>${statusBadge(r.status)}</div>
+        <div class="report-card-meta"><span>${fmt$(r.total)}</span>${r.reviewed_at?`<span>Reviewed ${fmtDate(r.reviewed_at.slice(0,10))}</span>`:''}</div>
+      </div>`).join('');
+  }
+  if (!html) el.innerHTML = '<div class="empty-state" style="padding:40px;background:var(--surface);border-radius:14px;border:1px solid var(--border)">No reports submitted yet.</div>';
+  else el.innerHTML = html;
+
+  // Update approval badge tooltip with aging info
+  const badge = document.getElementById('approval-badge');
+  if (badge && submitted.length > 0) {
+    const oldest = submitted.reduce((a,b) => (a.submitted_at||'') < (b.submitted_at||'') ? a : b);
+    badge.title = `${submitted.length} pending · oldest: ${agingTooltip(oldest.submitted_at)}`;
+  }
+}
+
+// ── FEATURE 4: Currency note in form ─────────────────────────────────────────
+function updateCurrencyNote() {
+  const currency = document.getElementById('f-currency').value;
+  const amount = parseFloat(document.getElementById('f-amount').value) || 0;
+  const noteEl = document.getElementById('currency-note');
+  if (!noteEl) return;
+  if (currency && currency !== 'USD' && amount > 0) {
+    const rate = FX_RATES_CLIENT[currency] || 1;
+    const usd = (amount * rate).toFixed(2);
+    noteEl.textContent = `≈ $${parseFloat(usd).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} USD`;
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+}
+
+// ── FEATURE 5: Expense Splits ──────────────────────────────────────────────────
+let currentSplits = [];
+function toggleSplit(cb) {
+  const section = document.getElementById('f-split-section');
+  const fundGroup = document.getElementById('f-fund-group');
+  const typeGroup = document.getElementById('f-type-group');
+  if (cb.checked) {
+    section.style.display = 'block';
+    fundGroup.style.display = 'none';
+    typeGroup.style.display = 'none';
+    document.getElementById('f-fund').removeAttribute('required');
+    document.getElementById('f-type').removeAttribute('required');
+    if (currentSplits.length === 0) { addSplitRow(); addSplitRow(); }
+    else renderSplitRows();
+  } else {
+    section.style.display = 'none';
+    fundGroup.style.display = '';
+    typeGroup.style.display = '';
+    document.getElementById('f-fund').setAttribute('required','');
+    document.getElementById('f-type').setAttribute('required','');
+    currentSplits = [];
+  }
+}
+function addSplitRow() {
+  currentSplits.push({ fund: '', expense_type: '', amount: '' });
+  renderSplitRows();
+}
+function renderSplitRows() {
+  const container = document.getElementById('f-split-rows');
+  container.innerHTML = currentSplits.map((s,i) => `
+    <div style="display:grid;grid-template-columns:1fr 1fr 90px 60px 32px;gap:6px;margin-bottom:6px;align-items:center">
+      <select class="filter-select" style="font-size:12px;padding:5px 8px" onchange="updateSplitField(${i},'fund',this.value)">
+        <option value="">Fund…</option>${FUNDS.map(f=>`<option${s.fund===f?' selected':''}>${f}</option>`).join('')}
+      </select>
+      <select class="filter-select" style="font-size:12px;padding:5px 8px" onchange="updateSplitField(${i},'expense_type',this.value)">
+        <option value="">Type…</option>${EXPENSE_TYPES.map(t=>`<option${s.expense_type===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+      <input type="number" step="0.01" placeholder="Amount" value="${s.amount}" style="padding:5px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;width:100%" oninput="updateSplitField(${i},'amount',this.value)">
+      <span id="split-pct-${i}" style="font-size:11px;color:var(--text-mute);text-align:center"></span>
+      <button type="button" onclick="removeSplitRow(${i})" style="background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.2);color:var(--red);border-radius:6px;cursor:pointer;padding:4px 6px;font-size:12px">✕</button>
+    </div>`).join('');
+  updateSplitTotal();
+}
+function updateSplitField(i, field, val) {
+  currentSplits[i][field] = val;
+  if (field === 'amount') updateSplitTotal();
+}
+function removeSplitRow(i) {
+  currentSplits.splice(i, 1);
+  renderSplitRows();
+}
+function updateSplitTotal() {
+  const total = parseFloat(document.getElementById('f-amount').value) || 0;
+  const splitSum = currentSplits.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+  const el = document.getElementById('f-split-total');
+  if (el) {
+    const ok = Math.abs(splitSum - total) < 0.01;
+    el.textContent = `Total: ${fmt$(splitSum)} / ${fmt$(total)}`;
+    el.style.color = ok ? 'var(--green)' : 'var(--red)';
+  }
+  // Update percentages
+  currentSplits.forEach((s,i) => {
+    const pctEl = document.getElementById('split-pct-'+i);
+    if (pctEl && total > 0) {
+      const pct = ((parseFloat(s.amount)||0) / total * 100).toFixed(0);
+      pctEl.textContent = pct + '%';
+    }
+  });
+}
+
+// ── FEATURE 6: Send Digest ───────────────────────────────────────────────────
+async function sendDigest() {
+  const btn = document.getElementById('digest-btn');
+  if (!btn) return;
+  btn.textContent = '⏳ Sending…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/digest/send', { method:'POST', headers:{'Content-Type':'application/json'} }).then(r=>r.json());
+    if (res.ok) {
+      btn.textContent = '✅ Sent to Telegram';
+      setTimeout(() => { btn.textContent = '📊 Send Digest'; btn.disabled = false; }, 4000);
+    } else {
+      btn.textContent = '❌ Failed';
+      setTimeout(() => { btn.textContent = '📊 Send Digest'; btn.disabled = false; }, 3000);
+    }
+  } catch(e) {
+    btn.textContent = '❌ Error';
+    btn.disabled = false;
+  }
+}
+
+// ── FEATURE 7: Mobile Sidebar Toggle ─────────────────────────────────────────
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobile-backdrop');
+  const isOpen = sidebar.classList.toggle('mobile-open');
+  backdrop.style.display = isOpen ? 'block' : 'none';
+}
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('mobile-backdrop');
+  sidebar.classList.remove('mobile-open');
+  backdrop.style.display = 'none';
+}
+
+// ── SAVE EXPENSE (with splits support) ───────────────────────────────────────
+const _origSaveExpense = saveExpense;
+async function saveExpense(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-id').value;
+  const amt = parseFloat(document.getElementById('f-amount').value) || 0;
+  const hasR = !!document.getElementById('form-receipt-filename').value;
+  const splitEnabled = document.getElementById('f-split-toggle').checked;
+
+  if (splitEnabled) {
+    // Validate splits
+    const splitSum = currentSplits.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+    if (Math.abs(splitSum - amt) > 0.01) {
+      alert(`Split amounts (${fmt$(splitSum)}) must equal expense total (${fmt$(amt)})`);
+      return;
+    }
+    const incomplete = currentSplits.filter(s => !s.fund || !s.expense_type || !parseFloat(s.amount));
+    if (incomplete.length) { alert('All split rows must have Fund, Type, and Amount.'); return; }
+  }
+
+  if (amt >= 75 && !hasR && !confirm('Expense is ≥ $75 but has no receipt. Save anyway?')) return;
+
+  const fund = splitEnabled ? (currentSplits[0]?.fund || 'GP') : document.getElementById('f-fund').value;
+  const expense_type = splitEnabled ? (currentSplits[0]?.expense_type || 'GP Expense') : document.getElementById('f-type').value;
+
+  const payload = {
+    date: document.getElementById('f-date').value,
+    vendor: document.getElementById('f-vendor').value,
+    amount: amt,
+    currency: document.getElementById('f-currency').value,
+    fund, expense_type,
+    category: document.getElementById('f-category').value,
+    description: '', reimbursable: 1,
+    notes: document.getElementById('f-notes').value,
+    receipt_path: document.getElementById('form-receipt-path').value||null,
+    receipt_filename: document.getElementById('form-receipt-filename').value||null,
+    ai_extracted: document.getElementById('form-ai-extracted').value==='1'?1:0,
+    payment_method: document.getElementById('f-payment-method').value||null
+  };
+
+  const url = id ? '/api/expenses/'+id : '/api/expenses';
+  const method = id ? 'PUT' : 'POST';
+  const result = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).then(r=>r.json());
+  const expId = id || result.id;
+
+  // Save splits
+  if (splitEnabled && expId) {
+    const splitsPayload = currentSplits.map(s => ({
+      fund: s.fund, expense_type: s.expense_type,
+      amount: parseFloat(s.amount),
+      pct: (parseFloat(s.amount) / amt * 100)
+    }));
+    await fetch(`/api/expenses/${expId}/splits`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({splits:splitsPayload})});
+  } else if (!splitEnabled && id) {
+    // Clear splits if editing and turned off split
+    await fetch(`/api/expenses/${id}/splits`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({splits:[]})});
+  }
+
+  closeExpenseModal();
+  currentSplits = [];
+  await loadAllReports();
+  loadExpenses();
+  loadOverview();
+  if (document.getElementById('page-reports').classList.contains('active')) loadReports();
+}
+
+// Patch openEditExpense to load splits
+const _origOpenEditExpense = openEditExpense;
+async function openEditExpense(id) {
+  const res = await fetch('/api/expenses/'+id);
+  if (!res.ok) { alert('Could not load expense (id='+id+', status='+res.status+')'); return; }
+  const e = await res.json();
+  openAddExpense();
+  document.getElementById('edit-id').value = e.id;
+  document.getElementById('f-date').value = e.date;
+  document.getElementById('f-vendor').value = e.vendor;
+  document.getElementById('f-amount').value = e.amount;
+  document.getElementById('f-currency').value = e.currency||'USD';
+  document.getElementById('f-fund').value = e.fund;
+  document.getElementById('f-type').value = e.expense_type;
+  document.getElementById('f-category').value = e.category;
+  document.getElementById('f-notes').value = e.notes||(e.description||'');
+  document.getElementById('form-receipt-path').value = e.receipt_path||'';
+  document.getElementById('form-receipt-filename').value = e.receipt_filename||'';
+  if (e.receipt_filename) document.getElementById('scan-status').innerHTML = `<div class="scan-result"><strong>📎 Attached:</strong> ${esc(e.receipt_filename)}</div>`;
+  const isCash = e.payment_method === 'Cash';
+  document.getElementById('f-cash').checked = isCash;
+  document.getElementById('f-payment-method').value = e.payment_method||'';
+  document.getElementById('expense-modal-title').textContent = 'Edit Expense';
+  document.getElementById('save-btn').textContent = 'Update';
+  updateCurrencyNote();
+  // Load splits
+  const splits = await fetch(`/api/expenses/${id}/splits`).then(r=>r.json()).catch(()=>[]);
+  if (splits.length > 0) {
+    currentSplits = splits.map(s => ({ fund:s.fund, expense_type:s.expense_type, amount:String(s.amount) }));
+    document.getElementById('f-split-toggle').checked = true;
+    toggleSplit({ checked: true });
+  }
+}
+
+// Patch openAddExpense to reset split state
+const _origOpenAddExpense = openAddExpense;
+function openAddExpense() {
+  document.getElementById('edit-id').value = '';
+  document.getElementById('expense-form').reset();
+  document.getElementById('form-receipt-path').value = '';
+  document.getElementById('form-receipt-filename').value = '';
+  document.getElementById('form-ai-extracted').value = '0';
+  document.getElementById('scan-status').innerHTML = '';
+  document.getElementById('line-items-display').style.display = 'none';
+  document.getElementById('amount-warn').style.display = 'none';
+  document.getElementById('f-cash').checked = false;
+  document.getElementById('f-payment-method').value = '';
+  document.getElementById('expense-modal-title').textContent = 'Add Expense';
+  document.getElementById('save-btn').textContent = 'Save Expense';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('save-as-template-bar').style.display = 'none';
+  document.getElementById('currency-note').style.display = 'none';
+  // Reset split
+  currentSplits = [];
+  document.getElementById('f-split-toggle').checked = false;
+  document.getElementById('f-split-section').style.display = 'none';
+  document.getElementById('f-split-rows').innerHTML = '';
+  document.getElementById('f-fund-group').style.display = '';
+  document.getElementById('f-type-group').style.display = '';
+  document.getElementById('f-fund').setAttribute('required','');
+  document.getElementById('f-type').setAttribute('required','');
+  document.getElementById('expense-modal').classList.remove('hidden');
+  loadTemplates();
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+</script>
+
+</body>
+</html>
