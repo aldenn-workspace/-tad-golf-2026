@@ -1567,6 +1567,41 @@ app.get('/api/affinity/notes', async (req, res) => {
   } catch(e) { res.json([]); }
 });
 
+
+// ── APPLE NOTES API ─────────────────────────────────────────────────────────
+const notesApi = require('./notes-api');
+
+// Apple Notes — served from SQLite index (no live AppleScript)
+app.get('/api/notes', (req, res) => {
+  try {
+    const { search } = req.query;
+    let notes;
+    if (search) {
+      notes = db.prepare('SELECT rowid as id, title, modified FROM apple_notes WHERE apple_notes MATCH ? ORDER BY rank LIMIT 50').all(search);
+    } else {
+      notes = db.prepare('SELECT note_index as id, title, modified FROM apple_notes ORDER BY id').all();
+    }
+    res.json(notes);
+  } catch(e) { res.status(500).json({ error: e.message, indexed: false }); }
+});
+
+app.get('/api/notes/:index', (req, res) => {
+  try {
+    const note = db.prepare('SELECT * FROM apple_notes WHERE note_index = ?').get(parseInt(req.params.index));
+    if (!note) return res.status(404).json({ error: 'Not found' });
+    res.json({ content: note.content, title: note.title, modified: note.modified });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/notes/sync', (req, res) => {
+  res.json({ ok: true, message: 'Sync runs nightly at 2:30am or trigger manually' });
+  const { execFile } = require('child_process');
+  execFile('node', ['/Users/mini/.openclaw/workspace/mission-control/sync-apple-notes.js'], { timeout: 600000 }, (err) => {
+    if (err) console.log('Notes sync error:', err.message);
+    else console.log('Notes sync complete');
+  });
+});
+
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
