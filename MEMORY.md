@@ -70,12 +70,6 @@ _Lean essential context only. Detail lives in MEMORY_ARCHIVE.md._
 - **Tad** → Mount St. Mary's, August 2026, D1 golf
 - **Nat** — also plays junior golf. Calendar: localhost:3459
 
-## ⚠️ Do Not Archive Orphan Session Transcripts
-- The `.jsonl` files in `~/.openclaw/agents/main/sessions/` that `openclaw doctor` keeps failing to archive (EPERM errors) are **conversation history**
-- On Apr 12, they were the only way to recover 4 days of lost context after MEMORY.md was wiped
-- **Do not run `doctor --fix` to clean these up** — leave them alone
-- If doctor ever successfully archives them as `.deleted` files, recovery from a future wipe becomes much harder
-
 ## ⛔ DO NOT TOUCH
 - **lossless-claw** — catastrophic failure Mar 21, never reinstall
 - **Git history rewrite** — planned op only, Mike sign-off required
