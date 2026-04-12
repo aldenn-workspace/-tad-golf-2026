@@ -88,6 +88,12 @@ a{color:var(--accent);text-decoration:none}
 .tag-normal{color:var(--text-dim);background:var(--surface3);border-color:var(--border)}
 .tag-low{color:var(--text-mute);background:var(--surface);border-color:var(--border)}
 .tcard-notes{font-size:11.5px;color:var(--text-dim);margin-bottom:8px;line-height:1.4;font-style:italic}
+.notes-topic-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.notes-topic-card:hover{background:var(--surface2);border-color:var(--accent)}
+.ntc-icon{font-size:28px;margin-bottom:8px}
+.ntc-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.ntc-sub{font-size:11px;color:var(--text-muted);line-height:1.4}
+.ntc-count{position:absolute;top:14px;right:14px;font-size:11px;color:var(--accent);font-weight:600;background:rgba(124,111,247,.12);padding:2px 8px;border-radius:20px}
 .tcard-actions{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
 .tcard-btn{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:6px;border:1px solid var(--border2);background:var(--surface3);color:var(--text-dim);cursor:pointer;font-family:'Inter',sans-serif;transition:all .14s}
 .tcard-btn:hover{color:var(--text);border-color:var(--border2)}
@@ -1045,12 +1051,94 @@ a{color:var(--accent);text-decoration:none}
   <!-- ── APPLE NOTES PAGE ── -->
   <div class="page" id="page-notes">
     <div class="page-head">
-      <div><div class="page-title">📝 Notes</div><div class="page-sub">Your Apple Notes — read-only view</div></div>
-      <input id="notes-search" placeholder="🔍 Search notes..." oninput="filterNotes(this.value)" style="padding:7px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;width:200px">
+      <div><div class="page-title">📝 Knowledge Base</div><div class="page-sub">Your notes — 13,500+ across all years</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="notes-search" placeholder="🔍 Search all notes..." oninput="filterNotes(this.value)" style="padding:7px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;width:220px">
+        <button onclick="showNotesView('kb')" id="notes-btn-kb" class="btn btn-primary btn-sm">📚 Topics</button>
+        <button onclick="showNotesView('reports')" id="notes-btn-reports" class="btn btn-ghost btn-sm">📄 Reports</button>
+        <button onclick="showNotesView('list')" id="notes-btn-list" class="btn btn-ghost btn-sm">📋 All Notes</button>
+      </div>
     </div>
-    <div style="display:flex;gap:16px;height:calc(100vh - 140px)">
-      <div id="notes-list" style="width:280px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border);padding-right:12px"></div>
-      <div id="notes-content" style="flex:1;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;padding:4px"><div style="color:var(--text-muted)">Select a note to read it</div></div>
+
+    <!-- KB VIEW -->
+    <div id="notes-kb-view">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:4px">
+        <div class="notes-topic-card" onclick="openTopic('promus')">
+          <div class="ntc-icon">💼</div>
+          <div class="ntc-title">Promus / VC</div>
+          <div class="ntc-sub">Deals, portfolio, LPs, fundraising</div>
+          <div class="ntc-count" id="ntc-count-promus">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('family')">
+          <div class="ntc-icon">👨‍👩‍👧‍👦</div>
+          <div class="ntc-title">Family</div>
+          <div class="ntc-sub">Paige, Tad, Nat, Sam, Katherine, Ally</div>
+          <div class="ntc-count" id="ntc-count-family">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('golf')">
+          <div class="ntc-icon">⛳</div>
+          <div class="ntc-title">Golf</div>
+          <div class="ntc-sub">Tad & Nat tournaments, rankings, courses</div>
+          <div class="ntc-count" id="ntc-count-golf">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('trips')">
+          <div class="ntc-icon">✈️</div>
+          <div class="ntc-title">Family Trips</div>
+          <div class="ntc-sub">Naples, Nantucket, Cinque Terre, Dubai...</div>
+          <div class="ntc-count" id="ntc-count-trips">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('markets')">
+          <div class="ntc-icon">📈</div>
+          <div class="ntc-title">Markets / Stocks</div>
+          <div class="ntc-sub">Trades, ideas, earnings, analysis</div>
+          <div class="ntc-count" id="ntc-count-markets">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('bible')">
+          <div class="ntc-icon">📖</div>
+          <div class="ntc-title">Bible / Faith</div>
+          <div class="ntc-sub">Studies, verses, sermons, reflections</div>
+          <div class="ntc-count" id="ntc-count-bible">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('health')">
+          <div class="ntc-icon">🏥</div>
+          <div class="ntc-title">Health</div>
+          <div class="ntc-sub">WHOOP, AFib, workouts, doctors</div>
+          <div class="ntc-count" id="ntc-count-health">—</div>
+        </div>
+        <div class="notes-topic-card" onclick="openTopic('ai')">
+          <div class="ntc-icon">🤖</div>
+          <div class="ntc-title">AI / Tech</div>
+          <div class="ntc-sub">OpenClaw, Claude, agents, ideas</div>
+          <div class="ntc-count" id="ntc-count-ai">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIST / TOPIC VIEW -->
+    <!-- REPORTS VIEW -->
+    <div id="notes-reports-view" style="display:none">
+      <div style="display:flex;gap:16px;height:calc(100vh - 160px)">
+        <div style="width:260px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border);padding-right:12px">
+          <div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Saved Reports</div>
+          <div id="reports-list"></div>
+        </div>
+        <div id="reports-content" style="flex:1;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--text);padding:4px 8px">
+          <div style="color:var(--text-muted)">Select a report to read it</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notes-list-view" style="display:none">
+      <div style="display:flex;gap:16px;height:calc(100vh - 160px)">
+        <div style="width:300px;flex-shrink:0">
+          <div id="notes-topic-header" style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;padding:0 2px"></div>
+          <div style="margin-bottom:8px">
+            <button onclick="openTopicReport()" id="notes-report-btn" class="btn btn-primary btn-sm" style="display:none;width:100%">✨ Generate Report</button>
+          </div>
+          <div id="notes-list" style="overflow-y:auto;height:calc(100% - 60px);border-right:1px solid var(--border);padding-right:12px"></div>
+        </div>
+        <div id="notes-content" style="flex:1;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--text);padding:4px"><div style="color:var(--text-muted)">Select a note to read it</div></div>
+      </div>
     </div>
   </div>
 
@@ -1804,6 +1892,17 @@ a{color:var(--accent);text-decoration:none}
 </div>
 
 <!-- TRAVEL DETAIL PANEL -->
+<!-- Report Reader Modal -->
+<div id="report-reader-overlay" class="modal-overlay hidden" onclick="closeReportReader(event)">
+  <div style="background:var(--surface);border-radius:14px;width:min(860px,95vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div id="report-reader-title" style="font-size:15px;font-weight:800;color:var(--text)"></div>
+      <button onclick="closeReportReader()" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+    </div>
+    <div id="report-reader-body" style="overflow-y:auto;padding:24px 32px;font-size:13px;line-height:1.9;color:var(--text)"></div>
+  </div>
+</div>
+
 <div id="travel-detail-overlay" class="modal-overlay hidden" onclick="closeTravelDetail(event)">
   <div id="travel-detail-panel" style="position:fixed;right:0;top:0;bottom:0;width:680px;max-width:95vw;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;padding:36px 32px;box-shadow:-8px 0 40px rgba(0,0,0,.35)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -4170,43 +4269,167 @@ async function sendLegalToTelegram() {
   setTimeout(() => { btn.disabled = false; btn.textContent = '📤 Send to Telegram'; }, 3000);
 }
 
-// ── APPLE NOTES ──────────────────────────────────────────────────────────────
+// ── APPLE NOTES / KNOWLEDGE BASE ─────────────────────────────────────────────
 let allNotes = [];
 let currentNoteIndex = null;
+let currentTopicQuery = '';
+
+const NOTE_TOPICS = {
+  promus:  { label: 'Promus / VC', keywords: ['promus','halter','whoop','iceye','rhombus','chef robot','rocket lab','orbital','fund','lp','portfolio','deal','series','seed','pv5','pvi','pvii','pviii'] },
+  family:  { label: 'Family',      keywords: ['paige','tad','nat','sam','katherine','ally','wisdom teeth','fafsa','graduation','dad','mom','collett'] },
+  golf:    { label: 'Golf',         keywords: ['golf','tournament','ranking','course','junior','mount st mary','jga','usga','northern jr','tee time'] },
+  trips:   { label: 'Family Trips', keywords: ['naples','kalea','nantucket','vineyard','cinque terre','amsterdam','dubai','oman','italy','paris','lux','orlando','florida','ferry','hotel','trip','travel'] },
+  markets: { label: 'Markets',      keywords: ['tsla','nvda','crwd','pltr','amzn','msft','stock','market','trade','option','earnings','spx','spy','coin','btc','nasdaq'] },
+  bible:   { label: 'Bible / Faith',keywords: ['bible','psalm','proverb','jesus','god','faith','church','prayer','scripture','verse','ephesian','romans','genesis','resurrection','christian','sermon','gospel'] },
+  health:  { label: 'Health',       keywords: ['rhr','afib','heart','blood pressure','doctor','medicine','workout','zone 2','strain','recovery','whoop','sleep'] },
+  ai:      { label: 'AI / Tech',    keywords: ['openclaw','claude','openai','anthropic','agent','llm','gpt','alden','finn','chatgpt'] },
+};
 
 async function loadNotes() {
-  const list = document.getElementById('notes-list');
-  if (!list) return;
-  list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px">Loading...</div>';
-  const res = await fetch('/api/notes');
+  // Load counts for topic cards
+  const res = await fetch('/api/notes?limit=9999');
   allNotes = await res.json();
-  renderNotesList(allNotes);
+  // Update counts on cards
+  Object.entries(NOTE_TOPICS).forEach(([key, topic]) => {
+    const count = allNotes.filter(n => topic.keywords.some(kw => n.title.toLowerCase().includes(kw))).length;
+    const el = document.getElementById('ntc-count-' + key);
+    if (el) el.textContent = count + ' notes';
+  });
+}
+
+function showNotesView(view) {
+  document.getElementById('notes-kb-view').style.display = view === 'kb' ? '' : 'none';
+  document.getElementById('notes-list-view').style.display = view === 'list' ? '' : 'none';
+  document.getElementById('notes-reports-view').style.display = view === 'reports' ? '' : 'none';
+  document.getElementById('notes-btn-kb').className = 'btn btn-sm ' + (view==='kb' ? 'btn-primary' : 'btn-ghost');
+  document.getElementById('notes-btn-list').className = 'btn btn-sm ' + (view==='list' ? 'btn-primary' : 'btn-ghost');
+  document.getElementById('notes-btn-reports').className = 'btn btn-sm ' + (view==='reports' ? 'btn-primary' : 'btn-ghost');
+  if (view === 'reports') loadReportsList();
+  if (view === 'list' && !currentTopicQuery) renderNotesList(allNotes.slice(0, 100));
+}
+
+function openTopic(key) {
+  const topic = NOTE_TOPICS[key];
+  if (!topic) return;
+  currentTopicQuery = key;
+  const matches = allNotes.filter(n => topic.keywords.some(kw => n.title.toLowerCase().includes(kw)));
+  showNotesView('list');
+  const hdr = document.getElementById('notes-topic-header');
+  if (hdr) hdr.textContent = topic.label + ' — ' + matches.length + ' notes';
+  const btn = document.getElementById('notes-report-btn');
+  if (btn) { btn.style.display = ''; btn.dataset.topic = key; }
+  renderNotesList(matches);
+  document.getElementById('notes-content').innerHTML = '<div style="color:var(--text-muted);font-size:13px">Select a note, or click Generate Report for an AI summary.</div>';
 }
 
 function renderNotesList(notes) {
   const list = document.getElementById('notes-list');
   if (!list) return;
-  list.innerHTML = notes.length ? notes.map((n,i) => `
-    <div onclick="openNote(${n.id},'" + "" + "'" + n.title.replace(/'/g,'') + "'" + "')" style="padding:8px 10px;margin-bottom:4px;border-radius:7px;cursor:pointer;border:1px solid transparent" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-      <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.3">${esc(n.title)}</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${n.modified}</div>
+  list.innerHTML = notes.length ? notes.map(n => `
+    <div onclick="openNote(${n.note_index || n.id})" style="padding:7px 10px;margin-bottom:3px;border-radius:7px;cursor:pointer;border:1px solid transparent" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div style="font-size:11.5px;font-weight:600;color:var(--text);line-height:1.3">${esc(n.title)}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:1px">${(n.modified||'').replace('date ','').replace(/ at .*/,'')}</div>
     </div>
   `).join('') : '<div style="color:var(--text-muted);font-size:12px;padding:8px">No notes found</div>';
 }
 
-async function openNote(index, title) {
+async function openNote(index) {
   currentNoteIndex = index;
   const content = document.getElementById('notes-content');
+  if (!content) return;
   content.innerHTML = '<div style="color:var(--text-muted)">Loading...</div>';
   const res = await fetch('/api/notes/' + index);
   const d = await res.json();
-  content.innerHTML = '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">' + esc(title) + '</div>' + esc(d.content || 'Empty note');
+  content.innerHTML =
+    '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">' + esc(d.title || '') + '</div>' +
+    '<pre style="font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap;font-family:inherit;margin:0">' + esc(d.content || 'Empty note') + '</pre>';
+  showNotesView('list');
+}
+
+async function openTopicReport() {
+  const btn = document.getElementById('notes-report-btn');
+  const key = btn && btn.dataset.topic;
+  if (!key) return;
+  const content = document.getElementById('notes-content');
+  content.innerHTML = '<div style="color:var(--text-muted)">Generating report... this may take 15-20 seconds.</div>';
+  const res = await fetch('/api/notes/report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic: key })
+  });
+  const d = await res.json();
+  if (d.report) {
+    content.innerHTML =
+      '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">' + esc(NOTE_TOPICS[key].label) + ' — Report</div>' +
+      '<pre style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap;font-family:inherit;margin:0">' + esc(d.report) + '</pre>';
+  } else {
+    content.innerHTML = '<div style="color:var(--danger)">' + esc(d.error || 'Failed') + '</div>';
+  }
+}
+
+// ── KNOWLEDGE REPORTS ──────────────────────────────────────────
+let reportsCache = [];
+
+async function loadReportsList() {
+  const list = document.getElementById('reports-list');
+  if (!list) return;
+  if (!reportsCache.length) {
+    const res = await fetch('/api/knowledge-reports');
+    reportsCache = await res.json();
+  }
+  if (!reportsCache.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px">No reports yet</div>';
+    return;
+  }
+  list.innerHTML = reportsCache.map(r => `
+    <div onclick="openReport(${r.id})" style="padding:8px 10px;margin-bottom:4px;border-radius:7px;cursor:pointer;border:1px solid transparent" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.3">${esc(r.title)}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">${(r.updated||r.created||'').replace('T',' ').slice(0,16)}</div>
+    </div>
+  `).join('');
+}
+
+async function openReport(id) {
+  const overlay = document.getElementById('report-reader-overlay');
+  const titleEl = document.getElementById('report-reader-title');
+  const body = document.getElementById('report-reader-body');
+  titleEl.textContent = 'Loading...';
+  body.innerHTML = '<div style="color:var(--text-muted)">Loading...</div>';
+  overlay.classList.remove('hidden');
+  const res = await fetch('/api/knowledge-reports/' + id);
+  const r = await res.json();
+  titleEl.textContent = r.title;
+  let html = esc(r.content)
+    .replace(/^# (.+)$/gm, '<h2 style="font-size:19px;font-weight:800;color:var(--text);margin:28px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">$1</h2>')
+    .replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:700;color:var(--accent);margin:22px 0 6px">$1</h3>')
+    .replace(/^### (.+)$/gm, '<h4 style="font-size:13.5px;font-weight:700;color:var(--text);margin:16px 0 4px">$1</h4>')
+    .replace(/^#### (.+)$/gm, '<h5 style="font-size:12.5px;font-weight:700;color:var(--text-muted);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.4px">$1</h5>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em style="color:var(--text-muted)">$1</em>')
+    .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid var(--accent);margin:10px 0;padding:6px 14px;background:var(--surface2);border-radius:0 6px 6px 0;font-style:italic;color:var(--text-muted)">$1</blockquote>')
+    .replace(/^- (.+)$/gm, '<li style="margin:3px 0;padding-left:4px">$1</li>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:20px 0">')
+    .replace(/\n/g, '<br>');
+  body.innerHTML = '<div style="font-size:10px;color:var(--text-muted);margin-bottom:24px">' + (r.updated||'').slice(0,16) + '</div><div>' + html + '</div>';
+}
+
+function closeReportReader(e) {
+  if (e && e.target !== document.getElementById('report-reader-overlay')) return;
+  document.getElementById('report-reader-overlay').classList.add('hidden');
 }
 
 function filterNotes(query) {
-  if (!query) { renderNotesList(allNotes); return; }
+  showNotesView('list');
+  const hdr = document.getElementById('notes-topic-header');
+  if (!query) {
+    if (hdr) hdr.textContent = '';
+    renderNotesList(allNotes.slice(0, 100));
+    return;
+  }
   const q = query.toLowerCase();
-  renderNotesList(allNotes.filter(n => n.title.toLowerCase().includes(q)));
+  const matches = allNotes.filter(n => n.title.toLowerCase().includes(q));
+  if (hdr) hdr.textContent = matches.length + ' results for "' + query + '"';
+  renderNotesList(matches);
 }
 
 // ── COMPANIES ───────────────────────────────────────────────

@@ -1,74 +1,80 @@
 #!/usr/bin/env node
 /**
  * sync-apple-notes.js — Indexes Apple Notes to SQLite for fast search
- * Reads notes one at a time via AppleScript to avoid timeouts.
+ * Reads directly from NoteStore.sqlite (requires Full Disk Access for node).
  * Run nightly or on demand.
  */
 
-const { execSync } = require('child_process');
 const Database = require('better-sqlite3');
-const db = new Database('/Users/mini/.openclaw/workspace/mission-control/data/mission.db');
+const path = require('path');
+const os = require('os');
 
-function osascript(script) {
-  return execSync(`osascript -e '${script.replace(/'/g, "'\"'\"'")}'`, { timeout: 8000 }).toString().trim();
-}
+const NOTES_DB = path.join(os.homedir(), 'Library/Group Containers/group.com.apple.notes/NoteStore.sqlite');
+const MC_DB = path.join(__dirname, 'data/mission.db');
 
-async function main() {
-  console.log('Syncing Apple Notes...');
+function main() {
+  console.log('Syncing Apple Notes via direct DB read...');
   const startTime = Date.now();
 
-  // Get count first
-  let noteCount = 0;
-  try {
-    const countStr = osascript('tell application "Notes" to get count of notes of default account');
-    noteCount = parseInt(countStr) || 0;
-  } catch(e) {
-    console.error('Could not count notes:', e.message);
-    process.exit(1);
-  }
-  console.log(`Found ${noteCount} notes`);
+  const notesDb = new Database(NOTES_DB, { readonly: true });
+  const mcDb = new Database(MC_DB);
 
-  // Clear existing index
-  db.prepare('DELETE FROM apple_notes').run();
+  // Ensure table exists
+  mcDb.exec(`
+    CREATE TABLE IF NOT EXISTS apple_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      note_index INTEGER UNIQUE,
+      title TEXT NOT NULL,
+      content TEXT DEFAULT '',
+      modified TEXT DEFAULT '',
+      folder TEXT DEFAULT '',
+      synced_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+  try { mcDb.exec('ALTER TABLE apple_notes ADD COLUMN folder TEXT DEFAULT ""'); } catch(e) {}
 
-  const insert = db.prepare(`INSERT OR REPLACE INTO apple_notes 
-    (note_index, title, content, modified, synced_at) 
-    VALUES (?, ?, ?, ?, datetime('now'))`);
+  // Read all non-deleted notes from NoteStore
+  const notes = notesDb.prepare(`
+    SELECT
+      Z_PK as pk,
+      ZTITLE1 as title,
+      ZSNIPPET as snippet,
+      ZMODIFICATIONDATE1 as modified
+    FROM ZICCLOUDSYNCINGOBJECT
+    WHERE ZTITLE1 IS NOT NULL
+      AND ZMARKEDFORDELETION = 0
+    ORDER BY ZMODIFICATIONDATE1 DESC
+  `).all();
 
-  let synced = 0, errors = 0;
+  console.log(`Found ${notes.length} notes in NoteStore`);
 
-  for (let i = 1; i <= noteCount; i++) {
-    try {
-      const title = osascript(`tell application "Notes" to get name of note ${i} of default account`);
-      const content = osascript(`tell application "Notes" to get plaintext of note ${i} of default account`);
-      const modified = osascript(`tell application "Notes" to get modification date of note ${i} of default account`);
-      
-      insert.run(i, title, content.substring(0, 10000), modified);
-      synced++;
-      
-      if (synced % 10 === 0) process.stdout.write(`\r  ${synced}/${noteCount} synced...`);
-    } catch(e) {
-      errors++;
-      // Skip this note and continue
+  const upsert = mcDb.prepare(`
+    INSERT INTO apple_notes (note_index, title, content, modified, synced_at)
+    VALUES (?, ?, ?, datetime(? + 978307200, 'unixepoch', 'localtime'), datetime('now'))
+    ON CONFLICT(note_index) DO UPDATE SET
+      title = excluded.title,
+      content = excluded.content,
+      modified = excluded.modified,
+      synced_at = excluded.synced_at
+  `);
+
+  const syncAll = mcDb.transaction((notes) => {
+    for (const n of notes) {
+      upsert.run(n.pk, n.title || 'Untitled', n.snippet || '', n.modified || 0);
     }
-    
-    // Small delay every 5 notes to avoid overwhelming AppleScript
-    if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
-  }
+    return notes.length;
+  });
 
-  // Rebuild FTS index
-  try {
-    db.prepare('INSERT INTO apple_notes_fts(apple_notes_fts) VALUES("rebuild")').run();
-  } catch(e) {}
+  const synced = syncAll(notes);
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
-  const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-  console.log(`\n✅ Synced ${synced} notes in ${elapsed}s (${errors} errors)`);
-  
-  // Log to memory
-  const total = db.prepare('SELECT COUNT(*) as n FROM apple_notes').get().n;
-  console.log(`Total in index: ${total}`);
-  
-  db.close();
+  const total = mcDb.prepare('SELECT COUNT(*) as n FROM apple_notes').get();
+  console.log(`Synced ${synced} notes in ${elapsed}s. Total in DB: ${total.n}`);
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+try {
+  main();
+} catch(e) {
+  console.error('Sync failed:', e.message);
+  process.exit(1);
+}

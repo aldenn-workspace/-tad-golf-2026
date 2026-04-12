@@ -1593,6 +1593,85 @@ app.get('/api/notes/:index', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// Knowledge Reports CRUD
+app.get('/api/knowledge-reports', (req, res) => {
+  try {
+    const rows = db.prepare('SELECT id, title, topic, created, updated FROM knowledge_reports ORDER BY updated DESC').all();
+    res.json(rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/knowledge-reports/:id', (req, res) => {
+  try {
+    const row = db.prepare('SELECT * FROM knowledge_reports WHERE id = ?').get(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    res.json(row);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/notes/custom-report', async (req, res) => {
+  try {
+    const { query, prompt: userPrompt } = req.body;
+    if (!query) return res.status(400).json({ error: 'query required' });
+    const notes = db.prepare(`SELECT title, content FROM apple_notes WHERE title LIKE ? OR content LIKE ? ORDER BY modified ASC LIMIT 40`).all('%'+query+'%', '%'+query+'%');
+    if (!notes.length) return res.json({ report: 'No notes found for: ' + query });
+    const notesText = notes.map(n => '### ' + n.title + '\n' + (n.content||'').slice(0,2000)).join('\n\n---\n\n');
+    const prompt = userPrompt
+      ? userPrompt + '\n\nNOTES:\n\n' + notesText
+      : `Synthesize these ${notes.length} notes about "${query}" into a clear, organized report. Pull out key themes, insights, and anything notable. Be direct and useful.\n\nNOTES:\n\n` + notesText;
+    const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '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';
+    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const aiJson = await aiRes.json();
+    if (!aiRes.ok) throw new Error(aiJson.error?.message || 'Claude API error');
+    res.json({ report: aiJson.content[0].text, noteCount: notes.length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/notes/report', async (req, res) => {
+  try {
+    const { topic } = req.body;
+    const topics = {
+      promus:  { label: 'Promus / VC', keywords: ['promus','halter','whoop','iceye','rhombus','rocket lab','orbital','fund','lp','portfolio','deal','series','seed','pv5'] },
+      family:  { label: 'Family',      keywords: ['paige','tad','nat','sam','katherine','ally','wisdom teeth','fafsa','graduation','dad','mom','collett'] },
+      golf:    { label: 'Golf',         keywords: ['golf','tournament','ranking','course','junior','mount st mary','jga','usga','northern jr','tee time'] },
+      trips:   { label: 'Family Trips', keywords: ['naples','kalea','nantucket','vineyard','cinque terre','amsterdam','dubai','oman','italy','paris','orlando','florida','ferry','hotel','trip','travel'] },
+      markets: { label: 'Markets',      keywords: ['tsla','nvda','crwd','pltr','amzn','msft','stock','market','trade','option','earnings','spx','spy','coin','btc'] },
+      bible:   { label: 'Bible / Faith',keywords: ['bible','psalm','proverb','jesus','god','faith','church','prayer','scripture','verse','ephesian','romans','genesis','resurrection','christian','sermon','gospel'] },
+      health:  { label: 'Health',       keywords: ['rhr','afib','heart','blood pressure','doctor','medicine','workout','zone 2','strain','recovery','sleep'] },
+      ai:      { label: 'AI / Tech',    keywords: ['openclaw','claude','openai','anthropic','agent','llm','gpt','alden','finn'] },
+    };
+    const t = topics[topic];
+    if (!t) return res.status(400).json({ error: 'Unknown topic' });
+
+    // Find matching notes
+    const allNotes = db.prepare('SELECT title, content FROM apple_notes').all();
+    const matches = allNotes.filter(n =>
+      t.keywords.some(kw => (n.title + ' ' + n.content).toLowerCase().includes(kw))
+    ).slice(0, 60);
+
+    if (!matches.length) return res.json({ report: 'No notes found for this topic.' });
+
+    // Build prompt
+    const notesText = matches.map(n => `### ${n.title}\n${(n.content||'').slice(0,500)}`).join('\n\n');
+    const prompt = `You are analyzing Mike Collett's personal Apple Notes on the topic: "${t.label}".\n\nBelow are ${matches.length} relevant notes. Synthesize them into a clear, organized report. Pull out key themes, important details, patterns over time, and anything actionable or notable. Write in a direct, useful style.\n\n${notesText}`;
+
+    const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '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';
+    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 3000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const aiJson = await aiRes.json();
+    if (!aiRes.ok) throw new Error(aiJson.error?.message || 'Claude API error');
+    const report = aiJson.content[0].text;
+    res.json({ report, noteCount: matches.length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/notes/sync', (req, res) => {
   res.json({ ok: true, message: 'Sync runs nightly at 2:30am or trigger manually' });
   const { execFile } = require('child_process');
