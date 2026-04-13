@@ -1641,6 +1641,34 @@ app.get('/api/notes/:index', (req, res) => {
 });
 
 // ── PORTFOLIO INFO ───────────────────────────────────────────────────────────
+// Portfolio position lookup by company name (for company detail panel)
+app.get('/api/portfolio/position/:name', (req, res) => {
+  try {
+    const name = req.params.name;
+    // Fuzzy match on company name
+    const holdings = db.prepare(`
+      SELECT h.*, f.name as fund_name, f.type as fund_type
+      FROM portfolio_holdings h
+      JOIN portfolio_funds f ON f.fund_id = h.fund_id
+      WHERE h.company LIKE ? OR h.company LIKE ?
+      ORDER BY h.fair_value DESC
+    `).all('%'+name+'%', '%'+name.split(' ')[0]+'%');
+    if (!holdings.length) { res.json(null); return; }
+    const totalCost = holdings.reduce((s,h) => s+h.cost, 0);
+    const totalFMV = holdings.reduce((s,h) => s+h.fair_value, 0);
+    const moic = totalCost > 0 ? (totalFMV/totalCost) : 0;
+    const funds = [...new Set(holdings.map(h=>h.fund_id))];
+    const firstDate = holdings.map(h=>h.date).filter(Boolean).sort()[0];
+    const lastRound = holdings[0]?.round || '';
+    res.json({ holdings, totalCost, totalFMV, moic, funds, firstDate, lastRound });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/portfolio/fx', (req, res) => {
+  try { res.json(db.prepare('SELECT * FROM fx_rates').all()); }
+  catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/portfolio/funds', (req, res) => {
   try { res.json(db.prepare('SELECT * FROM portfolio_funds ORDER BY fmv DESC').all()); }
   catch(e) { res.status(500).json({ error: e.message }); }

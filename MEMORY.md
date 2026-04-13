@@ -50,11 +50,35 @@ _Lean essential context only. Detail lives in MEMORY_ARCHIVE.md._
 - **Riley** — Meeting scribe, Granola API every 2h (`riley.js`). Granola key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`
 
 ## Promus Ventures — Key Facts
-- **Funds:** PVI (FMV $148.9M), PVII ($81.6M), PVIII ($22.9M), PVE ($10.3M), Orbital Ventures I (€132.2M) — **"Orbital Ventures S.C.A. SICAV-RAIF" = Promus in portfolio company legal docs** (board seats, investor rights, ROFR, etc.)
-- **Crown jewels:** WHOOP (~$141M FMV, $10.1B valuation Apr 9), Halter USA (~$113M FMV)
+- **Funds:** PVI (FMV $148.2M), PVII ($81.6M), PVIII ($22.9M), PVE ($10.2M), Orbital Ventures I ($154.4M USD / €132.2M) — **"Orbital Ventures S.C.A. SICAV-RAIF" = Promus in portfolio company legal docs**
+- **Crown jewels:** WHOOP (~$147M total FMV across PVI+PVE+PVWhoop, $10.1B valuation), Halter USA (~$75M FMV across PVII+PVMHalter)
 - **PV V fundraise:** $150M target, active. Team: Mike, John Lusk, Matt Martorello, Bill Merchantz, Stéphane Blanc (starts May 1). **Pierre Festal — GONE**, never include in team.
 - **Affinity CRM** wired to Mission Control. 751 LPs in PV5 pipeline (list 192358).
 - **Azure app** (`Alden Incoming Deals Reader`): Tenant `6db61128...`, Client `6da1a0c3...`. App-only auth, never expires. 50+ deals imported.
+
+## Portfolio Info Tab (Built Apr 13, 2026)
+- **Default landing page** of Mission Control
+- **DB tables:** `portfolio_funds`, `portfolio_holdings`, `portfolio_subpositions`, `portfolio_exits`, `fx_rates`
+- **Fund cards:** 8 vehicles — PVI, PVII, PVIII, PVE, PVMHalter (5 SPVs), PVWhoop (2 SPVs), PVMChef, OVI + PVRocketLab (exited)
+- **Total FMV: ~$467M** across all vehicles (USD, OVI converted at EUR/USD daily rate)
+- **SPV count: 9** (Halter 5 + Whoop 2 + Chef 1 + Rocket Lab 1 exited)
+- **Features:** Sortable columns, expand/collapse per-round detail, MOIC per tranche, country flags, % of Fund column, EUR/USD badge (daily cron 7am CT, job: 3ca9aae8)
+- **Company integration:** ↗ link on each row opens Company detail; Company detail shows purple Portfolio Position card (Cost, FMV, MOIC, funds, first date)
+- **New 2026 SPVs added:** Halter Tranche 5 ($3.19M, 79,594 sh @ $40.14), Whoop Series G ($2.675M, 238,116 sh @ $11.234, Apr 1 2026)
+- **OVI:** 20 companies, 55 subpositions from SOI draft (Dropbox). EUR→USD converted daily.
+- **Pending:** Exits table (need PVI-PVE SOI spreadsheets), Port Cap Tables tab (Carta API), committed capital for PVI/PVIII/PVE (Mike to confirm), board decks storage, company board dates on calendar
+
+## Integration Roadmap (Mike's vision, Apr 13)
+- Exits table below active holdings
+- Quarterly auto-update workflow
+- Performance charts (FMV over time, MOIC waterfall)
+- Carta API cap tables tab (start with WHOOP)
+- Board decks storage + per-company doc viewer
+- Portfolio company board dates → MC calendar + auto-reminders
+- Team login views (John, Matt, Bill, Stéphane)
+- Granola meeting notes → auto-filed to company record
+- Funding round alerts per portfolio company
+- WHOOP IPO / public comps tracking
 
 ## Current Priorities / Open Loops
 - **Stéphane Blanc starts Apr 13** — PV Expenses access (cron fires 9am CT)
