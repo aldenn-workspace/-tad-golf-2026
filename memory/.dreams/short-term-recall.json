@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-13T12:00:16.278Z",
+  "entries": {
+    "memory:memory/2026-04-10.md:54:65": {
+      "key": "memory:memory/2026-04-10.md:54:65",
+      "path": "memory/2026-04-10.md",
+      "startLine": 54,
+      "endLine": 65,
+      "source": "memory",
+      "snippet": "- `second-brain/morning-briefings/hayley-2026-04-09.md` — Hayley portfolio briefing (WHOOP raised $575M at $10.1B) - `.learnings/last_security_audit.json` — security audit results ### 8. Notable Context - Hayley (portfolio monitor agent) is live: Mon + Thu 7am CT, using Claude Managed Agents cloud infra - WHOOP raised $575M at $10.1B valuation (Apr 9 briefing) — significant for Promus portfolio - Stéphane Blanc starts April 13, 2026 (PV Expenses access) - RHR experiment ends April 16, 2026 (Whoop Tracker) --- **Overall: All systems green. One security issue found (hardcoded keys in Hayley script) and mitigated via .gitignore. Workspace backup complete.**",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.43919279575347897,
+      "maxScore": 0.43919279575347897,
+      "firstRecalledAt": "2026-04-13T12:00:16.278Z",
+      "lastRecalledAt": "2026-04-13T12:00:16.278Z",
+      "queryHashes": [
+        "7c737757c055"
+      ],
+      "recallDays": [
+        "2026-04-13"
+      ],
+      "conceptTags": [
+        "backup",
+        "10.1b",
+        "second",
+        "brain",
+        "morning",
+        "briefings",
+        "hayley",
+        "portfolio"
+      ]
+    },
+    "memory:memory/2026-04-10.md:30:59": {
+      "key": "memory:memory/2026-04-10.md:30:59",
+      "path": "memory/2026-04-10.md",
+      "startLine": 30,
+      "endLine": 59,
+      "source": "memory",
+      "snippet": "- Key changes: gitignore fixes, serve.js refactor, Hayley config/briefings, security audit state ### 4. /tmp Stale File Cleanup - Scanned for files/dirs older than 1 day in /tmp - Result: **Nothing to clean** — /tmp is tidy ### 5. Orphaned Session Check - Sessions list: 1 active (this nightly mission). No orphaned sessions. ### 6. Security Issue — FIXED **Finding:** `scripts/hayley-managed-agents.js` contained hardcoded credentials: - Anthropic API key (`sk-ant-api03-...`) - Telegram bot token (`8395890971:AAH...`) **Action taken:** Added `scripts/hayley-managed-agents.js` to `.gitignore` to prevent future commits of this sensitive file. File remains local but will not be pushed to GitHu",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3570017248392105,
+      "maxScore": 0.3570017248392105,
+      "firstRecalledAt": "2026-04-13T12:00:16.278Z",
+      "lastRecalledAt": "2026-04-13T12:00:16.278Z",
+      "queryHashes": [
+        "7c737757c055"
+      ],
+      "recallDays": [
+        "2026-04-13"
+      ],
+      "conceptTags": [
+        "serve.js",
+        "config/briefings",
+        "files/dirs",
+        "scripts/hayley-managed-agents.js",
+        "sk-ant-api03",
+        "key",
+        "changes",
+        "gitignore"
+      ]
+    }
+  }
+}
