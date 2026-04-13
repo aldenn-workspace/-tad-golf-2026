@@ -1293,22 +1293,33 @@ app.post('/api/legal', upload.single('file'), async (req, res) => {
   // Run Tate analysis in background
   (async () => {
     try {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'x-api-key': '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', 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6', max_tokens: 2000,
-          system: TATE_SYSTEM,
-          messages: [{ role: 'user', content: `Please review this document:\n\nDocument: ${docName}\n\n${docText.substring(0, 30000)}` }]
-        })
-      });
-      const d = await r.json();
-      const result = d.content?.[0]?.text || 'Analysis failed';
+      const { tateLegalReview } = require('./tate-legal');
+      const questions = req.body?.questions || null;
+      const result = await tateLegalReview(docName, docText, filePath, questions);
       db.prepare('UPDATE legal_reviews SET result = ?, status = ? WHERE id = ?').run(result, 'done', id);
     } catch(e) {
       db.prepare('UPDATE legal_reviews SET result = ?, status = ? WHERE id = ?').run(e.message, 'error', id);
     }
   })();
+});
+
+// Ask Tate questions across all uploaded docs for a company/tag
+app.post('/api/legal/ask', async (req, res) => {
+  try {
+    const { questions, doc_ids } = req.body;
+    if (!questions) return res.status(400).json({ error: 'questions required' });
+    let rows;
+    if (doc_ids && doc_ids.length) {
+      rows = db.prepare('SELECT * FROM legal_reviews WHERE id IN (' + doc_ids.map(()=>'?').join(',') + ')').all(...doc_ids);
+    } else {
+      rows = db.prepare('SELECT * FROM legal_reviews ORDER BY created DESC LIMIT 10').all();
+    }
+    if (!rows.length) return res.status(404).json({ error: 'No documents found' });
+    const { tateMultiDocReview } = require('./tate-legal');
+    const docs = rows.map(r => ({ name: r.doc_name, text: r.doc_text, filePath: r.file_path }));
+    const answer = await tateMultiDocReview(docs, questions);
+    res.json({ answer, docCount: rows.length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/legal/:id/send-telegram', async (req, res) => {

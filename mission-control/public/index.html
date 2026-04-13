@@ -967,6 +967,17 @@ a{color:var(--accent);text-decoration:none}
       <div id="legal-result" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:20px;white-space:pre-wrap;font-size:12px;line-height:1.7;max-height:600px;overflow-y:auto"></div>
     </div>
 
+    <!-- Ask Tate -->
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;letter-spacing:.05em">ASK TATE — QUESTIONS ACROSS ALL DOCS</div>
+      <textarea id="tate-question-input" placeholder="e.g. How do our pro-rata and super pro-rata rights work? What is our ROFR on secondary sales? Can we veto being removed from the board?" style="width:100%;height:80px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;color:var(--text);font-size:12px;resize:vertical"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <button class="btn btn-primary" onclick="askTate()">🤖 Ask Tate</button>
+        <span style="font-size:11px;color:var(--text-muted)">Searches across all uploaded docs</span>
+      </div>
+      <div id="tate-answer-area" style="display:none;margin-top:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:20px;white-space:pre-wrap;font-size:12px;line-height:1.7;max-height:600px;overflow-y:auto"></div>
+    </div>
+
     <!-- History -->
     <div style="margin-top:24px">
       <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;letter-spacing:.05em">RECENT REVIEWS</div>
@@ -4258,6 +4269,25 @@ async function loadLegalResult(id) {
   document.getElementById('legal-result').textContent = d.result || 'No result yet';
   document.getElementById('legal-status').textContent = d.status === 'done' ? '⚖️ Review complete' : d.status;
   document.getElementById('legal-telegram-btn').style.display = d.status === 'done' ? '' : 'none';
+}
+
+async function askTate() {
+  const questions = document.getElementById('tate-question-input').value.trim();
+  if (!questions) return;
+  const area = document.getElementById('tate-answer-area');
+  area.style.display = '';
+  area.textContent = 'Tate is reading the documents and thinking... (15-30 seconds)';
+  try {
+    const res = await fetch('/api/legal/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questions })
+    });
+    const d = await res.json();
+    area.textContent = d.answer || d.error || 'No response';
+  } catch(e) {
+    area.textContent = 'Error: ' + e.message;
+  }
 }
 
 async function sendLegalToTelegram() {

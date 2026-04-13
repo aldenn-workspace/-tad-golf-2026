@@ -49,7 +49,7 @@ _Lean essential context only. Detail lives in MEMORY_ARCHIVE.md._
 - **Riley** — Meeting scribe, Granola API every 2h (`riley.js`). Granola key: `grn_1CDS8DEwUbwEqVY1xp6NJvdp_K0qLqIr3QRIbwlz1wbTaWQxO0AVTqFyZT11nx4H5rHi0`
 
 ## Promus Ventures — Key Facts
-- **Funds:** PVI (FMV $148.9M), PVII ($81.6M), PVIII ($22.9M), PVE ($10.3M), Orbital Ventures I (€132.2M)
+- **Funds:** PVI (FMV $148.9M), PVII ($81.6M), PVIII ($22.9M), PVE ($10.3M), Orbital Ventures I (€132.2M) — **"Orbital Ventures S.C.A. SICAV-RAIF" = Promus in portfolio company legal docs** (board seats, investor rights, ROFR, etc.)
 - **Crown jewels:** WHOOP (~$141M FMV, $10.1B valuation Apr 9), Halter USA (~$113M FMV)
 - **PV V fundraise:** $150M target, active. Team: Mike, John Lusk, Matt Martorello, Bill Merchantz, Stéphane Blanc (starts May 1). **Pierre Festal — GONE**, never include in team.
 - **Affinity CRM** wired to Mission Control. 751 LPs in PV5 pipeline (list 192358).
