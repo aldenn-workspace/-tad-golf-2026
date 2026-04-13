@@ -1535,35 +1535,70 @@ app.post('/api/pv5/sync', (req, res) => {
   });
 });
 
-// Affinity LP contacts
-app.get('/api/affinity/lp-contacts/:opportunity_id', async (req, res) => {
+// Affinity LP contacts — resolves field values for a list entry
+const AFFINITY_AUTH = 'Basic ' + Buffer.from(':ylGvSZSuMURrSnQ0CXMlpb3YqeQtkRuBJPqiZa1xtrI').toString('base64');
+const AFFINITY_USER_MAP = {
+  1067014: { name: 'Mike Collett', email: 'mike@promusventures.com' },
+  42908347: { name: 'Pierre Festal', email: 'pierre.festal@gmail.com' },
+  39216132: { name: 'Gareth Keane', email: '' },
+  136746016: { name: 'Estelle Godard', email: '' },
+  70986123: { name: 'Jeremy Teboul', email: '' },
+};
+
+app.get('/api/affinity/lp-contacts/:list_entry_id', async (req, res) => {
   try {
-    const AUTH = 'Basic ' + Buffer.from(':ylGvSZSuMURrSnQ0CXMlpb3YqeQtkRuBJPqiZa1xtrI').toString('base64');
-    const oppRes = await fetch(`https://api.affinity.co/opportunities/${req.params.opportunity_id}`, { headers: { Authorization: AUTH } });
+    const listEntryId = req.params.list_entry_id;
+    // Get the list entry to find entity name and entity_id
+    const leRes = await fetch(`https://api.affinity.co/lists/192358/list-entries/${listEntryId}`, { headers: { Authorization: AFFINITY_AUTH } });
+    const le = await leRes.json();
+    const entityId = le.entity_id;
+    const entityName = le.entity?.name || '';
+
+    // Get field values (owners, etc)
+    const fvRes = await fetch(`https://api.affinity.co/field-values?list_entry_id=${listEntryId}`, { headers: { Authorization: AFFINITY_AUTH } });
+    const fvs = await fvRes.json();
+    const ownerFvs = Array.isArray(fvs) ? fvs.filter(fv => fv.field_id === 3590815 && fv.value) : [];
+    const ownerIds = [...new Set(ownerFvs.map(fv => fv.value))];
+    const pvOwners = ownerIds.map(id => AFFINITY_USER_MAP[id] || { name: 'User ' + id, email: '' });
+    if (!ownerIds.includes(1067014)) pvOwners.unshift(AFFINITY_USER_MAP[1067014]);
+
+    // Get notes scoped strictly to this opportunity (LP card)
+    const notesRes = await fetch(`https://api.affinity.co/notes?opportunity_id=${entityId}&page_size=20`, { headers: { Authorization: AFFINITY_AUTH } });
+    const notesData = await notesRes.json();
+    const notes = (notesData.notes || []).map(n => ({ content: n.content, created_at: n.created_at }));
+
+    // Get contacts directly linked to this opportunity (person_ids on the opp record)
+    let persons = [];
+    let location = '';
+    const oppRes = await fetch(`https://api.affinity.co/opportunities/${entityId}`, { headers: { Authorization: AFFINITY_AUTH } });
     const opp = await oppRes.json();
     const personIds = opp.person_ids || [];
-    const fvRes = await fetch(`https://api.affinity.co/field-values?opportunity_id=${req.params.opportunity_id}`, { headers: { Authorization: AUTH } });
-    const fvData = await fvRes.json();
-    const fvs = Array.isArray(fvData) ? fvData.filter(x => typeof x === 'object') : [];
-    const ownerFvs = fvs.filter(fv => fv.field_id === 3590815 && fv.value);
-    const pvOwners = [];
-    await Promise.all(ownerFvs.map(async fv => {
-      try {
-        const pr = await fetch(`https://api.affinity.co/persons/${fv.value}`, { headers: { Authorization: AUTH } });
-        const pd = await pr.json();
-        if (pd.first_name || pd.last_name) pvOwners.push({ name: [pd.first_name, pd.last_name].filter(Boolean).join(' '), email: pd.primary_email || '' });
-      } catch(e) {}
-    }));
-    const persons = [];
-    await Promise.all(personIds.slice(0, 10).map(async pid => {
-      try {
-        const pr = await fetch(`https://api.affinity.co/persons/${pid}`, { headers: { Authorization: AUTH } });
-        const pd = await pr.json();
-        if (pd.first_name || pd.last_name || pd.primary_email) persons.push({ id: pd.id, name: [pd.first_name, pd.last_name].filter(Boolean).join(' '), email: pd.primary_email || '', title: pd.title || '' });
-      } catch(e) {}
-    }));
-    res.json({ persons: persons.filter(p => p.name || p.email), pvOwners });
-  } catch(e) { res.json({ persons: [], pvOwners: [] }); }
+    const orgIds = opp.organization_ids || [];
+
+    // Fetch domain from org if available
+    if (orgIds.length) {
+      const orgRes = await fetch(`https://api.affinity.co/organizations/${orgIds[0]}`, { headers: { Authorization: AFFINITY_AUTH } });
+      const orgData = await orgRes.json();
+      if (orgData.domain) location = orgData.domain;
+    }
+
+    // Fetch only persons directly linked to this LP opportunity
+    if (personIds.length) {
+      const personResults = await Promise.all(personIds.slice(0,10).map(async pid => {
+        try {
+          const pr = await fetch(`https://api.affinity.co/persons/${pid}`, { headers: { Authorization: AFFINITY_AUTH } });
+          const pd = await pr.json();
+          if (pd.first_name || pd.last_name || pd.primary_email) {
+            return { name: [pd.first_name, pd.last_name].filter(Boolean).join(' '), email: pd.primary_email || '', title: pd.title || '' };
+          }
+        } catch(e) {}
+        return null;
+      }));
+      persons = personResults.filter(Boolean);
+    }
+
+    res.json({ pvOwners, persons, notes, location });
+  } catch(e) { console.error('lp-contacts error:', e.message); res.json({ persons: [], pvOwners: [], notes: [], location: '' }); }
 });
 
 app.get('/api/affinity/notes', async (req, res) => {
