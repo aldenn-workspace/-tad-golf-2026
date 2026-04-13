@@ -10,7 +10,8 @@ _Lean essential context only. Detail lives in MEMORY_ARCHIVE.md._
 - **Telegram** is primary channel. X: @mikecollett.
 
 ## Hard Rules (Non-Negotiable)
-1. **NEVER take a destructive/irreversible action without explicit "go ahead"** — conversation about options is NOT permission. This means: session deletes, file wipes, git rewrites, service terminations, external sends.
+1. **Write memory at 50% context** — update daily log + MEMORY.md proactively, not when asked. Again at 70% if session continues. Never wait past 70%.
+2. **NEVER take a destructive/irreversible action without explicit "go ahead"** — conversation about options is NOT permission. This means: session deletes, file wipes, git rewrites, service terminations, external sends.
 2. **Git history rewrite = planned op only** — never autonomous, always Mike-approved.
 3. **Session resets must summarize to MEMORY.md first.**
 4. **NEVER touch streaming config (fixed 2026.4.11).**
@@ -56,11 +57,21 @@ _Lean essential context only. Detail lives in MEMORY_ARCHIVE.md._
 - **Azure app** (`Alden Incoming Deals Reader`): Tenant `6db61128...`, Client `6da1a0c3...`. App-only auth, never expires. 50+ deals imported.
 
 ## Current Priorities / Open Loops
-- **Stéphane Blanc starts Apr 13** — PV Expenses access
+- **Stéphane Blanc starts Apr 13** — PV Expenses access (cron fires 9am CT)
 - **RHR experiment ends Apr 16** — Whoop Tracker Week 8 taper
 - **Mac mini #2 arrives May 5** — full Promus/Finn infrastructure migrates there
 - **Sadie calendar agent** — `sadie-calendar.js` missing, needs build
 - **Git push to GitHub blocked** — secrets in older commits. Local-only for now. Do NOT rewrite history autonomously.
+- **Lunar Outpost legal docs** — need full Section 4 of IRA + any side letters from Series A closing
+- **Hayley news** — re-triggered Apr 13 8:40am; parser fixed; verify news shows in company pages
+
+## Tate Legal Agent
+- Fully built Apr 13. PDF extraction via pdfminer. Multi-doc Q&A via `/api/legal/ask`.
+- Lunar Outpost docs: `/Users/mini/.openclaw/workspace/legal-docs/lunar-outpost/` (ira.pdf, rofr.pdf, voting.pdf, cert.pdf)
+- Board protection confirmed: Orbital (=Promus) has Series Seed Director seat, removal requires Orbital consent (Section 1.6a, Voting Agreement). Threshold: ≥541,321 Series Seed shares.
+
+## Knowledge Base (MC Notes Tab)
+- 8 topic cards built. Reports system live. Ephesians study report saved (id=1, ~20K chars, full 6 chapters).
 
 ## Memory Backup
 - **`~/memory-backup/`** — clean git repo, no secrets. Backs up every 30 min (LaunchAgent: `local.memory-backup`).

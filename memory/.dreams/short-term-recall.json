@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-13T12:00:16.278Z",
+  "updatedAt": "2026-04-13T13:40:52.865Z",
   "entries": {
     "memory:memory/2026-04-10.md:54:65": {
       "key": "memory:memory/2026-04-10.md:54:65",
@@ -9,15 +9,16 @@
       "endLine": 65,
       "source": "memory",
       "snippet": "- `second-brain/morning-briefings/hayley-2026-04-09.md` — Hayley portfolio briefing (WHOOP raised $575M at $10.1B) - `.learnings/last_security_audit.json` — security audit results ### 8. Notable Context - Hayley (portfolio monitor agent) is live: Mon + Thu 7am CT, using Claude Managed Agents cloud infra - WHOOP raised $575M at $10.1B valuation (Apr 9 briefing) — significant for Promus portfolio - Stéphane Blanc starts April 13, 2026 (PV Expenses access) - RHR experiment ends April 16, 2026 (Whoop Tracker) --- **Overall: All systems green. One security issue found (hardcoded keys in Hayley script) and mitigated via .gitignore. Workspace backup complete.**",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.43919279575347897,
+      "totalScore": 0.8471191465854644,
       "maxScore": 0.43919279575347897,
       "firstRecalledAt": "2026-04-13T12:00:16.278Z",
-      "lastRecalledAt": "2026-04-13T12:00:16.278Z",
+      "lastRecalledAt": "2026-04-13T13:40:52.865Z",
       "queryHashes": [
-        "7c737757c055"
+        "7c737757c055",
+        "e50ef90e4c9c"
       ],
       "recallDays": [
         "2026-04-13"

@@ -1,0 +1,27 @@
+{
+  "date": "2026-04-13",
+  "summary": "1 critical · 3 warn · 1 info",
+  "critical": [
+    "skills.code_safety: Skill 'last30days' contains dangerous code patterns (env-harvesting, 5 issues)"
+  ],
+  "warn": [
+    "gateway.trusted_proxies_missing: Reverse proxy headers are not trusted",
+    "tools.exec.security_full_configured: Exec security=full for main, finn",
+    "security.trust_model.multi_user_heuristic: Multi-user setup detected"
+  ],
+  "firewall": "enabled (State=1)",
+  "open_public_ports": [
+    "ControlCenter 718 *:5000",
+    "ControlCenter 718 *:7000",
+    "Dropbox 98653 *:17500",
+    "node 8830 *:3458",
+    "rapportd 620 *:49159"
+  ],
+  "loopback_ports": [
+    "Dropbox 127.0.0.1:17600", "Dropbox 127.0.0.1:17603",
+    "node 5725 127.0.0.1:18789", "node 5725 127.0.0.1:18791", "node 5725 127.0.0.1:62357",
+    "node 74552 127.0.0.1:3456", "node 84784 127.0.0.1:3455", "node 84787 127.0.0.1:3461",
+    "node 8825 127.0.0.1:3462", "node 8826 127.0.0.1:3459", "node 8828 127.0.0.1:3463",
+    "node 8831 127.0.0.1:3457"
+  ]
+}

@@ -1,1 +1,2 @@
 {"type":"memory.recall.recorded","timestamp":"2026-04-13T12:00:16.278Z","query":"Hayley news monitor portfolio companies","resultCount":2,"results":[{"path":"memory/2026-04-10.md","startLine":54,"endLine":65,"score":0.43919279575347897},{"path":"memory/2026-04-10.md","startLine":30,"endLine":59,"score":0.3570017248392105}]}
+{"type":"memory.recall.recorded","timestamp":"2026-04-13T13:40:52.865Z","query":"Hayley news monitor portfolio companies Promus","resultCount":1,"results":[{"path":"memory/2026-04-10.md","startLine":54,"endLine":65,"score":0.4079263508319855}]}

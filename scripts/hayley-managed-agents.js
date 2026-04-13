@@ -164,21 +164,28 @@ Format your response exactly as:
       const today = new Date().toISOString().slice(0, 10);
 
       // Parse company sections from the briefing
-      // Format: **Company Name**\n• bullets
-      const companyBlocks = result.matchAll(/\*\*([^*]+)\*\*\n((?:[•\-][^\n]+\n?)+)/g);
+      // Handles multiple formats: ### Company, **Company**, or Company followed by bullets
+      const sections = result.split(/\n(?=###|\*\*[A-Z])/);
       let saved = 0;
-      for (const match of companyBlocks) {
-        const name = match[1].trim();
-        const summary = match[2].trim();
-        if (name && summary && !summary.includes('PROMUS') && !summary.includes('ORBITAL')) {
-          // Find company in DB by name (fuzzy)
-          const co = db.prepare('SELECT id FROM companies WHERE name LIKE ? COLLATE NOCASE').get('%' + name.split(' ')[0] + '%');
-          if (co) {
-            db.prepare("UPDATE companies SET hayley_summary = ?, hayley_updated = ?, latest_news = ?, latest_news_date = ?, updated = datetime('now') WHERE id = ?").run(
-              summary, today, summary.substring(0, 300), today, co.id
-            );
-            saved++;
-          }
+      for (const section of sections) {
+        // Extract company name from ### Name or **Name**
+        const nameMatch = section.match(/^###\s*(?:🏢|📡|🤖|🌍|💡|🏥|🛰|⚡)?\s*([A-Za-z][^\n*#]+?)\s*$|^\*\*([^*]+)\*\*/m);
+        if (!nameMatch) continue;
+        const name = (nameMatch[1] || nameMatch[2] || '').trim();
+        if (!name || name.match(/PROMUS|ORBITAL|VENTURES|BRIEFING|PORTFOLIO/i)) continue;
+        // Extract bullet lines
+        const bullets = section.match(/[•\-\*]\s*[^\n]+/g);
+        if (!bullets || !bullets.length) continue;
+        const summary = bullets.join('\n').trim();
+        if (!summary || summary.length < 10) continue;
+        // Find company in DB by name (fuzzy - try full name first, then first word)
+        let co = db.prepare('SELECT id FROM companies WHERE name LIKE ? COLLATE NOCASE').get('%' + name + '%');
+        if (!co) co = db.prepare('SELECT id FROM companies WHERE name LIKE ? COLLATE NOCASE').get('%' + name.split(' ')[0] + '%');
+        if (co) {
+          db.prepare("UPDATE companies SET hayley_summary = ?, hayley_updated = ?, latest_news = ?, latest_news_date = ?, updated = datetime('now') WHERE id = ?").run(
+            summary, today, summary.substring(0, 300), today, co.id
+          );
+          saved++;
         }
       }
       console.log('\n✅ Saved', saved, 'company news summaries to DB');
