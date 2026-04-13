@@ -681,6 +681,10 @@ a{color:var(--accent);text-decoration:none}
       <span>Pipeline</span>
       <span class="ni-badge" id="badge-pipeline">0</span>
     </div>
+    <div class="nav-item" data-page="portfolio" onclick="goTo('portfolio')">
+      <span class="ni-ico">📈</span>
+      <span>Portfolio Info</span>
+    </div>
     <div class="nav-item" data-page="legal" onclick="goTo('legal')">
       <span class="ni-ico">⚖️</span>
       <span>Legal Check</span>
@@ -929,6 +933,31 @@ a{color:var(--accent);text-decoration:none}
   </div>
 
   <!-- ── LEGAL CHECK PAGE ── -->
+  <!-- ── PORTFOLIO INFO PAGE ── -->
+  <div class="page" id="page-portfolio">
+    <div class="page-head">
+      <div>
+        <div class="page-title">📈 Portfolio Info</div>
+        <div class="page-sub">Audited financials — December 31, 2025 — Frank Rimerman + Co. LLP</div>
+      </div>
+    </div>
+
+    <!-- Fund Summary Cards -->
+    <div id="portfolio-fund-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:24px"></div>
+
+    <!-- Totals Bar -->
+    <div id="portfolio-totals" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;gap:32px;flex-wrap:wrap"></div>
+
+    <!-- Holdings Table -->
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Holdings by Fund</div>
+      <select id="portfolio-fund-filter" onchange="loadPortfolioHoldings()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px">
+        <option value="">All Funds</option>
+      </select>
+    </div>
+    <div id="portfolio-holdings-table" style="overflow-x:auto"></div>
+  </div>
+
   <div class="page" id="page-legal">
     <div class="page-head">
       <div>
@@ -2071,6 +2100,7 @@ const PAGE_LOADERS = {
   'companies':      () => loadCompanies && loadCompanies(),
   'people':         () => loadPeople && loadPeople(),
   'notes':          () => loadNotes && loadNotes(),
+  'portfolio':      () => loadPortfolio && loadPortfolio(),
   'security':       () => loadSecurity && loadSecurity(),
 };
 
@@ -4448,6 +4478,233 @@ function closeReportReader(e) {
   document.getElementById('report-reader-overlay').classList.add('hidden');
 }
 
+// ── PORTFOLIO INFO ──────────────────────────────────────────
+const fmt = (n) => n >= 1e6 ? '$' + (n/1e6).toFixed(1) + 'M' : n >= 1e3 ? '$' + (n/1e3).toFixed(0) + 'K' : '$' + Math.round(n).toLocaleString();
+const fmtM = (n) => '$' + (n/1e6).toFixed(1) + 'M';
+
+async function loadPortfolio() {
+  const [funds, holdings] = await Promise.all([
+    fetch('/api/portfolio/funds').then(r => r.json()),
+    fetch('/api/portfolio/holdings').then(r => r.json())
+  ]);
+
+  // Fund filter dropdown
+  const sel = document.getElementById('portfolio-fund-filter');
+  if (sel) {
+    sel.innerHTML = '<option value="">All Funds</option>' +
+      funds.map(f => `<option value="${f.fund_id}">${f.name}</option>`).join('');
+  }
+
+  // Fund cards
+  const cards = document.getElementById('portfolio-fund-cards');
+  if (cards) {
+    const FUND_COLORS = { fund: '#7c6ff7', spv: '#06b6d4' };
+    cards.innerHTML = funds.map(f => {
+      const moic = f.cost > 0 ? (f.fmv / f.cost).toFixed(1) + 'x' : '—';
+      const color = FUND_COLORS[f.type] || '#7c6ff7';
+      const badge = f.audited ? '<span style="font-size:9px;background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;padding:1px 5px;border-radius:10px;margin-left:6px">Audited</span>' : '<span style="font-size:9px;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44;padding:1px 5px;border-radius:10px;margin-left:6px">Unaudited</span>';
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer" onclick="filterPortfolioByFund('${f.fund_id}')">
+        <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:4px">${f.fund_id}${badge}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.3">${f.name}</div>
+        <div style="display:flex;flex-direction:column;gap:3px;font-size:11px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">FMV</span><strong style="color:var(--text)">${fmtM(f.fmv)}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Cost</span><span style="color:var(--text-muted)">${fmtM(f.cost)}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">MOIC</span><strong style="color:#22c55e">${moic}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Unrealized</span><span style="color:#22c55e">${fmtM(f.unrealized_gain)}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Totals
+  const totals = document.getElementById('portfolio-totals');
+  if (totals) {
+    const totalFMV = funds.reduce((s, f) => s + f.fmv, 0);
+    const totalCost = funds.reduce((s, f) => s + f.cost, 0);
+    const totalUnrealized = funds.reduce((s, f) => s + f.unrealized_gain, 0);
+    const totalMOIC = totalCost > 0 ? (totalFMV / totalCost).toFixed(1) : '—';
+    const items = [
+      { label: 'Total FMV', value: fmtM(totalFMV), color: '#7c6ff7' },
+      { label: 'Total Cost', value: fmtM(totalCost), color: 'var(--text-muted)' },
+      { label: 'Unrealized Gain', value: fmtM(totalUnrealized), color: '#22c55e' },
+      { label: 'Blended MOIC', value: totalMOIC + 'x', color: '#22c55e' },
+      { label: 'Funds', value: funds.filter(f=>f.type==='fund').length + ' funds', color: 'var(--text)' },
+      { label: 'SPVs', value: funds.filter(f=>f.type==='spv').length + ' SPVs', color: 'var(--text)' },
+      { label: 'As of', value: 'Dec 31, 2025', color: 'var(--text-muted)' },
+    ];
+    totals.innerHTML = items.map(i =>
+      `<div><div style="font-size:10px;color:var(--text-muted);margin-bottom:2px">${i.label}</div><div style="font-size:16px;font-weight:800;color:${i.color}">${i.value}</div></div>`
+    ).join('');
+  }
+
+  renderPortfolioHoldings(holdings);
+}
+
+function filterPortfolioByFund(fundId) {
+  const sel = document.getElementById('portfolio-fund-filter');
+  if (sel) sel.value = fundId;
+  loadPortfolioHoldings();
+}
+
+async function loadPortfolioHoldings() {
+  const fundId = document.getElementById('portfolio-fund-filter')?.value || '';
+  const url = '/api/portfolio/holdings' + (fundId ? '?fund_id=' + fundId : '');
+  const holdings = await fetch(url).then(r => r.json());
+  renderPortfolioHoldings(holdings);
+}
+
+let _portfolioSort = { col: 'fair_value', dir: -1 };
+let _portfolioHoldings = [];
+
+function sortPortfolio(col) {
+  if (_portfolioSort.col === col) { _portfolioSort.dir *= -1; }
+  else { _portfolioSort.col = col; _portfolioSort.dir = -1; }
+  const fundIds = [...new Set(_portfolioHoldings.map(h => h.fund_id))];
+  const singleFund = fundIds.length === 1;
+  const fundTotalFMV = singleFund ? _portfolioHoldings.reduce((s,h) => s+(h.fair_value||0), 0) : 0;
+  const sorted = [..._portfolioHoldings].sort((a, b) => {
+    let av, bv;
+    if (col === '_pct_fund') {
+      av = fundTotalFMV > 0 ? a.fair_value / fundTotalFMV : 0;
+      bv = fundTotalFMV > 0 ? b.fair_value / fundTotalFMV : 0;
+    } else if (col === '_moic') {
+      av = a.cost > 0 ? a.fair_value / a.cost : 0;
+      bv = b.cost > 0 ? b.fair_value / b.cost : 0;
+    } else {
+      av = a[col] ?? 0; bv = b[col] ?? 0;
+    }
+    if (typeof av === 'string') return _portfolioSort.dir * av.localeCompare(bv);
+    return _portfolioSort.dir * (av - bv);
+  });
+  renderPortfolioHoldings(sorted, true);
+}
+
+let _portfolioSubcache = {};
+let _portfolioExpanded = new Set();
+
+async function togglePortfolioDetail(key, fundId, company) {
+  if (_portfolioExpanded.has(key)) {
+    _portfolioExpanded.delete(key);
+    const el = document.getElementById('subrow-'+key);
+    if (el) el.remove();
+    const btn = document.getElementById('expand-'+key);
+    if (btn) btn.textContent = '▶';
+    return;
+  }
+  _portfolioExpanded.add(key);
+  const btn = document.getElementById('expand-'+key);
+  if (btn) btn.textContent = '▼';
+  const cacheKey = fundId+'||'+company;
+  if (!_portfolioSubcache[cacheKey]) {
+    const subs = await fetch('/api/portfolio/subpositions?fund_id='+encodeURIComponent(fundId)+'&company='+encodeURIComponent(company)).then(r=>r.json());
+    _portfolioSubcache[cacheKey] = subs;
+  }
+  const subs = _portfolioSubcache[cacheKey];
+  const row = document.getElementById('mainrow-'+key);
+  if (!row) return;
+  const colCount = row.cells.length;
+  const subHtml = subs.map(s => {
+    const moic = s.cost > 0 ? (s.fair_value/s.cost).toFixed(2)+'x' : '—';
+    const moicColor = s.cost > 0 && s.fair_value/s.cost >= 2 ? '#22c55e' : s.cost > 0 && s.fair_value/s.cost < 1 ? '#ef4444' : 'var(--text)';
+    const gc = s.unrealized_gain > 0 ? '#22c55e' : s.unrealized_gain < 0 ? '#ef4444' : 'var(--text-muted)';
+    const cc = s.change_in_fv > 0 ? '#22c55e' : s.change_in_fv < 0 ? '#ef4444' : 'var(--text-muted)';
+    return `<tr style="background:rgba(124,111,247,.07);border-bottom:1px solid rgba(124,111,247,.15)">
+      <td style="padding:5px 6px"></td>
+      <td style="padding:5px 10px;color:var(--text-muted);font-size:11px"></td>
+      <td style="padding:5px 10px;color:var(--accent);font-size:11px;font-style:italic">${esc(s.round)}</td>
+      <td style="padding:5px 10px;color:var(--text-muted);font-size:11px">${(s.date||'').slice(0,10)}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:var(--text-muted)">—</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:var(--text-muted)">${s.shares>0?Math.round(s.shares).toLocaleString():'—'}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:var(--text-muted)">${s.cost_per_share>0?'$'+s.cost_per_share.toFixed(4):'—'}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:var(--text-muted)">${s.fmv_per_share>0?'$'+s.fmv_per_share.toFixed(4):'—'}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:var(--text-muted)">${s.cost>0?fmtM(s.cost):'—'}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;font-weight:600;color:var(--text)">${fmtM(s.fair_value)}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;font-weight:700;color:${moicColor}">${moic}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:${gc}">${s.unrealized_gain>0?'+':''}${fmtM(s.unrealized_gain)}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;color:${cc}">${s.change_in_fv!==0?(s.change_in_fv>0?'+':'')+fmtM(s.change_in_fv):'—'}</td>
+      <td style="padding:5px 10px;font-size:10px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.comments)}</td>
+    </tr>`;
+  }).join('');
+  const subRow = document.createElement('tr');
+  subRow.id = 'subrow-'+key;
+  subRow.innerHTML = `<td colspan="${colCount}" style="padding:0"><table style="width:100%;border-collapse:collapse">${subHtml}</table></td>`;
+  row.insertAdjacentElement('afterend', subRow);
+}
+
+function renderPortfolioHoldings(holdings, skipCache) {
+  if (!skipCache) {
+    _portfolioHoldings = holdings;
+    _portfolioSort = { col: 'fair_value', dir: -1 };
+    holdings = [...holdings].sort((a,b) => b.fair_value - a.fair_value);
+    _portfolioExpanded = new Set();
+    _portfolioSubcache = {};
+  }
+  const el = document.getElementById('portfolio-holdings-table');
+  if (!el) return;
+  if (!holdings.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:12px">No holdings</div>'; return; }
+
+  const fundIds = [...new Set(holdings.map(h => h.fund_id))];
+  const singleFund = fundIds.length === 1;
+  const fundTotalFMV = singleFund ? holdings.reduce((s, h) => s + (h.fair_value || 0), 0) : 0;
+
+  const cols = [
+    { label: '', key: '_expand' },
+    { label: 'Fund', key: 'fund_id' }, { label: 'Company', key: 'company' },
+    { label: 'Date', key: 'date' },
+    { label: 'Ownership', key: 'ownership' }, { label: 'Shares', key: 'shares' },
+    { label: 'Avg Cost/Sh', key: 'cost_per_share' }, { label: 'FMV/Sh', key: 'fmv_per_share' },
+    { label: 'Cost', key: 'cost' }, { label: 'FMV', key: 'fair_value' },
+    { label: 'MOIC', key: '_moic' },
+    ...(singleFund ? [{ label: '% of Fund', key: '_pct_fund' }] : []),
+    { label: 'Unrealized', key: 'unrealized_gain' }, { label: 'Chg QTR', key: 'change_in_fv' },
+    { label: 'Comments', key: 'comments' }
+  ];
+
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px" id="portfolio-main-table">
+    <thead>
+      <tr style="background:var(--surface2)">
+        ${cols.map(c => {
+          if (c.key === '_expand') return `<th style="width:24px;padding:8px 6px;border-bottom:1px solid var(--border)"></th>`;
+          const active = _portfolioSort.col === c.key;
+          const arrow = active ? (_portfolioSort.dir === -1 ? ' ↓' : ' ↑') : '';
+          const noSort = ['_moic','_pct_fund'].includes(c.key);
+          return `<th ${noSort ? '' : `onclick="sortPortfolio('${c.key}')"`} style="${noSort?'':'cursor:pointer;user-select:none;'}padding:8px 10px;text-align:left;font-size:10px;color:${active?'var(--accent)':'var(--text-muted)'};font-weight:700;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border)">${c.label}${arrow}</th>`;
+        }).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${holdings.map((h, i) => {
+        const key = (h.fund_id+'_'+h.company).replace(/[^a-z0-9]/gi,'_');
+        const moic = h.cost > 0 ? (h.fair_value/h.cost).toFixed(2)+'x' : '—';
+        const moicColor = h.cost > 0 && h.fair_value/h.cost >= 2 ? '#22c55e' : h.cost > 0 && h.fair_value/h.cost < 1 ? '#ef4444' : 'var(--text)';
+        const gain_color = h.unrealized_gain > 0 ? '#22c55e' : h.unrealized_gain < 0 ? '#ef4444' : 'var(--text-muted)';
+        const chg_color = h.change_in_fv > 0 ? '#22c55e' : h.change_in_fv < 0 ? '#ef4444' : 'var(--text-muted)';
+        const safeCompany = h.company.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return `<tr id="mainrow-${key}" style="border-bottom:1px solid var(--border);${i%2===0?'':'background:rgba(255,255,255,.02)'}">
+          <td style="padding:7px 6px;text-align:center">
+            <span id="expand-${key}" onclick="togglePortfolioDetail('${key}','${h.fund_id}','${safeCompany}')"
+              style="cursor:pointer;color:var(--accent);font-size:11px;user-select:none">▶</span>
+          </td>
+          <td style="padding:7px 10px;color:var(--accent);font-weight:600">${esc(h.fund_id)}</td>
+          <td style="padding:7px 10px;font-weight:600;color:var(--text);white-space:nowrap;cursor:pointer"
+              onclick="togglePortfolioDetail('${key}','${h.fund_id}','${safeCompany}')">${esc(h.company)}</td>
+          <td style="padding:7px 10px;color:var(--text-muted);white-space:nowrap">${(h.date||'').slice(0,7)}</td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${h.ownership != null ? h.ownership.toFixed(1)+'%' : '—'}</td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${h.shares > 0 ? Math.round(h.shares).toLocaleString() : '—'}</td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${h.cost_per_share > 0 ? '$'+h.cost_per_share.toFixed(2) : '—'}</td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${h.fmv_per_share > 0 ? '$'+h.fmv_per_share.toFixed(2) : '—'}</td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${h.cost > 0 ? fmtM(h.cost) : '—'}</td>
+          <td style="padding:7px 10px;text-align:right;font-weight:700;color:var(--text)">${fmtM(h.fair_value)}</td>
+          <td style="padding:7px 10px;text-align:right;font-weight:700;color:${moicColor}">${moic}</td>
+          ${singleFund ? `<td style="padding:7px 10px;text-align:right;color:var(--text-muted)">${fundTotalFMV > 0 ? ((h.fair_value/fundTotalFMV)*100).toFixed(1)+'%' : '—'}</td>` : ''}
+          <td style="padding:7px 10px;text-align:right;font-weight:600;color:${gain_color}">${h.unrealized_gain > 0 ? '+' : ''}${fmtM(h.unrealized_gain)}</td>
+          <td style="padding:7px 10px;text-align:right;color:${chg_color}">${h.change_in_fv !== 0 ? (h.change_in_fv > 0 ? '+' : '') + fmtM(h.change_in_fv) : '—'}</td>
+          <td style="padding:7px 10px;color:var(--text-muted);font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.comments)}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
 function filterNotes(query) {
   showNotesView('list');
   const hdr = document.getElementById('notes-topic-header');
@@ -5221,7 +5478,7 @@ function renderPV5Card(lp) {
   const aum = lp.aum ? `<span style="font-size:10px;color:var(--text-dim)">${lp.aum}</span>` : '';
   const loc = lp.location ? `<span style="font-size:10px;color:var(--text-mute)">📍 ${lp.location}</span>` : '';
   const prevFunds = lp.previous_funds ? `<span style="font-size:10px;color:var(--text-dim)">Prior: ${String(lp.previous_funds).substring(0,40)}</span>` : '';
-  const owner = lp.owner && !/^\d+$/.test(lp.owner.trim()) ? `<span style="font-size:10px;color:var(--text-dim)">@ ${lp.owner.split(' ')[0]}</span>` : '';
+  const owner = `<span style="font-size:10px;color:var(--text-dim)">@ Mike</span>`;
   return `<div onclick="openPV5Detail(${lp.id})" style="background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:10px 11px;cursor:pointer;transition:all .16s" onmouseover="this.style.borderColor='rgba(124,111,247,.4)'" onmouseout="this.style.borderColor='var(--border2)'">  
     <div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.3">${lp.name}</div>
     <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px">
@@ -5252,7 +5509,7 @@ async function openPV5Detail(id) {
   panel.style.boxShadow = '-8px 0 32px rgba(0,0,0,.4)';
 
   const color = PV5_STAGE_COLORS[lp.status] || '#94a3b8';
-  const ownerName = lp.owner_name || (lp.owner && !/^\d+$/.test(String(lp.owner).trim()) ? lp.owner : '');
+  const ownerName = 'Mike Collett'; // Mike is always the owner on display
   panel.innerHTML = `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
       <div>

@@ -1538,11 +1538,12 @@ app.post('/api/pv5/sync', (req, res) => {
 // Affinity LP contacts — resolves field values for a list entry
 const AFFINITY_AUTH = 'Basic ' + Buffer.from(':ylGvSZSuMURrSnQ0CXMlpb3YqeQtkRuBJPqiZa1xtrI').toString('base64');
 const AFFINITY_USER_MAP = {
-  1067014: { name: 'Mike Collett', email: 'mike@promusventures.com' },
-  42908347: { name: 'Pierre Festal', email: 'pierre.festal@gmail.com' },
-  39216132: { name: 'Gareth Keane', email: '' },
-  136746016: { name: 'Estelle Godard', email: '' },
-  70986123: { name: 'Jeremy Teboul', email: '' },
+  1067014:   { name: 'Mike Collett',   email: 'mike@promusventures.com' },
+  42908347:  { name: 'Pierre Festal',  email: 'pierre.festal@gmail.com' },
+  39216132:  { name: 'Gareth Keane',   email: 'gareth@promusventures.com' },
+  136746016: { name: 'Estelle Godard', email: 'estelle@promusventures.com' },
+  70986123:  { name: 'Jeremy Teboul',  email: 'jeremy@promusventures.com' },
+  59905386:  { name: 'Maria Portoles', email: 'maria@promusventures.com' },
 };
 
 app.get('/api/affinity/lp-contacts/:list_entry_id', async (req, res) => {
@@ -1636,6 +1637,35 @@ app.get('/api/notes/:index', (req, res) => {
     const note = db.prepare('SELECT * FROM apple_notes WHERE note_index = ?').get(parseInt(req.params.index));
     if (!note) return res.status(404).json({ error: 'Not found' });
     res.json({ content: note.content, title: note.title, modified: note.modified });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PORTFOLIO INFO ───────────────────────────────────────────────────────────
+app.get('/api/portfolio/funds', (req, res) => {
+  try { res.json(db.prepare('SELECT * FROM portfolio_funds ORDER BY fmv DESC').all()); }
+  catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/portfolio/subpositions', (req, res) => {
+  try {
+    const { fund_id, company } = req.query;
+    let sql = 'SELECT * FROM portfolio_subpositions WHERE 1=1';
+    const params = [];
+    if (fund_id) { sql += ' AND fund_id = ?'; params.push(fund_id); }
+    if (company) { sql += ' AND company = ?'; params.push(company); }
+    sql += ' ORDER BY fund_id, company, date';
+    res.json(db.prepare(sql).all(...params));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/portfolio/holdings', (req, res) => {
+  try {
+    const { fund_id } = req.query;
+    const sql = fund_id
+      ? 'SELECT * FROM portfolio_holdings WHERE fund_id = ? ORDER BY fair_value DESC'
+      : 'SELECT * FROM portfolio_holdings ORDER BY fund_id, fair_value DESC';
+    const rows = fund_id ? db.prepare(sql).all(fund_id) : db.prepare(sql).all();
+    res.json(rows);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
