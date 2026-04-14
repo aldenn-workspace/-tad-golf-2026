@@ -26,6 +26,17 @@ You wake up fresh each session. These files are your continuity:
 
 Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
 
+### ✍️ Write Memory Immediately After Significant Work
+
+**The rule:** Every time you ship a feature, make a decision, or learn something important — write it down BEFORE moving on. Not at the end of the session. Now.
+
+- Feature shipped → append to `memory/YYYY-MM-DD.md` immediately
+- Important decision → update `MEMORY.md` immediately  
+- Context learned → write it down
+- Long session (1h+) → write at the 1h mark and every hour after, regardless
+
+Don't wait to be asked. Don't batch it up. Don't do it "at the end." Write it now.
+
 ### 🧠 MEMORY.md - Your Long-Term Memory
 
 - **ONLY load in main session** (direct chats with your human)
