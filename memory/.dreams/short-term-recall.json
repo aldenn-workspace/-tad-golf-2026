@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-13T13:40:52.865Z",
+  "updatedAt": "2026-04-14T02:26:09.235Z",
   "entries": {
     "memory:memory/2026-04-10.md:54:65": {
       "key": "memory:memory/2026-04-10.md:54:65",
@@ -63,6 +63,37 @@
         "key",
         "changes",
         "gitignore"
+      ]
+    },
+    "memory:memory/2026-04-13.md:241:264": {
+      "key": "memory:memory/2026-04-13.md:241:264",
+      "path": "memory/2026-04-13.md",
+      "startLine": 241,
+      "endLine": 264,
+      "source": "memory",
+      "snippet": "### Flow (every email to newdeals@promusventures.com) 1. Email arrives with deck PDF 2. Zach downloads + extracts deck text, saves copy to Dropbox 3. Claude reads email body + deck → extracts structured deal data 4. Affinity lookup runs async → finds or creates company org + person record 5. Note logged to Affinity with full inbound context 6. Deal card shows: - \"📎 Deck extracted and read\" - Affinity history (existing notes/relationships) ### Test Results - Sync ran: 50 emails total (all previously imported, no new emails) - Pipeline ready for next new email with deck ### Files Modified - `/Users/mi/.openclaw/workspace/mission-control/serve.js` - New function: `extractAttachmentTe",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3617922008037567,
+      "maxScore": 0.3617922008037567,
+      "firstRecalledAt": "2026-04-14T02:26:09.235Z",
+      "lastRecalledAt": "2026-04-14T02:26:09.235Z",
+      "queryHashes": [
+        "17d0f1cfbbdb"
+      ],
+      "recallDays": [
+        "2026-04-13"
+      ],
+      "conceptTags": [
+        "promusventures.com",
+        "notes/relationships",
+        "users/mi",
+        "flow",
+        "email",
+        "newdeals",
+        "arrives",
+        "deck"
       ]
     }
   }

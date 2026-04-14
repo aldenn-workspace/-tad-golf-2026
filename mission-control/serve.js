@@ -1008,9 +1008,48 @@ async function syncOutlookDeals() {
       );
     }
 
-    // ── Affinity enrichment + save ──────────────────────────────────
+    // ── Drew analyst summary + Affinity enrichment ──────────────────
     // Run async so it doesn't block the sync loop
     (async () => {
+      // Step 1: Drew writes an analyst brief from email + deck
+      try {
+        const apiKey = process.env.ANTHROPIC_API_KEY || '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';
+        const drewPrompt = `You are Drew, a sharp VC analyst at Promus Ventures (early-stage deep tech: space, AI, robotics).
+
+You just received an inbound pitch. Write a concise analyst brief covering:
+- **What they do** (1-2 sentences, plain English)
+- **Round & ask** (stage, amount, valuation if known)
+- **Why interesting** (strongest signals from email/deck)
+- **Red flags or gaps** (missing info, concerns)
+- **Promus fit** (does this fit space/AI/robotics thesis?)
+- **Suggested next step** (pass, take a call, request more info)
+
+Be direct and opinionated. No fluff.
+
+Email subject: ${subject}
+From: ${msg.from?.emailAddress?.name || ''} <${msg.from?.emailAddress?.address || ''}>
+Email body: ${bodyText.substring(0, 1000)}
+${attachmentText ? '\nDeck content:\n' + attachmentText.substring(0, 3000) : '\n(No deck attached)'}`;
+
+        const drewRes = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 600, messages: [{ role: 'user', content: drewPrompt }] }),
+        });
+        const drewData = await drewRes.json();
+        const drewSummary = drewData.content?.[0]?.text || '';
+        if (drewSummary) {
+          const timestamp = new Date().toISOString().substring(0, 10);
+          const existingNotes = db.prepare('SELECT notes FROM incoming_deals WHERE id=?').get(newDeal.id)?.notes || '';
+          db.prepare('UPDATE incoming_deals SET notes=? WHERE id=?').run(
+            (existingNotes ? existingNotes + '\n\n' : '') + `--- Drew's Analysis (${timestamp}) ---\n${drewSummary}`,
+            newDeal.id
+          );
+          console.log(`[Drew] Analysis written for: ${coName}`);
+        }
+      } catch(e) { console.error('[Drew] Analysis error:', e.message); }
+
+      // Step 2: Affinity enrichment
       try {
         const senderName = msg.from?.emailAddress?.name || '';
         const senderEmail = msg.from?.emailAddress?.address || '';

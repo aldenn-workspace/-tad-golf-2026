@@ -1,0 +1,222 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.4.11",
+    "lastTouchedAt": "2026-04-12T19:21:22.788Z"
+  },
+  "bindings": [
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "telegram",
+        "accountId": "default"
+      }
+    },
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "discord",
+        "accountId": "mtq4nzgxnjy4ndu0ntkwmdy5na-gprsat-weevknl9qbh0k8y-tctfb4te-3gyiu"
+      }
+    },
+    {
+      "agentId": "finn",
+      "match": {
+        "channel": "slack",
+        "accountId": "a0al1duflus-10681484565314-12022cecc89ec9b25d55878cd36918df346e6"
+      }
+    }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "8395890971:AAHwb27dmD9SWCIfyvOToU5TXfMVAt-3aDo",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "groupPolicy": "allowlist",
+      "streaming": {
+        "mode": "off"
+      },
+      "execApprovals": {
+        "enabled": true,
+        "approvers": [
+          "8345634392"
+        ]
+      },
+      "allowFrom": [
+        "8345634392"
+      ]
+    },
+    "discord": {
+      "enabled": false,
+      "streaming": {
+        "mode": "partial"
+      },
+      "accounts": {
+        "mtq4nzgxnjy4ndu0ntkwmdy5na-gprsat-weevknl9qbh0k8y-tctfb4te-3gyiu": {
+          "enabled": true,
+          "token": "MTQ4NzgxNjY4NDU0NTkwMDY5NA.GpRsaT.wEEVkNl9Qbh0K8y-TCtFB4te-3GyiULKKR6AMA",
+          "groupPolicy": "allowlist",
+          "streaming": {
+            "mode": "partial"
+          },
+          "guilds": {}
+        },
+        "default": {
+          "groupPolicy": "allowlist"
+        }
+      }
+    },
+    "slack": {
+      "mode": "socket",
+      "enabled": true,
+      "userTokenReadOnly": true,
+      "streaming": {
+        "mode": "partial"
+      },
+      "accounts": {
+        "a0al1duflus-10681484565314-12022cecc89ec9b25d55878cd36918df346e6": {
+          "enabled": true,
+          "botToken": "xoxb-10665947211671-10675526276835-GQdSg5OboPgIt1eEO9LiIuON",
+          "appToken": "xapp-1-A0AKVF9HN91-10694816129729-fee5ef5c97cb836d386bb63a796b31ea811d7d421e4805130b0d8d17a2461fe6",
+          "userTokenReadOnly": true,
+          "groupPolicy": "allowlist",
+          "streaming": {
+            "mode": "partial"
+          },
+          "channels": {}
+        }
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "d718bf2a0e7dc24a8ed49e6a3c871337f32b745f34a90b79"
+    },
+    "port": 18789,
+    "bind": "loopback",
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      },
+      "slack": {
+        "enabled": true
+      },
+      "openai": {
+        "enabled": true
+      },
+      "browser": {
+        "enabled": true
+      },
+      "anthropic": {
+        "enabled": true
+      }
+    }
+  },
+  "tools": {
+    "exec": {
+      "security": "full",
+      "ask": "off"
+    },
+    "fs": {
+      "workspaceOnly": true
+    },
+    "profile": "coding"
+  },
+  "wizard": {
+    "lastRunAt": "2026-04-12T18:08:54.713Z",
+    "lastRunVersion": "2026.4.5",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "agents": {
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "workspace": "/Users/mini/.openclaw/workspace",
+        "identity": {
+          "name": "Alden",
+          "emoji": "\ud83e\udd89"
+        }
+      },
+      {
+        "id": "finn",
+        "workspace": "/Users/mini/finn/workspace",
+        "identity": {
+          "name": "Finn",
+          "emoji": "\u2b50"
+        },
+        "model": {
+          "primary": "anthropic/claude-sonnet-4-6"
+        }
+      }
+    ],
+    "defaults": {
+      "models": {
+        "openai/gpt-5.4": {
+          "alias": "GPT"
+        },
+        "anthropic/claude-sonnet-4-6": {}
+      },
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6"
+      },
+      "workspace": "/Users/mini/.openclaw/workspace",
+      "heartbeat": {
+        "every": "4h",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "compaction": {
+        "reserveTokens": 50000,
+        "keepRecentTokens": 30000,
+        "model": "anthropic/claude-haiku-4-5"
+      }
+    }
+  },
+  "auth": {
+    "profiles": {
+      "openai:default": {
+        "provider": "openai",
+        "mode": "api_key"
+      },
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "api_key"
+      }
+    }
+  },
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "openclaw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer",
+    "reset": {
+      "mode": "daily",
+      "atHour": 2
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  }
+}
