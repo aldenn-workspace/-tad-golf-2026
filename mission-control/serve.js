@@ -818,8 +818,8 @@ Fields to extract:
 
 Email Subject: ${subject}
 
-Email Body (first 1500 chars):
-${bodyText.substring(0, 1500)}
+Email Body + Deck Content (first 3000 chars):
+${bodyText.substring(0, 3000)}
 
 Return JSON only. Use empty string "" for any field not found.`;
 
@@ -846,12 +846,80 @@ Return JSON only. Use empty string "" for any field not found.`;
   }
 }
 
+// Download + extract text from PDF attachments for a given message
+async function extractAttachmentText(token, mailbox, messageId) {
+  const fs = require('fs');
+  const path = require('path');
+  const { execSync } = require('child_process');
+  const os = require('os');
+
+  try {
+    const attRes = await fetch(
+      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(mailbox)}/messages/${messageId}/attachments?$select=id,name,contentType,size`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const attData = await attRes.json();
+    const attachments = (attData.value || []).filter(a =>
+      a.contentType === 'application/pdf' ||
+      (a.name || '').toLowerCase().endsWith('.pdf') ||
+      (a.name || '').toLowerCase().endsWith('.pptx') ||
+      (a.name || '').toLowerCase().endsWith('.ppt')
+    );
+    if (!attachments.length) return '';
+
+    let allText = '';
+    for (const att of attachments.slice(0, 3)) { // max 3 attachments
+      try {
+        // Fetch full attachment with content
+        const fullRes = await fetch(
+          `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(mailbox)}/messages/${messageId}/attachments/${att.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const fullAtt = await fullRes.json();
+        const b64 = fullAtt.contentBytes;
+        if (!b64) continue;
+
+        // Save to temp file
+        const ext = (att.name || 'deck.pdf').split('.').pop().toLowerCase();
+        const tmpFile = path.join(os.tmpdir(), `drew_att_${Date.now()}.${ext}`);
+        fs.writeFileSync(tmpFile, Buffer.from(b64, 'base64'));
+
+        // Extract text
+        let text = '';
+        if (ext === 'pdf') {
+          try {
+            text = execSync(`python3 -c "from pdfminer.high_level import extract_text; print(extract_text('${tmpFile}'))"`,
+              { timeout: 30000, maxBuffer: 5 * 1024 * 1024 }).toString().substring(0, 8000);
+          } catch(e) { text = '[PDF extraction failed]'; }
+        } else {
+          text = '[PowerPoint attachment — PDF extraction not supported yet]';
+        }
+        if (text.trim()) allText += `\n\n=== ATTACHMENT: ${att.name} ===\n${text}`;
+
+        // Save to Dropbox deals folder
+        const dropboxDir = '/Users/mini/Dropbox/Promus Deals';
+        if (fs.existsSync('/Users/mini/Dropbox')) {
+          if (!fs.existsSync(dropboxDir)) fs.mkdirSync(dropboxDir, { recursive: true });
+          const dest = path.join(dropboxDir, `${Date.now()}_${att.name}`);
+          fs.copyFileSync(tmpFile, dest);
+        }
+
+        fs.unlinkSync(tmpFile);
+      } catch(e) { console.error('Attachment error:', att.name, e.message); }
+    }
+    return allText;
+  } catch(e) {
+    console.error('fetchAttachments error:', e.message);
+    return '';
+  }
+}
+
 async function syncOutlookDeals() {
   const { token, cfg } = await getOutlookToken();
 
   const startDate = cfg.startDate || '2026-01-01';
   const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(cfg.mailbox)}/messages` +
-    `?$top=50&$select=id,subject,from,receivedDateTime,body,internetMessageId` +
+    `?$top=50&$select=id,subject,from,receivedDateTime,body,internetMessageId,hasAttachments` +
     `&$filter=receivedDateTime ge ${startDate}T00:00:00Z&$orderby=receivedDateTime desc`;
 
   const mailRes = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
@@ -875,8 +943,15 @@ async function syncOutlookDeals() {
     const rawBody = msg.body?.content || '';
     const bodyText = rawBody.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
-    // Extract structured fields via Claude
-    const extracted = await extractDealDataWithClaude(subject, bodyText);
+    // Download + extract PDF attachments (deck)
+    let attachmentText = '';
+    if (msg.hasAttachments) {
+      attachmentText = await extractAttachmentText(token, cfg.mailbox, msg.id);
+      if (attachmentText) console.log(`[Zach] Extracted attachment text for: ${subject} (${attachmentText.length} chars)`);
+    }
+
+    // Extract structured fields via Claude (include deck text if available)
+    const extracted = await extractDealDataWithClaude(subject, bodyText + attachmentText);
 
     // Skip if same company AND same round stage already exists (dedup)
     const companyName = extracted.deal_name || '';
@@ -912,8 +987,8 @@ async function syncOutlookDeals() {
       source_email: msgId,
       source_channel: 'email',
       intake_date: intakeDate,
-      email_content: bodyText.substring(0, 800),
-      notes: '',
+      email_content: (bodyText + (attachmentText ? '\n\n[DECK ATTACHED]' + attachmentText.substring(0, 1200) : '')).substring(0, 2000),
+      notes: attachmentText ? '📎 Deck extracted and read by Drew' : '',
       status: 'new',
     });
 
@@ -932,6 +1007,79 @@ async function syncOutlookDeals() {
         `Inbound ${fromAddr.includes('promusventures.com') ? 'Intro' : 'Cold'}. Amount: ${extracted.amount_raising||'?'}. Valuation: ${extracted.valuation||'?'}.`
       );
     }
+
+    // ── Affinity enrichment + save ──────────────────────────────────
+    // Run async so it doesn't block the sync loop
+    (async () => {
+      try {
+        const senderName = msg.from?.emailAddress?.name || '';
+        const senderEmail = msg.from?.emailAddress?.address || '';
+        let affinityHistory = '';
+        let affinityOrgId = null;
+
+        // 1. Search Affinity for existing org
+        if (coName) {
+          const orgResult = await _affinityClient.findOrganization(coName);
+          if (orgResult) {
+            affinityOrgId = orgResult.id;
+            affinityHistory += `\n\nAffinity: Found org "${orgResult.name}" (id:${orgResult.id})`;
+            // Get company context (notes, interactions)
+            const ctx = await _affinityClient.getCompanyContext(coName);
+            if (ctx?.notes?.length) {
+              affinityHistory += `\nExisting notes: ${ctx.notes.slice(0,2).map(n=>n.content?.substring(0,150)).join(' | ')}`;
+            }
+          } else {
+            // Create new org in Affinity
+            try {
+              const domain = senderEmail.split('@')[1] || '';
+              const newOrg = await _affinityClient.createOrganization({ name: coName, domain });
+              affinityOrgId = newOrg?.id;
+              affinityHistory += `\n\nAffinity: Created new org "${coName}"`;
+            } catch(e) { console.error('[Zach] Affinity createOrg error:', e.message); }
+          }
+        }
+
+        // 2. Search for sender person in Affinity
+        let affinityPersonId = null;
+        if (senderEmail) {
+          const personResult = await _affinityClient.findPerson(senderName || senderEmail);
+          if (personResult) {
+            affinityPersonId = personResult.id;
+            affinityHistory += `\nAffinity: Found person "${personResult.first_name} ${personResult.last_name}"`;
+          }
+        }
+
+        // 3. Save inbound note to Affinity
+        const noteContent = `Inbound deal received via newdeals@promusventures.com\n` +
+          `From: ${senderName} <${senderEmail}>\n` +
+          `Subject: ${subject}\n` +
+          `Round: ${extracted.round_stage || '?'} | Amount: ${extracted.amount_raising || '?'} | Valuation: ${extracted.valuation || '?'}\n` +
+          `Industry: ${extracted.industry || '?'} | Location: ${extracted.city || '?'}\n` +
+          (attachmentText ? `Deck: Yes — extracted ${attachmentText.length} chars` : 'Deck: None attached') +
+          `\n\nLogged by Zach (Promus AI deal intake system)`;
+
+        if (affinityOrgId || affinityPersonId) {
+          await _affinityClient.createNote({
+            organizationId: affinityOrgId,
+            personId: affinityPersonId,
+            content: noteContent,
+            createdAt: intakeDate,
+          });
+          affinityHistory += '\nNote saved to Affinity ✓';
+        }
+
+        // 4. Update deal record with Affinity history
+        if (affinityHistory) {
+          const existingNotes = db.prepare('SELECT notes FROM incoming_deals WHERE id=?').get(newDeal.id)?.notes || '';
+          db.prepare('UPDATE incoming_deals SET notes=? WHERE id=?').run(
+            (existingNotes + affinityHistory).substring(0, 2000), newDeal.id
+          );
+        }
+
+        console.log(`[Zach] Affinity enrichment done for: ${coName}${affinityHistory ? ' ✓' : ' (no match)'}`);
+      } catch(e) { console.error('[Zach] Affinity enrichment error:', e.message); }
+    })();
+
     imported++;
   }
   return { ok: true, imported, skipped, total: messages.length };
