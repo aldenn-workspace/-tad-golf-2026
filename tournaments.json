@@ -478,14 +478,14 @@
     },
     {
       "id": "il-state-am-qual-1",
-      "name": "IL State Am Qualifier \u2014 Winnetka",
-      "shortName": "IL State Am Qual #1",
+      "name": "IL State Am Qualifier \u2014 The Hawk",
+      "shortName": "IL State Am Qual",
       "status": "registered",
       "types": [
         "illinois"
       ],
-      "venue": "Winnetka Golf Club",
-      "city": "Winnetka",
+      "venue": "The Hawk Golf Club",
+      "city": "St. Charles",
       "state": "IL",
       "venueConfirmed": true,
       "venueNote": null,
@@ -501,9 +501,9 @@
       },
       "qualifier": null,
       "tournament": {
-        "start": "2026-06-09",
-        "end": "2026-06-09",
-        "displayDate": "Tue Jun 9, 2026",
+        "start": "2026-06-17",
+        "end": "2026-06-17",
+        "displayDate": "Wed Jun 17, 2026",
         "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
@@ -1169,12 +1169,12 @@
       "venueNote": null,
       "signup": null,
       "qualifier": {
-        "date": "2026-06-09",
-        "displayDate": "Tue Jun 9 (Winnetka) or Wed Jun 17 (The Hawk, St. Charles)",
-        "venue": "Winnetka GC or The Hawk CC",
-        "city": "Winnetka or St. Charles",
+        "date": "2026-06-17",
+        "displayDate": "Wed Jun 17 (The Hawk, St. Charles)",
+        "venue": "The Hawk Golf Club",
+        "city": "St. Charles",
         "state": "IL",
-        "dateConfidence": "from-schedule"
+        "dateConfidence": "confirmed-2026"
       },
       "tournament": {
         "start": "2026-07-14",
@@ -1183,7 +1183,7 @@
         "dateConfidence": "confirmed-2026"
       },
       "holes": null,
-      "notes": "IF QUAL at Tue Jun 9 (Winnetka) or Thu Jun 18 (St. Charles) qualifiers.",
+      "notes": "IF QUAL at Wed Jun 17 (The Hawk, St. Charles).",
       "results": null,
       "website": null,
       "actionNeeded": false
