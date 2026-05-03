@@ -346,8 +346,8 @@
       "notes": "Dornick Hills CC, Ardmore OK. Perry Maxwell design, est. 1914. US Jr Am is Mon Jul 20\u2013Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264.",
       "results": null,
       "website": "https://www.dornickhills.com",
-      "actionNeeded": false,
-      "actionLabel": null
+      "actionNeeded": true,
+      "actionLabel": "Purchase Stracka — US Jr Am Qualifier at Dornick Hills CC"
     },
     {
       "id": "practice-round-us-jr-am-qual-2026-06-07",
@@ -473,7 +473,8 @@
       "notes": "The Woodlands CC North Course, The Woodlands TX (Houston area). Premier private club in Spring TX. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA.",
       "results": null,
       "website": "https://thewoodlandscc.com",
-      "actionNeeded": false
+      "actionNeeded": true,
+      "actionLabel": "Purchase Stracka \u2014 US Am Qualifier at The Woodlands CC North Course"
     },
     {
       "id": "il-state-am-qual-1",
