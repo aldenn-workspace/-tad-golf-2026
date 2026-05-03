@@ -583,12 +583,12 @@
       "signup": {
         "opens": "2026-02-03",
         "opensDisplay": "Tue Feb 3, 2026",
-        "deadline": "2026-05-03",
-        "deadlineDisplay": "Sun May 3, 2026",
+        "deadline": "2026-05-01",
+        "deadlineDisplay": "Fri May 1, 2026",
         "timeDisplay": null,
         "url": "https://www.thewesternjunior.com",
         "done": true,
-        "notes": "Registered Tue Feb 3. Entries close Sun May 3. Index <3.0 required. Invite only \u2014 no qualifier."
+        "notes": "Registered Tue Feb 3. Entries close Fri May 1. Index <3.0 required. Invite only \u2014 no qualifier."
       },
       "qualifier": null,
       "tournament": {
