@@ -678,7 +678,7 @@ function renderCal(data,filter){
     any=true;
     const[,m]=mk.split('-').map(Number);
     const isCur=mk===TODAY.slice(0,7);
-    const isPast=mk<'2026-02';
+    const isPast=mk<TODAY.slice(0,7);
     const coll=isPast;
     const regC=es.filter(e=>e.t&&e.t.status==='registered').length;
     let pips='';
