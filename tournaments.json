@@ -387,7 +387,7 @@
       "actionNeeded": false
     },
     {
-      "id": "practice-round-us-am-qualifier-2026-06-07",
+      "id": "practice-round-us-am-qualifier-2026-06-10",
       "name": "Practice Round - US Amateur Qualifier",
       "shortName": "Practice Round",
       "status": "practice-round",
@@ -395,37 +395,37 @@
         "practice-round",
         "usga"
       ],
-      "venue": "Briar Ridge Country Club",
-      "city": "Schererville",
-      "state": "IN",
-      "venueConfirmed": true,
+      "venue": "TBD \u2014 Houston",
+      "city": "Houston",
+      "state": "TX",
+      "venueConfirmed": false,
       "venueNote": null,
       "signup": null,
       "qualifier": null,
       "tournament": {
-        "start": "2026-06-07",
-        "end": "2026-06-07",
-        "displayDate": "Sun Jun 7, 2026",
+        "start": "2026-06-10",
+        "end": "2026-06-10",
+        "displayDate": "Wed Jun 10, 2026",
         "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
-      "notes": "Practice round for Mon Jun 8 US Amateur Qualifier at Briar Ridge CC.",
+      "notes": "Practice round for Thu Jun 11 US Amateur Qualifier in Houston TX.",
       "results": null,
       "website": "https://champ-admin.usga.org",
       "actionNeeded": false
     },
     {
-      "id": "us-am-qual-schereville",
-      "name": "US Amateur Qualifier \u2014 Briar Ridge CC",
+      "id": "us-am-qual-houston",
+      "name": "US Amateur Qualifier \u2014 Houston",
       "shortName": "US Am Qualifier",
       "status": "registered",
       "types": [
         "usga"
       ],
-      "venue": "Briar Ridge Country Club",
-      "city": "Schererville",
-      "state": "IN",
-      "venueConfirmed": true,
+      "venue": "TBD \u2014 Houston",
+      "city": "Houston",
+      "state": "TX",
+      "venueConfirmed": false,
       "venueNote": null,
       "signup": {
         "opens": "2026-03-18",
@@ -435,17 +435,17 @@
         "timeDisplay": "8am CT",
         "url": "https://champ-admin.usga.org/player#/apply",
         "done": true,
-        "notes": "Applied Wed Mar 18. Apply window closes Thu May 28. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion GC, Ardmore PA + Philly CC, Gladwyne PA."
+        "notes": "Applied. Apply window closes Thu May 28. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion GC, Ardmore PA + Philly CC, Gladwyne PA."
       },
       "qualifier": null,
       "tournament": {
-        "start": "2026-06-08",
-        "end": "2026-06-08",
-        "displayDate": "Mon Jun 8, 2026",
-        "dateConfidence": "from-schedule"
+        "start": "2026-06-11",
+        "end": "2026-06-11",
+        "displayDate": "Thu Jun 11, 2026",
+        "dateConfidence": "confirmed-2026"
       },
-      "holes": null,
-      "notes": "PRIMARY qualifier. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA \u2014 NOT Olympic Club SF! Alt site: Orchard Ridge CC, Fort Wayne IN on Thu Jun 4.",
+      "holes": 18,
+      "notes": "US Am qualifier in Houston TX. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA.",
       "results": null,
       "website": "https://champ-admin.usga.org",
       "actionNeeded": false
