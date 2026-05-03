@@ -438,7 +438,7 @@ function checkPass(){
 }
 
 // ── DATA ──────────────────────────────────────────────────────────────
-const TODAY = '2026-02-18';
+const TODAY = new Date().toISOString().slice(0,10);
 const MONTHS = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 const STATUS_LBL = {registered:'Confirmed',applied:'Applied / Waiting',waiting:'Waiting to Register','if-qual':'If Qualified','practice-round':'Practice Round','invite-only':'Invite Only',canceled:'Canceled',tentative:'Tentative',past:'Past'};
 const STATUS_ICO = {registered:'✅',applied:'⏳',waiting:'🔔','if-qual':'🎯','practice-round':'🟦','invite-only':'💜',canceled:'❌',tentative:'📋',past:'🏁'};
@@ -674,7 +674,7 @@ function renderCal(data,filter){
     if(!es.length)continue;
     any=true;
     const[,m]=mk.split('-').map(Number);
-    const isCur=mk==='2026-02';
+    const isCur=mk===TODAY.slice(0,7);
     const isPast=mk<'2026-02';
     const coll=isPast;
     const regC=es.filter(e=>e.t&&e.t.status==='registered').length;
