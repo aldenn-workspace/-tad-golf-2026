@@ -320,10 +320,10 @@
         "usga",
         "national-jr"
       ],
-      "venue": "TBD — Oklahoma",
-      "city": "TBD",
+      "venue": "Dornick Hills Country Club",
+      "city": "Ardmore",
       "state": "OK",
-      "venueConfirmed": false,
+      "venueConfirmed": true,
       "venueNote": null,
       "signup": {
         "opens": "2026-03-11",
@@ -343,11 +343,36 @@
         "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
-      "notes": "Have Stracka. US Jr Am is Mon Jul 20\u2013Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264; entries open Wed Mar 11 at 9am ET.",
+      "notes": "Dornick Hills CC, Ardmore OK. Perry Maxwell design, est. 1914. US Jr Am is Mon Jul 20\u2013Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264.",
       "results": null,
-      "website": "https://champ-admin.usga.org",
+      "website": "https://www.dornickhills.com",
       "actionNeeded": false,
       "actionLabel": null
+    },
+    {
+      "id": "practice-round-us-jr-am-qual-2026-06-07",
+      "name": "Practice Round - US Jr Am Qualifier",
+      "shortName": "Practice Round",
+      "status": "practice-round",
+      "types": ["practice-round", "usga"],
+      "venue": "Dornick Hills Country Club",
+      "city": "Ardmore",
+      "state": "OK",
+      "venueConfirmed": true,
+      "venueNote": null,
+      "signup": null,
+      "qualifier": null,
+      "tournament": {
+        "start": "2026-06-07",
+        "end": "2026-06-07",
+        "displayDate": "Sun Jun 7, 2026",
+        "dateConfidence": "confirmed-2026"
+      },
+      "holes": 18,
+      "notes": "Practice round for Mon Jun 8 US Jr Am Qualifier at Dornick Hills CC, Ardmore OK.",
+      "results": null,
+      "website": "https://www.dornickhills.com",
+      "actionNeeded": false
     },
     {
       "id": "jr-pga-qual-1",
