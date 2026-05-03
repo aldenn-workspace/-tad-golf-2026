@@ -949,8 +949,8 @@
       "notes": "Illinois Open Qualifier #1 at Mistwood GC, Romeoville IL. SHOULD WE SWITCH THE WINNETKA QUALIFIER TO THIS QUALIFER? CORI LEE PLAYING IN THIS MAYBE TAD GOES OUT WITH CORY IF TEETIMES WORK?",
       "results": null,
       "website": null,
-      "actionNeeded": true,
-      "actionLabel": "Register when entry details are available"
+      "actionNeeded": false,
+      "actionLabel": null
     },
     {
       "id": "bubba-conlee",
