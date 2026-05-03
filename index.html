@@ -338,7 +338,7 @@ h1{font-size:clamp(2rem,5vw,2.9rem);font-weight:800;letter-spacing:-1.5px;line-h
   <div class="stat sr"><div class="n" id="sn-reg">—</div><div class="l">✅ Confirmed</div></div>
   <div class="stat sa"><div class="n" id="sn-app">—</div><div class="l">⏳ Applied</div></div>
   <div class="stat si"><div class="n" id="sn-iq">—</div><div class="l">🎯 If Qual</div></div>
-  <div class="stat sv"><div class="n" id="sn-inv">—</div><div class="l">💜 Invite Only</div></div>
+  <div class="stat sv"><div class="n" id="sn-played">—</div><div class="l">🏆 Played</div></div>
   <div class="stat sx"><div class="n" id="sn-can">—</div><div class="l">❌ Canceled</div></div>
 </div>
 
@@ -604,21 +604,21 @@ function matches(entry,f){
 
 // ── STATS ─────────────────────────────────────────────────────────────
 function updateStats(ts){
-  let tot=0,reg=0,app=0,iq=0,inv=0,can=0;
+  let tot=0,reg=0,app=0,iq=0,played=0,can=0;
   for(const t of ts){
     if(t.status==='past')continue;
+    if(t.status==='finished'){played++;continue;}
     tot++;
     if(t.status==='registered')reg++;
     else if(t.status==='applied'||t.status==='waiting')app++;
     else if(t.status==='if-qual')iq++;
-    else if(t.status==='invite-only'||t.status==='tentative')inv++;
     else if(t.status==='canceled')can++;
   }
   document.getElementById('sn-tot').textContent=tot;
   document.getElementById('sn-reg').textContent=reg;
   document.getElementById('sn-app').textContent=app;
   document.getElementById('sn-iq').textContent=iq;
-  document.getElementById('sn-inv').textContent=inv;
+  document.getElementById('sn-played').textContent=played;
   document.getElementById('sn-can').textContent=can;
 }
 
