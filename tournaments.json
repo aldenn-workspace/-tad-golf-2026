@@ -420,10 +420,10 @@
         "practice-round",
         "usga"
       ],
-      "venue": "TBD \u2014 Houston",
-      "city": "Houston",
+      "venue": "The Woodlands Country Club \u2014 North Course",
+      "city": "The Woodlands",
       "state": "TX",
-      "venueConfirmed": false,
+      "venueConfirmed": true,
       "venueNote": null,
       "signup": null,
       "qualifier": null,
@@ -434,23 +434,23 @@
         "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
-      "notes": "Practice round for Thu Jun 11 US Amateur Qualifier in Houston TX.",
+      "notes": "Practice round for Thu Jun 11 US Amateur Qualifier at The Woodlands CC North Course, The Woodlands TX.",
       "results": null,
-      "website": "https://champ-admin.usga.org",
+      "website": "https://thewoodlandscc.com",
       "actionNeeded": false
     },
     {
-      "id": "us-am-qual-houston",
-      "name": "US Amateur Qualifier \u2014 Houston",
+      "id": "us-am-qual-woodlands",
+      "name": "US Amateur Qualifier \u2014 The Woodlands CC",
       "shortName": "US Am Qualifier",
       "status": "registered",
       "types": [
         "usga"
       ],
-      "venue": "TBD \u2014 Houston",
-      "city": "Houston",
+      "venue": "The Woodlands Country Club \u2014 North Course",
+      "city": "The Woodlands",
       "state": "TX",
-      "venueConfirmed": false,
+      "venueConfirmed": true,
       "venueNote": null,
       "signup": {
         "opens": "2026-03-18",
@@ -470,9 +470,9 @@
         "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
-      "notes": "US Am qualifier in Houston TX. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA.",
+      "notes": "The Woodlands CC North Course, The Woodlands TX (Houston area). Premier private club in Spring TX. US Am is Mon Aug 10\u2013Sun Aug 16 at Merion Golf Club (East Course), Ardmore PA + Philadelphia CC, Gladwyne PA.",
       "results": null,
-      "website": "https://champ-admin.usga.org",
+      "website": "https://thewoodlandscc.com",
       "actionNeeded": false
     },
     {
