@@ -315,15 +315,15 @@
       "id": "us-jr-am-qual",
       "name": "US Junior Amateur Qualifier",
       "shortName": "US Jr Am Qualifier",
-      "status": "canceled",
+      "status": "registered",
       "types": [
         "usga",
         "national-jr"
       ],
-      "venue": "Thunderhawk Golf Club",
-      "city": "Beach Park",
-      "state": "IL",
-      "venueConfirmed": true,
+      "venue": "TBD — Oklahoma",
+      "city": "TBD",
+      "state": "OK",
+      "venueConfirmed": false,
       "venueNote": null,
       "signup": {
         "opens": "2026-03-11",
@@ -337,10 +337,10 @@
       },
       "qualifier": null,
       "tournament": {
-        "start": "2026-05-26",
-        "end": "2026-05-26",
-        "displayDate": "Tue May 26, 2026",
-        "dateConfidence": "from-schedule"
+        "start": "2026-06-08",
+        "end": "2026-06-08",
+        "displayDate": "Mon Jun 8, 2026",
+        "dateConfidence": "confirmed-2026"
       },
       "holes": 18,
       "notes": "Have Stracka. US Jr Am is Mon Jul 20\u2013Sat Jul 25 at Saucon Valley CC (Old + Grace Courses), Bethlehem PA if qualifier. Field size 264; entries open Wed Mar 11 at 9am ET.",
