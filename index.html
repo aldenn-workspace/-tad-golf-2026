@@ -639,7 +639,7 @@ function renderActions(data){
   items.sort((a,b)=>+b.urgent - +a.urgent);
   const el=document.getElementById('actionList');
   if(!items.length){
-    el.innerHTML=`<div style="color:var(--c-reg);font-size:13px;font-weight:600">✅ Current deadlines handled. Next up: Northern Jr signup opens Mar 1 @ 7am CT.</div>`;
+    el.innerHTML=`<div style="color:var(--c-reg);font-size:13px;font-weight:600">✅ All current deadlines handled.</div>`;
     return;
   }
   el.innerHTML=items.map(it=>{
